@@ -1,0 +1,28 @@
+package com.github.mcreeper12731.game.presets.custom;
+
+import com.github.mcreeper12731.game.models.Board;
+import com.github.mcreeper12731.game.models.Multiverse;
+import com.github.mcreeper12731.game.models.Timeline;
+import com.github.mcreeper12731.game.models.Color;
+import com.github.mcreeper12731.game.pieces.PieceType;
+import com.github.mcreeper12731.game.presets.GamePreset;
+
+public class Test1Preset implements GamePreset {
+
+    @Override
+    public Multiverse createMultiverse() {
+
+        return new Multiverse.Builder(2)
+                .withTimeline(
+                        new Timeline.Builder(0)
+                                .withBoard(
+                                        new Board.Builder(2,0,0, Color.WHITE)
+                                                .withPiece(Color.WHITE, PieceType.KING, 0, 0)
+                                                .withPiece(Color.BLACK, PieceType.KING, 1, 1)
+                                                .build()
+                                )
+                                .build()
+                )
+                .build();
+    }
+}

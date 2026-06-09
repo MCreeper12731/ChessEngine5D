@@ -78,19 +78,13 @@ public final class TurnIterator implements Iterator<List<Move>> {
                 Move move = iterator.next();
                 this.currentMoves.set(index, move);
 
-                List<Integer> activeTimelines = this.game.getMandatoryTimelineLs();
-                Integer addedTimelineL = this.game.applyMove(move);
-                if (addedTimelineL == null) {
-                    this.game.undoMoveFromCurrentTurn();
+                if (this.game.doesMoveAddTimeline(move)) {
                     this.resetFollowingIterators(index + 1);
                     return true;
                 }
 
                 // Handle if a move added a timeline as this might have activated a timeline
-                List<Integer> activeTimelinesAfter = this.game.getMandatoryTimelineLs();
-                this.game.undoMoveFromCurrentTurn();
-
-                if (activeTimelinesAfter.isEmpty() || activeTimelines.equals(activeTimelinesAfter)) {
+                if (this.game.doesMoveActivateTimeline(move)) {
                     // No new timeline activated, proceed as usual
                     currentMoves.set(index, move);
                     return true;

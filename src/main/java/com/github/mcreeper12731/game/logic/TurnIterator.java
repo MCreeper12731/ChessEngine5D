@@ -78,13 +78,13 @@ public final class TurnIterator implements Iterator<List<Move>> {
                 Move move = iterator.next();
                 this.currentMoves.set(index, move);
 
-                if (this.game.doesMoveAddTimeline(move)) {
+                if (!this.game.doesMoveAddTimeline(move)) {
                     this.resetFollowingIterators(index + 1);
                     return true;
                 }
 
                 // Handle if a move added a timeline as this might have activated a timeline
-                if (this.game.doesMoveActivateTimeline(move)) {
+                if (!this.game.doesMoveActivateTimeline(move)) {
                     // No new timeline activated, proceed as usual
                     currentMoves.set(index, move);
                     return true;
@@ -93,16 +93,13 @@ public final class TurnIterator implements Iterator<List<Move>> {
                 // New timeline activated, anchor moved that activated it and pre-generate all turns with this move
                 List<Move> anchoredPartialTurn = new ArrayList<>(this.anchoredPartialTurn);
                 anchoredPartialTurn.add(move);
-                this.game.applyMoves(anchoredPartialTurn);
+                this.game.applyMove(move);
                 TurnIterator turnIterator = new TurnIterator(this.game, this.minimal, anchoredPartialTurn);
                 turnIterator.forEachRemaining(turn -> {
-                    for (int i = anchoredPartialTurn.size() - 1; i >= 0; i--) {
-                        Move anchoredMove = anchoredPartialTurn.get(i);
-                        turn.addFirst(anchoredMove);
-                    }
+                    turn.addFirst(move);
                     this.generatedTurns.add(turn);
                 });
-                this.game.undoPartialTurn();
+                this.game.undoMoveFromCurrentTurn();
                 return false;
             }
         }

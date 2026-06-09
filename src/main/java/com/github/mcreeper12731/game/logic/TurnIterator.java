@@ -9,73 +9,65 @@ import java.util.function.Supplier;
 public final class TurnIterator implements Iterator<List<Move>> {
 
     private final Game game;
+    private final boolean minimal;
+
     private final List<Supplier<Iterator<Move>>> moveIteratorSuppliers;
     private final List<Iterator<Move>> moveIterators;
     private final List<Move> currentMoves;
 
-    private List<Move> nextTurn;
-    private boolean initialized;
+    private final List<Move> anchoredPartialTurn;
+
+    private final Deque<List<Move>> generatedTurns = new ArrayDeque<>();
 
     public TurnIterator(Game game, boolean minimal) {
 
         this.game = game;
+        this.minimal = minimal;
+
         this.moveIteratorSuppliers = new ArrayList<>();
 
-        for (int l : minimal ? this.game.getMandatoryTimelineLs() : this.game.getMultiverse().getTimelineIndices()) {
+        for (int l : minimal ? this.game.getMandatoryTimelineLs() : this.game.getPlayableTimelineLs()) {
             Board board = this.game.getMultiverse().getTimeline(l).getLastBoard();
 
-            this.moveIteratorSuppliers.add(MoveGeneratorNew.probableMovesSupplier(board, this.game.getMultiverse()));
+            this.moveIteratorSuppliers.add(MoveGenerator.probableMovesSupplier(board, this.game.getMultiverse()));
         }
 
         this.moveIterators = new ArrayList<>();
         this.currentMoves = new ArrayList<>();
 
-        for (int i = 0; i < moveIteratorSuppliers.size(); i++) {
-            this.moveIterators.add(null);
-            this.currentMoves.add(null);
+        for (Supplier<Iterator<Move>> moveIteratorSupplier : moveIteratorSuppliers) {
+            Iterator<Move> iterator = moveIteratorSupplier.get();
+
+            this.moveIterators.add(iterator);
+            this.currentMoves.add(iterator.next());
         }
+
+        this.anchoredPartialTurn = new ArrayList<>();
 
         this.step();
     }
 
+    private TurnIterator(Game game, boolean minimal, List<Move> anchoredPartialTurn) {
+        this(game, minimal);
+
+        this.anchoredPartialTurn.addAll(anchoredPartialTurn);
+    }
+
     private void step() {
-        this.nextTurn = null;
 
         while (true) {
-            if (!this.initialized) {
-                if (!this.initializeFirstCombination()) {
-                    return;
-                }
 
-                this.initialized = true;
-            } else {
-                if (!this.advanceCombination()) {
-                    return;
-                }
+            if (!this.advanceCombination()) {
+                return;
             }
 
-            List<Move> candidateTurn = List.copyOf(this.currentMoves);
+            List<Move> candidateTurn = new ArrayList<>(this.currentMoves);
 
             if (isLegalTurn(candidateTurn)) {
-                this.nextTurn = candidateTurn;
+                this.generatedTurns.add(candidateTurn);
                 return;
             }
         }
-    }
-
-    private boolean initializeFirstCombination() {
-        for (int index = 0; index < this.moveIteratorSuppliers.size(); index++) {
-            Iterator<Move> iterator = this.moveIteratorSuppliers.get(index).get();
-
-            if (!iterator.hasNext()) {
-                return false;
-            }
-
-            this.moveIterators.set(index, iterator);
-            this.currentMoves.set(index, iterator.next());
-        }
-
-        return true;
     }
 
     private boolean advanceCombination() {
@@ -83,10 +75,41 @@ public final class TurnIterator implements Iterator<List<Move>> {
             Iterator<Move> iterator = this.moveIterators.get(index);
 
             if (iterator.hasNext()) {
-                this.currentMoves.set(index, iterator.next());
+                Move move = iterator.next();
+                this.currentMoves.set(index, move);
 
-                this.resetFollowingIterators(index + 1);
-                return true;
+                List<Integer> activeTimelines = this.game.getMandatoryTimelineLs();
+                Integer addedTimelineL = this.game.applyMove(move);
+                if (addedTimelineL == null) {
+                    this.game.undoMoveFromCurrentTurn();
+                    this.resetFollowingIterators(index + 1);
+                    return true;
+                }
+
+                // Handle if a move added a timeline as this might have activated a timeline
+                List<Integer> activeTimelinesAfter = this.game.getMandatoryTimelineLs();
+                this.game.undoMoveFromCurrentTurn();
+
+                if (activeTimelinesAfter.isEmpty() || activeTimelines.equals(activeTimelinesAfter)) {
+                    // No new timeline activated, proceed as usual
+                    currentMoves.set(index, move);
+                    return true;
+                }
+
+                // New timeline activated, anchor moved that activated it and pre-generate all turns with this move
+                List<Move> anchoredPartialTurn = new ArrayList<>(this.anchoredPartialTurn);
+                anchoredPartialTurn.add(move);
+                this.game.applyMoves(anchoredPartialTurn);
+                TurnIterator turnIterator = new TurnIterator(this.game, this.minimal, anchoredPartialTurn);
+                turnIterator.forEachRemaining(turn -> {
+                    for (int i = anchoredPartialTurn.size() - 1; i >= 0; i--) {
+                        Move anchoredMove = anchoredPartialTurn.get(i);
+                        turn.addFirst(anchoredMove);
+                    }
+                    this.generatedTurns.add(turn);
+                });
+                this.game.undoPartialTurn();
+                return false;
             }
         }
 
@@ -96,10 +119,6 @@ public final class TurnIterator implements Iterator<List<Move>> {
     private void resetFollowingIterators(int startIndex) {
         for (int index = startIndex; index < this.moveIterators.size(); index++) {
             Iterator<Move> iterator = this.moveIteratorSuppliers.get(index).get();
-
-            if (!iterator.hasNext()) {
-                throw new IllegalStateException("Move iterator unexpectedly had no moves.");
-            }
 
             this.moveIterators.set(index, iterator);
             this.currentMoves.set(index, iterator.next());
@@ -150,16 +169,16 @@ public final class TurnIterator implements Iterator<List<Move>> {
 
     @Override
     public boolean hasNext() {
-        return this.nextTurn != null;
+        return !this.generatedTurns.isEmpty();
     }
 
     @Override
     public List<Move> next() {
-        if (this.nextTurn == null) {
+        if (this.generatedTurns.isEmpty()) {
             throw new NoSuchElementException();
         }
 
-        List<Move> result = this.nextTurn;
+        List<Move> result = this.generatedTurns.pop();
         this.step();
         return result;
     }

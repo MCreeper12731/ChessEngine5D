@@ -4,17 +4,27 @@ import com.github.mcreeper12731.game.models.Multiverse;
 import com.github.mcreeper12731.game.moves.Move;
 import com.github.mcreeper12731.game.pieces.movesets.*;
 
-import java.util.List;
+import java.util.Collections;
+import java.util.Iterator;
 
 public enum PieceType {
-    KING("K", new KingMoveSet()),
-    QUEEN("Q", new QueenMoveSet()),
-    ROOK("R", new RookMoveSet()),
-    BISHOP("B", new BishopMoveSet()),
-    KNIGHT("N", new KnightMoveSet()),
+    EMPTY("", (e, p) -> Collections.emptyIterator()),
+
+    // Normal pieces
+    KING("K", new SingleStepMoveSet(MoveDirections.DIRECTIONS_1234_DIM)),
+    QUEEN("Q", new SlidingMoveSet(MoveDirections.DIRECTIONS_1234_DIM)),
+    ROOK("R", new SlidingMoveSet(MoveDirections.DIRECTIONS_1_DIM)),
+    BISHOP("B", new SlidingMoveSet(MoveDirections.DIRECTIONS_2_DIM)),
+    KNIGHT("N", new SingleStepMoveSet(MoveDirections.DIRECTIONS_KNIGHT)),
     PAWN("P", new PawnMoveSet()),
+
+    // Fairy pieces
+    UNICORN("U", new SlidingMoveSet(MoveDirections.DIRECTIONS_3_DIM)),
+    DRAGON("D", new SlidingMoveSet(MoveDirections.DIRECTIONS_4_DIM)),
+    PRINCESS("S", new SlidingMoveSet(MoveDirections.DIRECTIONS_12_DIM)),
+    BRAWN("W", new BrawnMoveSet())
+    // Missing common king and royal queen but who cares
     ;
-    //TODO: implement more pieces
 
     public final String name;
     public final String longName;
@@ -26,7 +36,7 @@ public enum PieceType {
         this.moveSet = moveSet;
     }
 
-    public List<Move> getAvailableMoves(Multiverse multiverse, Piece pieceInstance) {
-        return moveSet.generateMoves(multiverse, pieceInstance);
+    public Iterator<Move> moveIterator(Multiverse multiverse, Piece pieceInstance) {
+        return this.moveSet.iterator(multiverse, pieceInstance);
     }
 }

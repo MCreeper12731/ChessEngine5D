@@ -1,71 +1,163 @@
 package com.github.mcreeper12731.game.moves;
 
-import com.github.mcreeper12731.game.models.Point4D;
+import com.github.mcreeper12731.game.logic.Game;
 import com.github.mcreeper12731.game.models.Color;
+import com.github.mcreeper12731.game.models.Multiverse;
+import com.github.mcreeper12731.game.models.Point4D;
 import com.github.mcreeper12731.game.pieces.Piece;
 import com.github.mcreeper12731.game.pieces.PieceType;
 
 import java.util.Objects;
 
-public record Move(Color pieceColor, PieceType pieceType,
-                   double fromTimeline, int fromTime, int fromX, int fromY,
-                   double toTimeline, int toTime, int toX, int toY,
-                   PieceType promotionResult
-                   ) implements Comparable<Move> {
-
-    public Move(Piece piece, Point4D to, PieceType promotionResult) {
-        this(
-                piece.color(), piece.type(),
-                piece.location().timeline(), piece.location().time(), piece.location().x(), piece.location().y(),
-                to.timeline(), to.time(), to.x(), to.y(),
-                promotionResult
-        );
-    }
-
-    public Move(Piece piece, Point4D to) {
-        this(piece, to, null);
-    }
-
-    public Point4D from() {
-        return new Point4D(fromTimeline, fromTime, fromX, fromY);
-    }
-
-    public Point4D to() {
-        return new Point4D(toTimeline, toTime, toX, toY);
-    }
+public record Move(
+        Point4D from, Point4D to,
+        PieceType fromType, PieceType toType,
+        Color color,
+        Point4D castledRook,
+        Point4D enPassant,
+        boolean noop
+) implements Comparable<Move> {
 
     @Override
-    public String toString() {
-        return String.format("%s: %s > %s",
-                pieceType.name + pieceColor.name().charAt(0),
-                from(),
-                to()
-        );
+    public int compareTo(Move other) {
+        return this.hashCode() - other.hashCode();
     }
 
     @Override
     public boolean equals(Object other) {
-        if (other == null || getClass() != other.getClass()) return false;
-        Move move = (Move) other;
-        return toX == move.toX && toY == move.toY && fromX == move.fromX && fromY == move.fromY && toTime == move.toTime && fromTime == move.fromTime && toTimeline == move.toTimeline && fromTimeline == move.fromTimeline && pieceColor == move.pieceColor && pieceType == move.pieceType;
+        if (this == other) return true;
+        if (!(other instanceof Move move)) return false;
+        return this.hashCode() == move.hashCode();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(pieceColor, pieceType, fromTimeline, fromTime, fromX, fromY, toTimeline, toTime, toX, toY);
+        return Objects.hash(from, to, fromType, toType, castledRook, enPassant, noop);
     }
 
     @Override
-    public int compareTo(Move other) {
-        return penalty() - other.penalty();
+    public String toString() {
+        if (noop) return "MoveNew{noop}";
+
+        return
+                this.fromType + "_" + this.color + ":" + from + "->" + to +
+                (fromType != toType ? ", toType=" + toType : "") +
+                (castledRook != null ? ", castledRook=" + castledRook : "") +
+                (enPassant != null ? ", enPassant=" + enPassant : "");
     }
 
-    public int penalty() {
-        boolean sameTimeline = fromTimeline() == toTimeline();
-        boolean sameTime = fromTime() == toTime();
+    public static class Builder {
 
-        if (!sameTime && sameTimeline) return 1000; // Guarantees timeline splitting
-        if (!sameTime || !sameTimeline) return 500; // May or may not split timelines
-        return 0; // Same board move splits timelines
+        private final Multiverse multiverse;
+
+        private Point4D from;
+        private Point4D to;
+        private PieceType fromType;
+        private PieceType toType;
+        private Color color;
+        private Point4D castledRook;
+        private Point4D enPassant;
+        private boolean noop = false;
+
+        public Builder() {
+            this.multiverse = null;
+        }
+
+        public Builder(Game game) {
+            this.multiverse = game.getMultiverse();
+        }
+
+        public Builder(Multiverse multiverse) {
+            this.multiverse = multiverse;
+        }
+
+        public Builder withPiece(Piece piece) {
+            this.from = piece.location();
+            this.fromType = piece.type();
+            this.toType = piece.type();
+            this.color = piece.color();
+            return this;
+        }
+
+        public Builder withFrom(Point4D from) {
+            this.from = from;
+            if (this.multiverse != null) {
+                Piece piece = this.multiverse.getLocationContents(this.from);
+
+                this.fromType = piece.type();
+                this.toType = piece.type();
+                this.color = piece.color();
+            }
+            return this;
+        }
+
+        public Builder withFrom(int l, int t, int x, int y) {
+            this.from = new Point4D(l, t, x, y);
+            if (this.multiverse != null) {
+                Piece piece = this.multiverse.getLocationContents(this.from);
+
+                this.fromType = piece.type();
+                this.toType = piece.type();
+                this.color = piece.color();
+            }
+            return this;
+        }
+
+        public Builder withTo(Point4D to) {
+            this.to = to;
+            return this;
+        }
+
+        public Builder withTo(int l, int t, int x, int y) {
+            this.to = new Point4D(l, t, x, y);
+            return this;
+        }
+
+        public Builder withNoop(int l, int t) {
+            this.from = new Point4D(l, t, -1, -1);
+            this.to = new Point4D(l, t, -1, -1);
+            this.noop = true;
+            return this;
+        }
+
+        public Builder withColor(Color color) {
+            this.color = color;
+            return this;
+        }
+
+        public Builder withPromotion(PieceType toType) {
+            this.toType = toType;
+            return this;
+        }
+
+        public Builder withCastledRook(Point4D castledRook) {
+            this.castledRook = castledRook;
+            return this;
+        }
+
+        public Builder withEnPassant(Point4D enPassant) {
+            this.enPassant = enPassant;
+            return this;
+        }
+
+        public Builder withNoop() {
+            this.noop = true;
+            return this;
+        }
+
+        public Move build() {
+            if ((this.from == null || this.to == null || this.fromType == null || this.toType == null || this.color == null) && !this.noop)
+                throw new IllegalStateException();
+
+            return new Move(
+                    this.from, this.to,
+                    this.fromType, this.toType,
+                    this.color,
+                    this.castledRook,
+                    this.enPassant,
+                    this.noop
+            );
+        }
+
     }
 }

@@ -5,6 +5,8 @@ import com.github.mcreeper12731.game.models.Multiverse;
 import com.github.mcreeper12731.game.models.Point4D;
 import com.github.mcreeper12731.game.moves.Move;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public record Piece(
@@ -16,16 +18,25 @@ public record Piece(
         this(color, type, position, false);
     }
 
+    public Iterator<Move> getMoveIterator(Multiverse multiverse) {
+        return this.type.moveIterator(multiverse, this);
+    }
+
     public List<Move> getAvailableMoves(Multiverse multiverse) {
-        return type.getAvailableMoves(multiverse, this);
+        List<Move> moves = new ArrayList<>();
+        this.getMoveIterator(multiverse).forEachRemaining(moves::add);
+
+        return moves;
     }
 
     @Override
     public String toString() {
-        return type.name + color.name().charAt(0);
+        if (this.type == PieceType.EMPTY) return "..";
+
+        return this.type.name + this.color.name().charAt(0);
     }
 
     public String toLongString() {
-        return type.longName + color.name().charAt(0);
+        return this.type.longName + this.color.name().charAt(0) + "@" + this.location;
     }
 }

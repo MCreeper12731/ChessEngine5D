@@ -4,117 +4,142 @@ import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.models.Multiverse;
 import com.github.mcreeper12731.game.models.Point4D;
 import com.github.mcreeper12731.game.moves.Move;
-import com.github.mcreeper12731.game.moves.MoveValidator;
+import com.github.mcreeper12731.game.pieces.MoveDirections;
 import com.github.mcreeper12731.game.pieces.Piece;
 import com.github.mcreeper12731.game.pieces.PieceType;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class PawnMoveSet implements MoveSet {
 
-    // TODO: this entire file is so ugly, refactor at some point
+    private final List<Point4D> whiteMoves;
+    private final List<Point4D> whiteCaptures;
 
-    private MoveValidator moveValidator = null;
+    private final List<Point4D> blackMoves;
+    private final List<Point4D> blackCaptures;
 
-    private Optional<Move> simpleMove(Multiverse multiverse, Piece piece, Point4D moveVector) {
+    public PawnMoveSet() {
+        this.whiteMoves = MoveDirections.DIRECTIONS_WHITE_PAWN_MOVES;
+        this.whiteCaptures = MoveDirections.DIRECTIONS_WHITE_PAWN_CAPTURES;
 
-        int lastRank = piece.color() == Color.WHITE ? multiverse.getBoardSize() - 1 : 0;
+        this.blackMoves = MoveDirections.DIRECTIONS_BLACK_PAWN_MOVES;
+        this.blackCaptures = MoveDirections.DIRECTIONS_BLACK_PAWN_CAPTURES;
+    }
 
-        Point4D toLocation = piece.location().add(moveVector);
+    public PawnMoveSet(List<Point4D> whiteCaptures, List<Point4D> blackCaptures) {
+        this.whiteMoves = MoveDirections.DIRECTIONS_WHITE_PAWN_MOVES;
+        this.whiteCaptures = whiteCaptures;
 
-        if (!moveValidator.isToCorrect(piece.color(), toLocation))
-            return Optional.empty();
-
-        if (moveVector.x() == 0 && moveVector.time() == 0) {
-            // non-capturing, forward move
-
-            for (int i = 1; i <= Math.abs(moveVector.timeline()); i++) {
-                Optional<Piece> pieceAtLocation = multiverse.getPiece(
-                        piece.location().timeline() + i * Math.signum(moveVector.timeline()),
-                        toLocation.time(),
-                        toLocation.x(),
-                        toLocation.y()
-                );
-
-                if (pieceAtLocation.isPresent()) return Optional.empty();
-            }
-
-            for (int i = 1; i <= Math.abs(moveVector.y()); i++) {
-                Optional<Piece> pieceAtLocation = multiverse.getPiece(
-                        toLocation.timeline(),
-                        toLocation.time(),
-                        toLocation.x(),
-                        piece.location().y() + i * Integer.signum(moveVector.y())
-                );
-                if (pieceAtLocation.isPresent()) return Optional.empty();
-            }
-        } else {
-            // capturing, sideways move
-
-            Optional<Piece> pieceAtLocation = multiverse.getPiece(toLocation);
-
-            if (pieceAtLocation.isEmpty()) return Optional.empty();
-            if (pieceAtLocation.get().color() == piece.color()) return Optional.empty();
-        }
-
-
-        return Optional.of(new Move(
-                piece,
-                toLocation,
-                toLocation.y() == lastRank ? PieceType.QUEEN : null
-        ));
+        this.blackMoves = MoveDirections.DIRECTIONS_BLACK_PAWN_MOVES;
+        this.blackCaptures = blackCaptures;
     }
 
     @Override
-    public List<Move> generateMoves(Multiverse multiverse, Piece piece) {
+    public Iterator<Move> iterator(Multiverse multiverse, Piece piece) {
+        if (piece.color() == Color.WHITE)
+            return new PawnMoveIterator(multiverse, piece, this.whiteMoves, this.whiteCaptures);
+        return new PawnMoveIterator(multiverse, piece, this.blackMoves, this.blackCaptures);
+    }
 
-        if (moveValidator == null)
-            moveValidator = new MoveValidator(multiverse);
+    private static class PawnMoveIterator implements Iterator<Move> {
 
-        List<Move> moves = new ArrayList<>();
+        private final Multiverse multiverse;
+        private final Piece piece;
+        private final List<Point4D> moveDirections;
+        private final List<Point4D> captureDirections;
+        private final List<Move> validMoves;
 
-        int direction = piece.color() == Color.WHITE ? 1 : -1;
+        private int moveIndex = 0;
 
-        // non-capturing, forward moves
-        simpleMove(
-                multiverse,
-                piece,
-                new Point4D(0, 0, 0, direction)
-        ).ifPresent(moves::add);
-
-        if (!piece.moved()) {
-            simpleMove(
-                    multiverse,
-                    piece,
-                    new Point4D(0, 0, 0, direction * 2)
-            ).ifPresent(moves::add);
+        public PawnMoveIterator(Multiverse multiverse, Piece piece, List<Point4D> moveDirections, List<Point4D> captureDirections) {
+            this.multiverse = multiverse;
+            this.piece = piece;
+            this.moveDirections = moveDirections;
+            this.captureDirections = captureDirections;
+            this.validMoves = new ArrayList<>();
+            this.constructValidMoves();
         }
 
-        simpleMove(
-                multiverse,
-                piece,
-                new Point4D(0, 0, 1, direction)
-        ).ifPresent(moves::add);
+        private void constructValidMoves() {
 
-        simpleMove(
-                multiverse,
-                piece,
-                new Point4D(0, 0, -1, direction)
-        ).ifPresent(moves::add);
+            for (Point4D moveDirection : this.moveDirections) {
+                Point4D toLocation = this.piece.location().add(moveDirection);
+                Piece toPiece = this.multiverse.getLocationContents(toLocation);
 
-        simpleMove(
-                multiverse,
-                piece,
-                new Point4D(direction, 1, 0, 0)
-        ).ifPresent(moves::add);
+                if (toPiece == null) continue;
+                if (toPiece.type() != PieceType.EMPTY) continue;
 
-        simpleMove(
-                multiverse,
-                piece,
-                new Point4D(direction, -1, 0, 0)
-        ).ifPresent(moves::add);
+                this.validMoves.add(
+                        new Move.Builder()
+                                .withPiece(this.piece)
+                                .withTo(toLocation)
+                                .build()
+                );
 
-        return moves;
+                // If the pawn hasn't moved, check 2 spaces ahead
+                if (piece.moved()) continue;
+                toLocation = toLocation.add(moveDirection);
+                toPiece = this.multiverse.getLocationContents(toLocation);
+
+                if (toPiece == null) continue;
+                if (toPiece.type() != PieceType.EMPTY) continue;
+
+                this.validMoves.add(
+                        new Move.Builder()
+                                .withPiece(this.piece)
+                                .withTo(toLocation)
+                                .build()
+                );
+            }
+
+            for (Point4D captureDirection : this.captureDirections) {
+                Point4D toLocation = this.piece.location().add(captureDirection);
+                Piece toPiece = this.multiverse.getLocationContents(toLocation);
+
+                if (toPiece == null) continue;
+                
+                if (this.piece.color().other() == toPiece.color())
+                    this.validMoves.add(
+                            new Move.Builder()
+                                    .withPiece(this.piece)
+                                    .withTo(toLocation)
+                                    .build()
+                    );
+
+                // Pesky en-passant
+                if (captureDirection.l() != 0 || captureDirection.t() != 0) continue;
+                Point4D potentialPawnLocation = toLocation.add(0, 0, 0, -captureDirection.y());
+                Piece potentialPawn = this.multiverse.getLocationContents(potentialPawnLocation);
+
+                if (potentialPawn == null || potentialPawn.type() != PieceType.PAWN) continue;
+                Point4D potentialPastPawnLocation = potentialPawnLocation.add(0, -1, 0, captureDirection.y() * 2);
+                potentialPawn = this.multiverse.getLocationContents(potentialPastPawnLocation);
+
+                if (potentialPawn == null || potentialPawn.type() != PieceType.PAWN) continue;
+
+                this.validMoves.add(
+                        new Move.Builder()
+                                .withPiece(this.piece)
+                                .withTo(toLocation)
+                                .build()
+                );
+            }
+
+        }
+
+        @Override
+        public boolean hasNext() {
+            return this.moveIndex < this.validMoves.size();
+        }
+
+        @Override
+        public Move next() {
+            if (this.moveIndex >= this.validMoves.size()) throw new IllegalStateException();
+            Move result = this.validMoves.get(this.moveIndex);
+            this.moveIndex++;
+            return result;
+        }
     }
 }

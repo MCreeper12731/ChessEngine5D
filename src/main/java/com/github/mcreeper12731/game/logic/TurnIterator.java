@@ -29,7 +29,7 @@ public final class TurnIterator implements Iterator<List<Move>> {
         for (int l : minimal ? this.game.getMandatoryTimelineLs() : this.game.getPlayableTimelineLs()) {
             Board board = this.game.getMultiverse().getTimeline(l).getLastBoard();
 
-            this.moveIteratorSuppliers.add(MoveGenerator.probableMovesSupplier(board, this.game.getMultiverse()));
+            this.moveIteratorSuppliers.add(MoveGenerator.scoredMovesSupplier(board, this.game));
         }
 
         this.moveIterators = new ArrayList<>();
@@ -37,6 +37,7 @@ public final class TurnIterator implements Iterator<List<Move>> {
 
         for (Supplier<Iterator<Move>> moveIteratorSupplier : moveIteratorSuppliers) {
             Iterator<Move> iterator = moveIteratorSupplier.get();
+
 
             this.moveIterators.add(iterator);
             this.currentMoves.add(iterator.next());
@@ -84,17 +85,24 @@ public final class TurnIterator implements Iterator<List<Move>> {
                 }
 
                 // Handle if a move added a timeline as this might have activated a timeline
-                if (!this.game.doesMoveActivateTimeline(move)) {
+                if (!this.game.doesMoveActivateTimeline(move) && !this.game.doesMoveRewindPresent(move)) {
                     // No new timeline activated, proceed as usual
                     currentMoves.set(index, move);
                     return true;
                 }
 
-                // New timeline activated, anchor moved that activated it and pre-generate all turns with this move
+                // New timeline activated, anchor move that activated it and pre-generate all turns with this move
                 List<Move> anchoredPartialTurn = new ArrayList<>(this.anchoredPartialTurn);
                 anchoredPartialTurn.add(move);
                 this.game.applyMove(move);
                 TurnIterator turnIterator = new TurnIterator(this.game, this.minimal, anchoredPartialTurn);
+
+                if (!turnIterator.hasNext()) {
+                    this.game.undoMoveFromCurrentTurn();
+                    currentMoves.set(index, move);
+                    return true;
+                }
+
                 turnIterator.forEachRemaining(turn -> {
                     turn.addFirst(move);
                     this.generatedTurns.add(turn);
@@ -117,6 +125,8 @@ public final class TurnIterator implements Iterator<List<Move>> {
     }
 
     private boolean isLegalTurn(List<Move> turn) {
+
+
         Set<Integer> covered = new HashSet<>();
         List<Integer> mandatoryTimelines = this.game.getMandatoryTimelineLs();
 
@@ -151,7 +161,7 @@ public final class TurnIterator implements Iterator<List<Move>> {
         covered.add(move.from().l());
 
         if (move.to().l() != move.from().l()) {
-            if (this.game.getMultiverse().getTimeline(move.to().l()).getLastTimeCoordinate() == move.to().t())
+            if (this.game.getMultiverse().getTimeline(move.to().l()).getLastT() == move.to().t())
                 covered.add(move.to().l());
         }
 

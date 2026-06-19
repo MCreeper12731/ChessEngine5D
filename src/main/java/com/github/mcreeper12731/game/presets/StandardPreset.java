@@ -1,5 +1,6 @@
 package com.github.mcreeper12731.game.presets;
 
+import com.github.mcreeper12731.game.logic.Game;
 import com.github.mcreeper12731.game.models.Board;
 import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.models.Multiverse;
@@ -9,13 +10,13 @@ import com.github.mcreeper12731.game.pieces.PieceType;
 public class StandardPreset implements GamePreset {
 
     @Override
-    public Multiverse createMultiverse() {
+    public Game createGame() {
 
-        return new Multiverse.Builder(8)
+        return new Game(new Multiverse.Builder(8)
                 .withTimeline(
                         new Timeline.Builder(0)
                                 .withBoard(
-                                        new Board.Builder(8, 0, 0, Color.WHITE)
+                                        new Board.Builder(8, 0, 0)
                                                 .withWhitePiece(PieceType.ROOK, 0, 0)
                                                 .withWhitePiece(PieceType.KNIGHT, 1, 0)
                                                 .withWhitePiece(PieceType.BISHOP, 2, 0)
@@ -52,6 +53,6 @@ public class StandardPreset implements GamePreset {
                                 )
                                 .build()
                 )
-                .build();
+                .build());
     }
 }

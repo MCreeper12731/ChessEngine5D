@@ -1,5 +1,6 @@
 package com.github.mcreeper12731.game.presets.focused;
 
+import com.github.mcreeper12731.game.logic.Game;
 import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.pieces.PieceType;
 import com.github.mcreeper12731.game.models.Board;
@@ -10,13 +11,13 @@ import com.github.mcreeper12731.game.presets.GamePreset;
 public class JustQueensPreset implements GamePreset {
 
     @Override
-    public Multiverse createMultiverse() {
+    public Game createGame() {
 
-        return new Multiverse.Builder(6)
+        return new Game(new Multiverse.Builder(6)
                 .withTimeline(
                         new Timeline.Builder(0)
                                 .withBoard(
-                                        new Board.Builder(6, 0, 0, Color.WHITE)
+                                        new Board.Builder(6, 0, 0)
                                                 .withPiece(Color.WHITE, PieceType.KING, 2, 0)
                                                 .withPiece(Color.WHITE, PieceType.QUEEN, 4, 0)
                                                 .withPiece(Color.BLACK, PieceType.QUEEN, 1, 5)
@@ -25,6 +26,6 @@ public class JustQueensPreset implements GamePreset {
                                 )
                                 .build()
                 )
-                .build();
+                .build());
     }
 }

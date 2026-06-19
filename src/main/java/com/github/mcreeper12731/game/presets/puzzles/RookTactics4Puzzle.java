@@ -1,5 +1,6 @@
 package com.github.mcreeper12731.game.presets.puzzles;
 
+import com.github.mcreeper12731.game.logic.Game;
 import com.github.mcreeper12731.game.models.*;
 import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.pieces.PieceType;
@@ -12,13 +13,13 @@ public class RookTactics4Puzzle implements Puzzle {
     }
 
     @Override
-    public Multiverse createMultiverse() {
+    public Game createGame() {
 
-        return new Multiverse.Builder(4)
+        return new Game(new Multiverse.Builder(4)
                 .withTimeline(
                         new Timeline.Builder(0)
                                 .withBoard(
-                                        new Board.Builder(4, 0, 0, Color.WHITE)
+                                        new Board.Builder(4, 0, 0)
                                                 .withPiece(Color.WHITE, PieceType.PAWN, 0, 0)
                                                 .withPiece(Color.WHITE, PieceType.KING, 3, 0)
                                                 .withPiece(Color.BLACK, PieceType.ROOK, 0, 3)
@@ -47,6 +48,6 @@ public class RookTactics4Puzzle implements Puzzle {
                         new Point4D(1, 2, 2, 1),
                         new Point4D(1, 2, 1, 2)
                 )
-                .build();
+                .build());
     }
 }

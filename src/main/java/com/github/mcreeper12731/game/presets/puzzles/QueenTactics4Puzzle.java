@@ -1,5 +1,6 @@
 package com.github.mcreeper12731.game.presets.puzzles;
 
+import com.github.mcreeper12731.game.logic.Game;
 import com.github.mcreeper12731.game.models.*;
 import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.pieces.PieceType;
@@ -14,13 +15,13 @@ public class QueenTactics4Puzzle implements Puzzle {
     }
 
     @Override
-    public Multiverse createMultiverse() {
+    public Game createGame() {
 
-        return new Multiverse.Builder(5)
+        return new Game(new Multiverse.Builder(5)
                 .withTimeline(
                         new Timeline.Builder(0)
                                 .withBoard(
-                                        new Board.Builder(5, 0, 0, Color.WHITE)
+                                        new Board.Builder(5, 0, 0)
                                                 .withWhitePiece(PieceType.KING, 0, 0)
                                                 .withWhitePiece(PieceType.KNIGHT, 0, 2)
                                                 .withBlackPiece(PieceType.PAWN, 4, 2)
@@ -41,6 +42,6 @@ public class QueenTactics4Puzzle implements Puzzle {
                         new Point4D(0, 2, 0, 0),
                         new Point4D(0, 2, 1, 1)
                 )
-                .build();
+                .build());
     }
 }

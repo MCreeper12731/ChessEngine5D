@@ -1,10 +1,10 @@
 package com.github.mcreeper12731.game.presets.puzzles;
 
-import com.github.mcreeper12731.game.models.Multiverse;
-import com.github.mcreeper12731.game.models.Point4D;
+import com.github.mcreeper12731.game.logic.Game;
+import com.github.mcreeper12731.game.moves.Move;
 import com.github.mcreeper12731.game.presets.Preset;
 
-import java.awt.*;
+import java.util.List;
 
 public class OpeningTraps2Puzzle implements Puzzle {
 
@@ -14,37 +14,52 @@ public class OpeningTraps2Puzzle implements Puzzle {
     }
 
     @Override
-    public Multiverse createMultiverse() {
+    public Game createGame() {
 
-        return new Multiverse.Builder(Preset.STANDARD.getMultiverse())
-                .withTurn(
-                        new Point4D(0, 0, 4, 1),
-                        new Point4D(0, 0, 4, 3)
-                )
-                .withTurn(
-                        new Point4D(0, 1, 3,  6),
-                        new Point4D(0, 1, 3,  4)
-                )
-                .withTurn(
-                        new Point4D(0, 2, 4, 3),
-                        new Point4D(0, 2, 3, 4)
-                )
-                .withTurn(
-                        new Point4D(0, 3, 2, 7),
-                        new Point4D(0, 3, 5, 4)
-                )
-                .withTurn(
-                        new Point4D(0, 4, 1, 0),
-                        new Point4D(0, 4, 2, 2)
-                )
-                .withTurn(
-                       new Point4D(0, 5, 3, 7),
-                       new Point4D(0, 5, 3, 4)
-                )
-                .withTurn(
-                        new Point4D(0, 6, 2, 2),
-                        new Point4D(0, 6, 3, 4)
-                )
-                .build();
+        Game game = Preset.STANDARD.getGame();
+
+        game.applyMovesAndFinalizeTurn(List.of(new Move.Builder(game.getMultiverse())
+                .withFrom(0, 0, 4, 1)
+                .withTo(0, 0, 4, 3)
+                .build()
+        ));
+
+        game.applyMovesAndFinalizeTurn(List.of(new Move.Builder(game.getMultiverse())
+                .withFrom(0, 1, 3, 6)
+                .withTo(0, 1, 3, 4)
+                .build()
+        ));
+
+        game.applyMovesAndFinalizeTurn(List.of(new Move.Builder(game.getMultiverse())
+                .withFrom(0, 2, 4, 3)
+                .withTo(0, 2, 3, 4)
+                .build()
+        ));
+
+        game.applyMovesAndFinalizeTurn(List.of(new Move.Builder(game.getMultiverse())
+                .withFrom(0, 3, 2, 7)
+                .withTo(0, 3, 5, 4)
+                .build()
+        ));
+
+        game.applyMovesAndFinalizeTurn(List.of(new Move.Builder(game.getMultiverse())
+                .withFrom(0, 4, 1, 0)
+                .withTo(0, 4, 2, 2)
+                .build()
+        ));
+
+        game.applyMovesAndFinalizeTurn(List.of(new Move.Builder(game.getMultiverse())
+                .withFrom(0, 5, 3, 7)
+                .withTo(0, 5, 3, 4)
+                .build()
+        ));
+
+        game.applyMovesAndFinalizeTurn(List.of(new Move.Builder(game.getMultiverse())
+                .withFrom(0, 6, 2, 2)
+                .withTo(0, 6, 3, 4)
+                .build()
+        ));
+
+        return game;
     }
 }

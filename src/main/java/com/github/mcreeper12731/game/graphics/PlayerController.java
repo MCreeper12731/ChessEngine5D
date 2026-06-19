@@ -1,26 +1,27 @@
 package com.github.mcreeper12731.game.graphics;
 
 import com.github.mcreeper12731.game.models.Color;
-import com.github.mcreeper12731.game.moves.Move;
 import com.github.mcreeper12731.game.graphics.components.TileComponent;
-import com.github.mcreeper12731.game.moves.MoveFactory;
-import com.github.mcreeper12731.game.moves.MoveValidator;
+import com.github.mcreeper12731.game.models.Multiverse;
+import com.github.mcreeper12731.game.models.Timeline;
+import com.github.mcreeper12731.game.moves.Move;
 import com.github.mcreeper12731.game.pieces.Piece;
+import com.github.mcreeper12731.game.pieces.PieceType;
+import com.github.mcreeper12731.utility.Log;
 
 import java.util.List;
 
 public class PlayerController extends Controller {
 
-    private final MoveValidator moveValidator;
-
     private TileComponent selectedTile = null;
 
     public PlayerController(GraphicsApplication application, Color playingAs) {
         super(application, playingAs);
-        this.moveValidator = new MoveValidator(application.getMultiverse());
     }
 
     public void handleTileComponentClick(TileComponent clickedTile) {
+
+        Log.debug("Graphics", "Clicked " + clickedTile.getLocation().toString());
 
         if (clickedTile.getPiece() == null) {
             handleEmptyTileClick(clickedTile);
@@ -41,8 +42,12 @@ public class PlayerController extends Controller {
 
         if (selectedTile == null && clickedTile.getPiece().color() != playingAs) return;
 
-        if (selectedTile == null && !moveValidator.isFromCorrect(clickedTile.getLocation())) return;
-        if (selectedTile == null && !moveValidator.isPieceColorCorrect(clickedTile.getPiece().color(), clickedTile.getLocation())) return;
+        Multiverse multiverse = application.getGame().getMultiverse();
+        if (selectedTile == null && multiverse.getLocationContents(clickedTile.getLocation()) == null) return;
+
+        Timeline timeline = multiverse.getTimeline(clickedTile.getLocation().l());
+        if (selectedTile == null && timeline.getLastBoard().getPlayerTurn() != clickedTile.getPiece().color()) return;
+        if (selectedTile == null && timeline.getLastT() != clickedTile.getLocation().t()) return;
 
         if (selectedTile != null && selectedTile.getLocation() == clickedTile.getLocation()) {
             selectedTile.setSelected(false);
@@ -71,50 +76,74 @@ public class PlayerController extends Controller {
 
     private void setHighlightedTiles(Piece piece, boolean highlighted) {
 
-        List<Move> legalMoves = piece.getAvailableMoves(application.getMultiverse());
+        List<Move> legalMoves = piece.getAvailableMoves(application.getGame().getMultiverse());
 
         for (Move move : legalMoves) {
             TileComponent tile = application.getView()
-                    .getTimelineComponent(move.toTimeline())
-                    .getBoardComponentFromTime(move.toTime())
-                    .getTileComponent(move.toX(), move.toY());
+                    .getTimelineComponent(move.to().l())
+                    .getBoardComponentFromTime(move.to().t())
+                    .getTileComponent(move.to().x(), move.to().y());
             tile.setHighlighted(highlighted);
         }
     }
 
     private void attemptMove(TileComponent clickedTile) {
 
-        MoveFactory moveFactory = new MoveFactory(application.getMultiverse());
-        Move move = moveFactory.build(
-                selectedTile.getLocation(),
-                clickedTile.getLocation()
-        );
+        Move move = new Move.Builder(this.application.getGame().getMultiverse())
+                .withFrom(selectedTile.getLocation())
+                .withTo(clickedTile.getLocation())
+                .build();
 
-        if (!moveValidator.isValid(move)) return;
+        if (!isValidMove(move)) return;
 
         setHighlightedTiles(selectedTile.getPiece(), false);
-        application.getMultiverse().applyMove(move);
+        application.getGame().applyMove(move);
         selectedTile.setSelected(false);
         selectedTile = null;
 
         updateView();
     }
 
+    private boolean isValidMove(Move move) {
+
+        Multiverse multiverse = application.getGame().getMultiverse();
+
+        Piece pieceFrom = multiverse.getLocationContents(move.from());
+        if (pieceFrom == null) return false;
+        if (pieceFrom.type() == PieceType.EMPTY) return false;
+
+        Timeline timeline = multiverse.getTimeline(move.from().l());
+
+        if (move.color() != timeline.getLastBoard().getPlayerTurn()) return false;
+
+        Piece pieceTo = multiverse.getLocationContents(move.to());
+        if (pieceTo == null) return false;
+        if (pieceTo.color() == move.color()) return false;
+
+        List<Move> legalMoves = pieceFrom.getAvailableMoves(multiverse);
+
+        for (Move legalMove : legalMoves) {
+            if (move.equals(legalMove)) return true;
+        }
+
+        return false;
+    }
+
     @Override
     public void onTurnStart() {
         application.getScene().setOnKeyPressed(event -> {
             switch (event.getCode()) {
-                case R:
-                    application.getMultiverse().undoMoveFromCurrentTurn();
+                case Q:
+                    application.getGame().undoMoveFromCurrentTurn();
                     updateView();
                     break;
-                case T:
-                    application.getMultiverse().undoTurn();
+                case W:
+                    application.getGame().undoTurn();
                     application.updateCurrentPlayer();
                     updateView();
                     break;
-                case Q:
-                    System.out.println("Player played!");
+                case E:
+                    Log.print("Graphics", "Player played!");
                     application.updateCurrentPlayer();
                     updateView();
                     break;

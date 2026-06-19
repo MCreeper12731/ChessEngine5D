@@ -5,6 +5,7 @@ import com.github.mcreeper12731.game.graphics.PlayerController;
 import com.github.mcreeper12731.game.graphics.GraphicsConfig;
 import com.github.mcreeper12731.game.pieces.Piece;
 import com.github.mcreeper12731.game.models.Point4D;
+import com.github.mcreeper12731.utility.Log;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;

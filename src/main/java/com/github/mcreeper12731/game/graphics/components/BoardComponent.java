@@ -1,10 +1,10 @@
 package com.github.mcreeper12731.game.graphics.components;
 
 import com.github.mcreeper12731.game.graphics.GraphicsApplication;
-import com.github.mcreeper12731.game.graphics.PlayerController;
 import com.github.mcreeper12731.game.graphics.GraphicsConfig;
 import com.github.mcreeper12731.game.models.Board;
 import com.github.mcreeper12731.game.models.Point4D;
+import com.github.mcreeper12731.game.models.Timeline;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.Pane;
@@ -23,8 +23,8 @@ public class BoardComponent extends Pane {
         this.application = application;
 
         this.canvas = new Canvas();
-        this.canvas.setWidth(board.getSize() * GraphicsConfig.TILE_SIZE + GraphicsConfig.BOARD_PADDING);
-        this.canvas.setHeight(board.getSize() * GraphicsConfig.TILE_SIZE + GraphicsConfig.BOARD_PADDING);
+        this.canvas.setWidth(board.size() * GraphicsConfig.TILE_SIZE + GraphicsConfig.BOARD_PADDING);
+        this.canvas.setHeight(board.size() * GraphicsConfig.TILE_SIZE + GraphicsConfig.BOARD_PADDING);
         this.canvas.setLayoutX(-GraphicsConfig.BOARD_PADDING / 2.0);
         this.canvas.setLayoutY(-GraphicsConfig.BOARD_PADDING / 2.0);
         this.canvas.toBack();
@@ -32,16 +32,16 @@ public class BoardComponent extends Pane {
 
         this.setLayoutX(
                 GraphicsConfig.TIME_SPACING +
-                board.getTime() *
-                (board.getSize() * GraphicsConfig.TILE_SIZE + GraphicsConfig.TIME_SPACING)
+                board.t() *
+                (board.size() * GraphicsConfig.TILE_SIZE + GraphicsConfig.TIME_SPACING)
         );
         this.setLayoutY(0);
 
-        this.tileComponents = new TileComponent[board.getSize()][board.getSize()];
+        this.tileComponents = new TileComponent[board.size()][board.size()];
 
-        for (int x = 0; x < board.getSize(); x++) {
-            for (int y = 0; y < board.getSize(); y++) {
-                TileComponent component = new TileComponent(board.getPiece(x, y), new Point4D(board.getTimeline(), board.getTime(), x, y), board.getSize(), application);
+        for (int x = 0; x < board.size(); x++) {
+            for (int y = 0; y < board.size(); y++) {
+                TileComponent component = new TileComponent(board.getLocationContents(x, y), new Point4D(board.l(), board.t(), x, y), board.size(), application);
                 this.tileComponents[y][x] = component;
                 this.getChildren().add(component);
             }
@@ -54,13 +54,15 @@ public class BoardComponent extends Pane {
 
     public void draw() {
 
-        if (application.getMultiverse().getTimeline(board.getTimeline()).getLastTimeCoordinate() < board.getTime()) {
+        Timeline timeline = application.getGame().getMultiverse().getTimeline(board.l());
+
+        if (timeline != null && timeline.getLastT() < board.t()) {
             erase();
             return;
         }
 
-        for (int x = 0; x < board.getSize(); x++) {
-            for (int y = 0; y < board.getSize(); y++) {
+        for (int x = 0; x < board.size(); x++) {
+            for (int y = 0; y < board.size(); y++) {
                 tileComponents[y][x].draw();
             }
         }
@@ -69,8 +71,8 @@ public class BoardComponent extends Pane {
     }
 
     public void erase() {
-        for (int x = 0; x < board.getSize(); x++) {
-            for (int y = 0; y < board.getSize(); y++) {
+        for (int x = 0; x < board.size(); x++) {
+            for (int y = 0; y < board.size(); y++) {
                 tileComponents[y][x].erase();
             }
         }
@@ -81,8 +83,8 @@ public class BoardComponent extends Pane {
     private void drawDecorations() {
 
         GraphicsContext gc = this.canvas.getGraphicsContext2D();
-        if (this.board.getTime() == this.application.getMultiverse().getPresentTime()) {
-            if (application.getMultiverse().getTimeline(this.board.getTimeline()).isActive())
+        if (this.board.t() == this.application.getGame().getPresentTime()) {
+            if (this.application.getGame().getMultiverse().isTimelineActive(this.board.l()))
                 gc.setFill(GraphicsConfig.Color.PRESENT);
             else
                 gc.setFill(GraphicsConfig.Color.PRESENT.darker());

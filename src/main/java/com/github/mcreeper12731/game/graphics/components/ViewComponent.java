@@ -1,11 +1,8 @@
 package com.github.mcreeper12731.game.graphics.components;
 
-import com.github.mcreeper12731.MainApplication;
 import com.github.mcreeper12731.game.graphics.GraphicsApplication;
-import com.github.mcreeper12731.game.graphics.PlayerController;
 import com.github.mcreeper12731.game.graphics.GraphicsConfig;
-import com.github.mcreeper12731.game.models.Multiverse;
-import javafx.application.Application;
+import com.github.mcreeper12731.game.models.Timeline;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.Pane;
 
@@ -15,7 +12,7 @@ public class ViewComponent extends ScrollPane {
 
     private final GraphicsApplication application;
     private final Pane displayContainer = new Pane();
-    private final Map<Double, TimelineComponent> timelineComponents = new HashMap<>();
+    private final Map<Integer, TimelineComponent> timelineComponents = new HashMap<>();
 
     private double scale = 1.0;
 
@@ -26,8 +23,8 @@ public class ViewComponent extends ScrollPane {
         setContent(displayContainer);
         setPannable(true);
 
-        for (double timelineIndex : application.getMultiverse().getTimelineIndices()) {
-            addTimelineComponent(timelineIndex);
+        for (int l : application.getGame().getMultiverse().getTimelineLs()) {
+            addTimelineComponent(l);
         }
 
         setVvalue(GraphicsConfig.CENTER_OFFSET);
@@ -52,18 +49,21 @@ public class ViewComponent extends ScrollPane {
         });
     }
 
-    private void addTimelineComponent(double timelineIndex) {
+    private void addTimelineComponent(int l) {
+
+        Timeline timeline = application.getGame().getMultiverse().getTimeline(l);
+        if (timeline == null) return;
 
         TimelineComponent timelineComponent = new TimelineComponent(
-                application.getMultiverse().getTimeline(timelineIndex),
+                timeline,
                 application
         );
 
-        timelineComponents.put(timelineIndex, timelineComponent);
+        timelineComponents.put(l, timelineComponent);
         displayContainer.getChildren().add(timelineComponent);
     }
 
-    private void removeTimelineComponent(double timelineIndex) {
+    private void removeTimelineComponent(int timelineIndex) {
 
         TimelineComponent timelineComponent = timelineComponents.get(timelineIndex);
         timelineComponent.erase();
@@ -72,24 +72,24 @@ public class ViewComponent extends ScrollPane {
         displayContainer.getChildren().remove(timelineComponent);
     }
 
-    public TimelineComponent getTimelineComponent(double timelineIndex) {
+    public TimelineComponent getTimelineComponent(int timelineIndex) {
         return timelineComponents.get(timelineIndex);
     }
 
     public void draw() {
 
-        Set<Double> modelIndices = new HashSet<>(application.getMultiverse().getTimelineIndices());
-        Set<Double> viewIndices = new HashSet<>(timelineComponents.keySet());
+        Set<Integer> modelIndices = new HashSet<>(application.getGame().getMultiverse().getTimelineLs());
+        Set<Integer> viewIndices = new HashSet<>(timelineComponents.keySet());
         modelIndices.removeAll(viewIndices);
 
-        for (double timelineIndex : modelIndices) {
+        for (int timelineIndex : modelIndices) {
             addTimelineComponent(timelineIndex);
         }
 
-        modelIndices = new HashSet<>(application.getMultiverse().getTimelineIndices());
+        modelIndices = new HashSet<>(application.getGame().getMultiverse().getTimelineLs());
         viewIndices.removeAll(modelIndices);
 
-        for (double timelineIndex : viewIndices) {
+        for (int timelineIndex : viewIndices) {
             removeTimelineComponent(timelineIndex);
         }
 

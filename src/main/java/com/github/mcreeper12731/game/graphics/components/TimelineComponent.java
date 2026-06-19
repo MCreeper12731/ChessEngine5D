@@ -3,7 +3,6 @@ package com.github.mcreeper12731.game.graphics.components;
 import com.github.mcreeper12731.game.graphics.GraphicsApplication;
 import com.github.mcreeper12731.game.graphics.GraphicsConfig;
 import com.github.mcreeper12731.game.models.Timeline;
-import com.github.mcreeper12731.utility.Coordinate;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.Pane;
@@ -29,7 +28,8 @@ public class TimelineComponent extends Pane {
         this.canvas.toBack();
 
         this.setLayoutX(0);
-        this.setLayoutY(timeline.getId() * (application.getMultiverse().getBoardSize() * GraphicsConfig.TILE_SIZE + GraphicsConfig.TIMELINE_SPACING) + GraphicsConfig.CENTER_OFFSET);
+
+        this.setLayoutY(timeline.getL() * (application.getGame().getMultiverse().getBoardSize() * GraphicsConfig.TILE_SIZE + GraphicsConfig.TIMELINE_SPACING) + GraphicsConfig.CENTER_OFFSET);
 
         for (int time = 0; time < timeline.size(); time++) {
             addBoardComponent(time);
@@ -65,7 +65,7 @@ public class TimelineComponent extends Pane {
 
     public void draw() {
 
-        if (application.getMultiverse().getTimeline(timeline.getId()) == null) {
+        if (application.getGame().getMultiverse().getTimeline(timeline.getL()) == null) {
             erase();
             return;
         }
@@ -80,8 +80,8 @@ public class TimelineComponent extends Pane {
             removeBoardComponent(time);
         }
 
-        double width = (this.timeline.getLastTimeCoordinate() + 1) * (application.getMultiverse().getBoardSize() * GraphicsConfig.TILE_SIZE + GraphicsConfig.TIME_SPACING);
-        double height = application.getMultiverse().getBoardSize() * GraphicsConfig.TILE_SIZE;
+        double width = (this.timeline.getLastT() + 1) * (application.getGame().getMultiverse().getBoardSize() * GraphicsConfig.TILE_SIZE + GraphicsConfig.TIME_SPACING);
+        double height = application.getGame().getMultiverse().getBoardSize() * GraphicsConfig.TILE_SIZE;
         this.canvas.setWidth(width);
         this.canvas.setHeight(height);
 
@@ -104,8 +104,8 @@ public class TimelineComponent extends Pane {
             }
         }
 
-        double width = (this.timeline.getLastTimeCoordinate() + 1) * (application.getMultiverse().getBoardSize() * GraphicsConfig.TILE_SIZE + GraphicsConfig.TIME_SPACING);
-        double height = application.getMultiverse().getBoardSize() * GraphicsConfig.TILE_SIZE;
+        double width = (this.timeline.getLastT() + 1) * (application.getGame().getMultiverse().getBoardSize() * GraphicsConfig.TILE_SIZE + GraphicsConfig.TIME_SPACING);
+        double height = application.getGame().getMultiverse().getBoardSize() * GraphicsConfig.TILE_SIZE;
         this.canvas.setWidth(width);
         this.canvas.setHeight(height);
 
@@ -121,9 +121,9 @@ public class TimelineComponent extends Pane {
         GraphicsContext gc = this.canvas.getGraphicsContext2D();
         gc.setFill(Color.BLUE);
         gc.setFont(new Font(18));
-        gc.fillText(String.format("%dL", Coordinate.timelineFromIdToGame(timeline.getId())), 20, height / 2);
+        gc.fillText(String.format("%dL", timeline.getL()), 20, height / 2);
 
-        if (timeline.isActive()) gc.setFill(GraphicsConfig.Color.TIMELINE_ACTIVE);
+        if (this.application.getGame().getMultiverse().isTimelineActive(this.timeline.getL())) gc.setFill(GraphicsConfig.Color.TIMELINE_ACTIVE);
         else gc.setFill(GraphicsConfig.Color.TIMELINE_INACTIVE);
         gc.fillRect(0, 0, width, height);
     }

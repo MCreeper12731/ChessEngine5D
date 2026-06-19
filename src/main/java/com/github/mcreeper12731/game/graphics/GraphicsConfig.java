@@ -19,6 +19,7 @@ public class GraphicsConfig {
             return switch (playerColor) {
                 case BLACK -> javafx.scene.paint.Color.BLACK;
                 case WHITE -> javafx.scene.paint.Color.LIGHTGRAY;
+                case null -> javafx.scene.paint.Color.TRANSPARENT;
             };
         }
 

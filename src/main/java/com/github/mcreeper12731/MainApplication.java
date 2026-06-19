@@ -5,31 +5,33 @@ import com.github.mcreeper12731.game.graphics.EngineController;
 import com.github.mcreeper12731.game.graphics.GraphicsApplication;
 import com.github.mcreeper12731.game.graphics.PlayerController;
 import com.github.mcreeper12731.game.graphics.components.ViewComponent;
+import com.github.mcreeper12731.game.logic.Game;
 import com.github.mcreeper12731.game.models.Color;
-import com.github.mcreeper12731.game.models.Multiverse;
 import com.github.mcreeper12731.game.presets.Preset;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-import java.util.List;
-
 public class MainApplication extends Application implements GraphicsApplication {
 
+    private static Game staticGameForLaunch;
+    
     private ViewComponent view;
     private Controller controller1;
     private Controller controller2;
     private Preset preset;
-    private Multiverse multiverse;
-    private List<String> launchArgs;
+    private Game game;
     private Scene scene;
 
     @Override
     public void init() {
-        this.launchArgs = getParameters().getRaw();
-
         this.preset = Preset.fromString(LaunchConfig.PRESET);
-        this.multiverse = preset.getMultiverse();
+        if (this.preset != null) {
+            this.game = preset.getGame();
+        } else {
+            this.game = staticGameForLaunch;
+            staticGameForLaunch = null;
+        }
         this.controller1 = getController(LaunchConfig.CONTROLLER_1, Color.WHITE);
         this.controller2 = getController(LaunchConfig.CONTROLLER_2, Color.BLACK);
         this.view = new ViewComponent(this);
@@ -39,17 +41,18 @@ public class MainApplication extends Application implements GraphicsApplication 
     @Override
     public void start(Stage primaryStage) {
 
-        if (multiverse.getPlayerTurn() == Color.WHITE)
-            controller1.onTurnStart();
+        if (this.game.getPlayerTurn() == Color.WHITE)
+            this.controller1.onTurnStart();
         else
-            controller2.onTurnStart();
+            this.controller2.onTurnStart();
 
-        primaryStage.setTitle("5D Chess Visualizer");
-        primaryStage.setScene(scene);
+        String title = "5D Chess Visualizer";
+        primaryStage.setTitle(title);
+        primaryStage.setScene(this.scene);
         primaryStage.setMaximized(true);
         primaryStage.show();
 
-        view.draw();
+        this.view.draw();
     }
 
     private Controller getController(String controllerType, Color controllerColor) {
@@ -61,11 +64,11 @@ public class MainApplication extends Application implements GraphicsApplication 
     }
 
     public Preset getPreset() {
-        return preset;
+        return this.preset;
     }
 
-    public Multiverse getMultiverse() {
-        return multiverse;
+    public Game getGame() {
+        return this.game;
     }
 
     public ViewComponent getView() {
@@ -77,24 +80,29 @@ public class MainApplication extends Application implements GraphicsApplication 
     }
 
     public void updateCurrentPlayer() {
-        if (!multiverse.isCurrentTurnFinalizable()) {
+        if (!this.game.isCurrentTurnFinalizable()) {
             System.out.println("Current turn is not finalizable!");
             return;
         }
         getCurrentController().onTurnEnd();
-        multiverse.finalizeTurn(false);
+        this.game.finalizeTurn();
         getCurrentController().onTurnStart();
     }
 
     public Controller getCurrentController() {
-        return switch (multiverse.getPlayerTurn()) {
-            case WHITE -> controller1;
-            case BLACK -> controller2;
+        return switch (this.game.getPlayerTurn()) {
+            case WHITE -> this.controller1;
+            case BLACK -> this.controller2;
         };
     }
 
     public static void main(String[] args) {
         launch(args);
+    }
+
+    public static void launchWithGame(Game game) {
+        staticGameForLaunch = game;
+        launch();
     }
 
 }

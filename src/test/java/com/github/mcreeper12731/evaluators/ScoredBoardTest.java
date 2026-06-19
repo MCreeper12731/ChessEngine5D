@@ -76,7 +76,7 @@ class ScoredBoardTest {
         Board board = game.getMultiverse().getBoard(0, 0);
         ScoredBoard scoredBoard = new ScoredBoard(board, game);
 
-        List<ScoredMove> scoredMoves = scoredBoard.scoreMoves(MoveGenerator.probableMoves(board, game), game);
+        List<ScoredMove> scoredMoves = scoredBoard.scoreMoves(game);
 
         Log.debug("Test", scoredMoves.getFirst());
     }
@@ -89,7 +89,7 @@ class ScoredBoardTest {
         Board board = game.getMultiverse().getBoard(0, 2);
         ScoredBoard scoredBoard = new ScoredBoard(board, game);
 
-        List<ScoredMove> scoredMoves = scoredBoard.scoreMoves(MoveGenerator.probableMoves(board, game), game);
+        List<ScoredMove> scoredMoves = scoredBoard.scoreMoves(game);
 
         Log.debug("Test", scoredMoves);
     }

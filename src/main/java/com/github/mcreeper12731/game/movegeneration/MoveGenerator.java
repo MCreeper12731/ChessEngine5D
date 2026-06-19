@@ -44,22 +44,15 @@ public class MoveGenerator {
     }
     
     public static List<Move> probableMoves(Board board, Game game) {
-        Multiverse multiverse = game.getMultiverse();
-        List<Move> moves = new ArrayList<>();
-        
-        for (int x = 0; x < multiverse.getBoardSize(); x++) {
-            for (int y = 0; y < multiverse.getBoardSize(); y++) {
-                Piece piece = board.getLocationContents(x, y);
-                if (piece.color() != board.getPlayerTurn()) continue;
-                moves.addAll(piece.getAvailableMoves(multiverse));
-            }
-        }
-        return moves;
+        BoardMoveIterator boardMoveIterator = new BoardMoveIterator(board, game.getMultiverse());
+        List<Move> result = new ArrayList<>();
+        boardMoveIterator.forEachRemaining(result::add);
+        return result;
     }
     
     public static List<Move> scoredMoves(Board board, Game game) {
         ScoredBoard scoredBoard = new ScoredBoard(board, game);
-        return scoredBoard.scoreMoves(probableMoves(board, game), game).stream().map(ScoredMove::move).collect(Collectors.toList());
+        return scoredBoard.scoreMoves(game).stream().map(ScoredMove::move).collect(Collectors.toList());
     }
     
     

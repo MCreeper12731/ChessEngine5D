@@ -5,6 +5,7 @@ import com.github.mcreeper12731.game.models.Timeline;
 import com.github.mcreeper12731.game.models.Move;
 import com.github.mcreeper12731.game.movegeneration.MoveGenerator;
 import com.github.mcreeper12731.game.presets.Preset;
+import com.github.mcreeper12731.utility.Log;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
@@ -31,6 +32,13 @@ class MoveGeneratorTest {
             Set<Move> probableMoves = new HashSet<>(MoveGenerator.probableMoves(board, game));
             Set<Move> scoredMoves = new HashSet<>(MoveGenerator.scoredMoves(board, game));
 
+            Log.debug("Test", "Probable moves size:", probableMoves.size());
+            Log.debug("Test", "Scored moves size:", scoredMoves.size());
+            Set<Move> diff = new HashSet<>(probableMoves);
+            diff.removeAll(scoredMoves);
+
+            Log.debug("Test", "Difference", diff);
+            assertEquals(0, diff.size());
             assertEquals(probableMoves, scoredMoves);
         }
 

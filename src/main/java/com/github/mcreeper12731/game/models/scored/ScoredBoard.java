@@ -103,6 +103,7 @@ public record ScoredBoard(Board board, List<Integer> danger, List<Point4D> enemi
         for (Board board : opponentBoards) {
             List<Move> opponentMoves = MoveGenerator.probableMoves(board, game);
             for (Move move : opponentMoves) {
+                if (move.noop()) continue;
                 Piece piece = game.getMultiverse().getLocationContents(move.to());
                 if (piece.type() == PieceType.KING)
                     registerEnemy(move);
@@ -129,12 +130,17 @@ public record ScoredBoard(Board board, List<Integer> danger, List<Point4D> enemi
     }
 
     @SuppressWarnings("Duplicates")
-    public List<ScoredMove> scoreMoves(List<Move> moves, Game game) {
+    public List<ScoredMove> scoreMoves(Game game) {
         List<ScoredMove> scoredMoves = new ArrayList<>();
 
         int score = 0;
 
-        for (Move move : moves) {
+        List<Move> boardMoves = MoveGenerator.probableMoves(this.board, game);
+        for (Move move : boardMoves) {
+            if (move.noop()) {
+                scoredMoves.add(new ScoredMove(move, score));
+                continue;
+            }
 
             // jump costs
             if (game.doesMoveAddTimeline(move)) score += JUMP_COST;

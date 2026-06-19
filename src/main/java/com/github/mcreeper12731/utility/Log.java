@@ -26,6 +26,15 @@ public class Log {
         debug(prefix, "]");
     }
 
+    public static void debug(String prefix, Object... messages) {
+        StringBuilder messageBuilder = new StringBuilder();
+        for (Object message : messages) {
+            messageBuilder.append(message).append(" ");
+        }
+        messageBuilder.deleteCharAt(messageBuilder.length() - 1);
+        debug(prefix, messageBuilder.toString());
+    }
+
     public static void print(String prefix, String message) {
         System.out.printf("%s%s> %s%s%n", CYAN, prefix, RESET, message);
     }

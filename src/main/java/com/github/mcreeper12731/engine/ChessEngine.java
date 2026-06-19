@@ -1,39 +1,30 @@
 package com.github.mcreeper12731.engine;
 
-import com.github.mcreeper12731.engine.config.MoveStrategyConfig;
 import com.github.mcreeper12731.engine.finders.MoveStrategy;
-import com.github.mcreeper12731.engine.finders.BruteForceStrategy;
+import com.github.mcreeper12731.game.logic.Game;
 import com.github.mcreeper12731.game.models.Color;
-import com.github.mcreeper12731.game.models.Multiverse;
-import com.github.mcreeper12731.game.moves.Turn;
-import com.github.mcreeper12731.game.moves.TurnNode;
-import com.github.mcreeper12731.game.moves.TurnPlayedListener;
+import com.github.mcreeper12731.game.moves.Move;
 
-public class ChessEngine implements TurnPlayedListener {
+import java.util.List;
 
-    private final Multiverse multiverse;
+public class ChessEngine {
+
+    private final Game game;
     private final Color playingAs;
     private final MoveStrategy finder;
 
-    public ChessEngine(Multiverse multiverse, Color playingAs, MoveStrategyConfig config) {
-        multiverse.addListener(this);
-        this.multiverse = multiverse;
+    public ChessEngine(Game game, Color playingAs) {
+        this.game = game;
         this.playingAs = playingAs;
-        this.finder = MoveStrategy.fromConfig(config, this);
+        this.finder = null;
     }
 
-    public Turn getTurn() {
+    public List<Move> getTurn() {
         return finder.nextTurn();
     }
 
-    @Override
-    public void onTurnPlayed(Turn turn) {
-        if (turn.getPlayedBy() == playingAs) return;
-        finder.opponentTurn(turn);
-    }
-
-    public Multiverse getMultiverse() {
-        return multiverse;
+    public Game getGame() {
+        return this.game;
     }
 
     public Color getPlayingAs() {

@@ -3,7 +3,7 @@ package com.github.mcreeper12731.game.graphics;
 import com.github.mcreeper12731.engine.ChessEngine;
 import com.github.mcreeper12731.game.graphics.components.TileComponent;
 import com.github.mcreeper12731.game.models.Color;
-import com.github.mcreeper12731.game.moves.Move;
+import com.github.mcreeper12731.game.models.Move;
 
 import java.util.List;
 

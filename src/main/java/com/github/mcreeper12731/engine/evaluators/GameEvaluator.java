@@ -1,4 +1,4 @@
-package com.github.mcreeper12731.evaluators;
+package com.github.mcreeper12731.engine.evaluators;
 
 import com.github.mcreeper12731.game.logic.Game;
 

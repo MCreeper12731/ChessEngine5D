@@ -1,8 +1,9 @@
-package com.github.mcreeper12731.game.logic;
+package com.github.mcreeper12731.game.movegeneration.iterators;
 
-import com.github.mcreeper12731.evaluators.GameEvaluator;
-import com.github.mcreeper12731.evaluators.ScoredTurn;
-import com.github.mcreeper12731.game.moves.Move;
+import com.github.mcreeper12731.engine.evaluators.GameEvaluator;
+import com.github.mcreeper12731.game.models.scored.ScoredTurn;
+import com.github.mcreeper12731.game.logic.Game;
+import com.github.mcreeper12731.game.models.Move;
 
 import java.util.*;
 

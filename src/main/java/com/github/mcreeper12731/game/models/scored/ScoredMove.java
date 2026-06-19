@@ -1,7 +1,6 @@
-package com.github.mcreeper12731.evaluators;
+package com.github.mcreeper12731.game.models.scored;
 
-import com.github.mcreeper12731.game.logic.Game;
-import com.github.mcreeper12731.game.moves.Move;
+import com.github.mcreeper12731.game.models.Move;
 
 public record ScoredMove(Move move, double score) implements Comparable<ScoredMove> {
 

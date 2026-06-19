@@ -1,11 +1,15 @@
-package com.github.mcreeper12731.game.logic;
+package com.github.mcreeper12731.game.movegeneration;
 
-import com.github.mcreeper12731.evaluators.GameEvaluator;
-import com.github.mcreeper12731.game.models.ScoredBoard;
-import com.github.mcreeper12731.evaluators.ScoredMove;
+import com.github.mcreeper12731.engine.evaluators.GameEvaluator;
+import com.github.mcreeper12731.game.logic.Game;
+import com.github.mcreeper12731.game.models.scored.ScoredBoard;
+import com.github.mcreeper12731.game.models.scored.ScoredMove;
 import com.github.mcreeper12731.game.models.Board;
 import com.github.mcreeper12731.game.models.Multiverse;
-import com.github.mcreeper12731.game.moves.Move;
+import com.github.mcreeper12731.game.models.Move;
+import com.github.mcreeper12731.game.movegeneration.iterators.BoardMoveIterator;
+import com.github.mcreeper12731.game.movegeneration.iterators.SortedTurnIterator;
+import com.github.mcreeper12731.game.movegeneration.iterators.TurnIterator;
 import com.github.mcreeper12731.game.pieces.Piece;
 
 import java.util.ArrayList;

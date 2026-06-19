@@ -1,7 +1,4 @@
-package com.github.mcreeper12731.game.moves;
-
-import com.github.mcreeper12731.game.models.Color;
-import com.github.mcreeper12731.game.models.Point4D;
+package com.github.mcreeper12731.game.models;
 
 public class MoveEffect {
 

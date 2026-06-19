@@ -1,7 +1,9 @@
-package com.github.mcreeper12731.game.logic;
+package com.github.mcreeper12731.game.movegeneration.iterators;
 
+import com.github.mcreeper12731.game.logic.Game;
 import com.github.mcreeper12731.game.models.Board;
-import com.github.mcreeper12731.game.moves.Move;
+import com.github.mcreeper12731.game.models.Move;
+import com.github.mcreeper12731.game.movegeneration.MoveGenerator;
 
 import java.util.*;
 import java.util.function.Supplier;

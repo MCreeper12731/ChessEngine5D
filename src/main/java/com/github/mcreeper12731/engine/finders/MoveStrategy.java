@@ -1,6 +1,6 @@
 package com.github.mcreeper12731.engine.finders;
 
-import com.github.mcreeper12731.game.moves.Move;
+import com.github.mcreeper12731.game.models.Move;
 
 import java.util.List;
 

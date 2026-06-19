@@ -1,6 +1,6 @@
-package com.github.mcreeper12731.evaluators;
+package com.github.mcreeper12731.game.models.scored;
 
-import com.github.mcreeper12731.game.moves.Move;
+import com.github.mcreeper12731.game.models.Move;
 
 import java.util.List;
 

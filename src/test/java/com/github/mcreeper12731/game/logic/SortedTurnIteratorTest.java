@@ -1,6 +1,7 @@
 package com.github.mcreeper12731.game.logic;
 
-import com.github.mcreeper12731.game.moves.Move;
+import com.github.mcreeper12731.game.models.Move;
+import com.github.mcreeper12731.game.movegeneration.MoveGenerator;
 import com.github.mcreeper12731.game.presets.Preset;
 import org.junit.jupiter.api.Test;
 

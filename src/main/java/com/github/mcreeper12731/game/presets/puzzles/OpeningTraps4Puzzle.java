@@ -1,7 +1,7 @@
 package com.github.mcreeper12731.game.presets.puzzles;
 
 import com.github.mcreeper12731.game.logic.Game;
-import com.github.mcreeper12731.game.moves.Move;
+import com.github.mcreeper12731.game.models.Move;
 import com.github.mcreeper12731.game.presets.Preset;
 
 import java.util.List;

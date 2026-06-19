@@ -1,9 +1,10 @@
-package com.github.mcreeper12731.game.models;
+package com.github.mcreeper12731.game.models.scored;
 
-import com.github.mcreeper12731.evaluators.ScoredMove;
 import com.github.mcreeper12731.game.logic.Game;
-import com.github.mcreeper12731.game.logic.MoveGenerator;
-import com.github.mcreeper12731.game.moves.Move;
+import com.github.mcreeper12731.game.models.Board;
+import com.github.mcreeper12731.game.models.Move;
+import com.github.mcreeper12731.game.models.Point4D;
+import com.github.mcreeper12731.game.movegeneration.MoveGenerator;
 import com.github.mcreeper12731.game.pieces.Piece;
 import com.github.mcreeper12731.game.pieces.PieceType;
 

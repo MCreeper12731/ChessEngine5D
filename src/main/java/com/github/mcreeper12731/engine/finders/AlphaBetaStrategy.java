@@ -1,11 +1,11 @@
 package com.github.mcreeper12731.engine.finders;
 
 import com.github.mcreeper12731.engine.config.AlphaBetaStrategyConfig;
-import com.github.mcreeper12731.evaluators.GameEvaluator;
-import com.github.mcreeper12731.evaluators.ScoredTurn;
+import com.github.mcreeper12731.engine.evaluators.GameEvaluator;
+import com.github.mcreeper12731.game.models.scored.ScoredTurn;
 import com.github.mcreeper12731.game.logic.Game;
-import com.github.mcreeper12731.game.logic.MoveGenerator;
-import com.github.mcreeper12731.game.moves.Move;
+import com.github.mcreeper12731.game.movegeneration.MoveGenerator;
+import com.github.mcreeper12731.game.models.Move;
 
 import java.util.ArrayList;
 import java.util.Iterator;

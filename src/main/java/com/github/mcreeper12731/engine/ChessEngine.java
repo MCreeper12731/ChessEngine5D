@@ -3,7 +3,7 @@ package com.github.mcreeper12731.engine;
 import com.github.mcreeper12731.engine.finders.MoveStrategy;
 import com.github.mcreeper12731.game.logic.Game;
 import com.github.mcreeper12731.game.models.Color;
-import com.github.mcreeper12731.game.moves.Move;
+import com.github.mcreeper12731.game.models.Move;
 
 import java.util.List;
 

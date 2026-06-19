@@ -4,7 +4,7 @@ import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.graphics.components.TileComponent;
 import com.github.mcreeper12731.game.models.Multiverse;
 import com.github.mcreeper12731.game.models.Timeline;
-import com.github.mcreeper12731.game.moves.Move;
+import com.github.mcreeper12731.game.models.Move;
 import com.github.mcreeper12731.game.pieces.Piece;
 import com.github.mcreeper12731.game.pieces.PieceType;
 import com.github.mcreeper12731.utility.Log;

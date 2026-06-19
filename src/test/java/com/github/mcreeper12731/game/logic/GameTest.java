@@ -1,10 +1,9 @@
 package com.github.mcreeper12731.game.logic;
 
-import com.github.mcreeper12731.MainApplication;
 import com.github.mcreeper12731.game.models.Point4D;
-import com.github.mcreeper12731.game.moves.Move;
+import com.github.mcreeper12731.game.models.Move;
+import com.github.mcreeper12731.game.movegeneration.MoveGenerator;
 import com.github.mcreeper12731.game.presets.Preset;
-import com.github.mcreeper12731.utility.Log;
 import org.junit.jupiter.api.Test;
 
 import java.util.Iterator;

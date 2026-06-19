@@ -2,12 +2,11 @@ package com.github.mcreeper12731.game.logic;
 
 import com.github.mcreeper12731.game.models.Board;
 import com.github.mcreeper12731.game.models.Timeline;
-import com.github.mcreeper12731.game.moves.Move;
+import com.github.mcreeper12731.game.models.Move;
+import com.github.mcreeper12731.game.movegeneration.MoveGenerator;
 import com.github.mcreeper12731.game.presets.Preset;
-import com.github.mcreeper12731.utility.Log;
 import org.junit.jupiter.api.Test;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;

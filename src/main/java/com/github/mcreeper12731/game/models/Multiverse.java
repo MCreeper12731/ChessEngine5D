@@ -1,9 +1,6 @@
 package com.github.mcreeper12731.game.models;
 
-import com.github.mcreeper12731.game.moves.*;
 import com.github.mcreeper12731.game.pieces.Piece;
-import com.github.mcreeper12731.game.pieces.PieceType;
-import com.github.mcreeper12731.utility.Coordinate;
 
 import java.util.*;
 
@@ -11,316 +8,149 @@ public class Multiverse {
 
     private final int boardSize;
     private final boolean isEven;
-    private final Map<Double, Timeline> timelines = new HashMap<>();
-    private final Stack<MoveEffect> currentTurnMoveEffects = new Stack<>();
-    private final Stack<TurnEffect> turnEffects = new Stack<>();
-    private final List<TurnPlayedListener> turnListeners = new ArrayList<>();
-
-    private double bottomTimeline; // Value decrements - current lowest numbered timeline
-    private double topTimeline; // Value increments - current highest numbered timeline
-    private int presentTime;
-    private Color playerTurn;
-    private boolean lastMoveChangedTurns;
-    private boolean gameOver = false;
-    private Color winner = null;
+    // Timelines with L={-1, -2, ...}
+    private final List<Timeline> negativeTimelines = new ArrayList<>();
+    // Timelines with L={0, 1, 2, ...}
+    private final List<Timeline> positiveTimelines = new ArrayList<>();
 
     private Multiverse(
             int boardSize,
             boolean isEven,
-            Map<Double, Timeline> timelines,
-            double bottomTimeline,
-            double topTimeline,
-            Color playerTurn
+            List<Timeline> negativeTimelines,
+            List<Timeline> positiveTimelines
     ) {
         this.boardSize = boardSize;
         this.isEven = isEven;
-        this.timelines.putAll(timelines);
-        this.bottomTimeline = bottomTimeline;
-        this.topTimeline = topTimeline;
-        this.presentTime = 0;
-        this.playerTurn = playerTurn;
-        this.lastMoveChangedTurns = false;
-        this.winner = null;
+        this.negativeTimelines.addAll(negativeTimelines);
+        this.positiveTimelines.addAll(positiveTimelines);
     }
 
-    public void addTimeline(double timelineId, Timeline timeline) {
-        timelines.put(timelineId, timeline);
-        if (timelineId > 0) {
-            topTimeline = timelineId;
+    public void addTimeline(Timeline timeline) {
+        if (timeline.getL() >= 0) {
+            positiveTimelines.add(timeline);
+            return;
         }
-        if (timelineId < 0) {
-            bottomTimeline = timelineId;
+        negativeTimelines.add(timeline);
+    }
+
+    public Timeline getTimeline(int l) {
+        if (l >= 0) {
+            if (l >= positiveTimelines.size()) return null;
+            return positiveTimelines.get(l);
         }
+        if (l < -negativeTimelines.size()) return null;
+        return negativeTimelines.get(-l - 1);
     }
 
-    public Timeline getTimeline(double id) {
-        return timelines.get(id);
+    public void removeLastTimeline(boolean positive) {
+        if (positive) {
+            positiveTimelines.removeLast();
+            return;
+        }
+        negativeTimelines.removeLast();
     }
 
-    public Optional<Piece> getPiece(Point4D location) {
-        return getPiece(location.timeline(), location.time(), location.x(), location.y());
+    public Board getBoard(int l, int t) {
+        Timeline timeline = getTimeline(l);
+        if (timeline == null) return null;
+
+        return timeline.getBoardByT(t);
     }
 
-    public Optional<Piece> getPiece(double timeline, int time, int x, int y) {
-        return Optional.ofNullable(
-                timelines.get(timeline).getBoardByTime(time).getPiece(x, y)
-        );
+    public List<Board> getLastBoards() {
+        List<Board> boards = new ArrayList<>();
+
+        for (Timeline timeline : this.getTimelines()) {
+            boards.add(timeline.getLastBoard());
+        }
+        return boards;
     }
 
-    public List<Double> getTimelineIndices() {
-        List<Double> indices = new LinkedList<>();
-        for (double i = this.getBottomTimeline(); i <= this.getTopTimeline(); i++) {
-            if (this.isEven && i == 0) {
-                indices.add(-0.5);
-                indices.add(0.5);
-                continue;
-            }
+    /***
+     *
+     * @param location
+     * @return the piece at the given 4D location. Returns a piece with PieceType.NONE if there is no piece at the given location. Returns null if the location is not in the multiverse.
+     */
+    public Piece getLocationContents(Point4D location) {
+        return getLocationContents(location.l(), location.t(), location.x(), location.y());
+    }
+
+    /***
+     * Gets the piece at the given 4D location
+     * @param l
+     * @param t
+     * @param x
+     * @param y
+     * @return the piece at the given 4D location. Returns a piece with PieceType.NONE if there is no piece at the given location. Returns null if the location is not in the multiverse.
+     */
+    public Piece getLocationContents(int l, int t, int x, int y) {
+        Timeline timeline = getTimeline(l);
+        if (timeline == null) return null;
+
+        Board board = timeline.getBoardByT(t);
+        if (board == null) return null;
+
+        return board.getLocationContents(x, y);
+    }
+
+    public List<Integer> getTimelineLs() {
+        List<Integer> indices = new ArrayList<>();
+        int botL = getBotTimelineL();
+        int topL = getTopTimelineL();
+
+        for (int i = botL; i <= topL; i++) {
             indices.add(i);
         }
+
         return indices;
     }
 
-    public List<Double> getActiveTimelineIndices() {
-        List<Double> indices = new LinkedList<>();
+    public List<Integer> getActiveTimelineLs() {
+        List<Integer> indices = new ArrayList<>();
+        int botL = getBotTimelineL();
+        int topL = getTopTimelineL();
 
-        double topActiveTimeline = topTimeline;
-        double bottomActiveTimeline = bottomTimeline;
-
-        if (topActiveTimeline > Math.abs(bottomActiveTimeline) + 1) {
-            topActiveTimeline = Math.abs(bottomActiveTimeline) + 1;
-        } else if (Math.abs(bottomActiveTimeline) > topActiveTimeline + 1) {
-            bottomActiveTimeline = -(topActiveTimeline + 1);
+        if (-botL - (this.isEven ? 1 : 0) > topL) {
+            botL = -topL - (this.isEven ? 2 : 1);
+        } else if (-botL < topL) {
+            topL = -botL + (this.isEven ? 0 : 1);
         }
 
-        for (double i = bottomActiveTimeline; i <= topActiveTimeline; i++) {
-            if (isEven && i == 0) {
-                indices.add(-0.5);
-                indices.add(0.5);
-                continue;
-            }
+        for (int i = botL; i <= topL; i++) {
             indices.add(i);
         }
+
         return indices;
     }
 
-    public boolean isTimelineActive(double id) {
-        return getTimeline(id).isActive();
+    public boolean isTimelineActive(int id) {
+        if (id < 0 && id < -this.getTopTimelineL() - (this.isEven() ? 2 : 1)) return false;
+        if (id > 0 && id > -this.getBotTimelineL() + (this.isEven() ? 0 : 1)) return false;
+        return true;
     }
 
     public List<Timeline> getTimelines() {
-        List<Timeline> timelines = new LinkedList<>();
-        for (double index : getTimelineIndices()) {
-            timelines.add(this.timelines.get(index));
-        }
+
+        List<Timeline> timelines = new ArrayList<>(this.negativeTimelines.reversed());
+        timelines.addAll(this.positiveTimelines);
+
         return timelines;
     }
 
-    public void applyAndFinalizeTurn(Turn turn, boolean silent) {
-
-        applyTurn(turn);
-        finalizeTurn(silent);
+    public int getBotTimelineL() {
+        return -this.negativeTimelines.size();
     }
 
-    public void applyTurn(Turn turn) {
-
-        if (!currentTurnMoveEffects.isEmpty())
-            throw new RuntimeException("Cannot apply full turn as a turn is in progress!");
-
-        for (Move move : turn.getMoves()) {
-            applyMove(move);
-        }
+    public int getTopTimelineL() {
+        return this.positiveTimelines.size() - 1;
     }
 
-    public void finalizeTurn(boolean silent) {
-
-        if (!isCurrentTurnFinalizable())
-            throw new RuntimeException("Cannot finalize turn - current moves do not complete a valid turn!");
-
-        TurnEffect turnEffect = new TurnEffect(currentTurnMoveEffects);
-        if (!silent) turnListeners.forEach(listener -> listener.onTurnPlayed(turnEffect.getTurn()));
-
-        turnEffects.add(turnEffect);
-        currentTurnMoveEffects.clear();
-
-        updatePresent();
-        nextPlayerTurn();
+    public boolean isEven() {
+        return this.isEven;
     }
 
-    public void undoTurn() {
-
-        if (!currentTurnMoveEffects.isEmpty()) {
-            for (MoveEffect moveEffect : currentTurnMoveEffects) {
-                undoMove(moveEffect);
-            }
-            return;
-        }
-
-        if (turnEffects.isEmpty()) return;
-
-        TurnEffect turnEffect = turnEffects.pop();
-
-        for (int i = turnEffect.size() - 1; i >= 0; i--) {
-            undoMove(turnEffect.getMoveEffect(i));
-        }
-    }
-
-    public void applyMove(Move move) {
-        MoveEffect moveEffect = addMove(move);
-        currentTurnMoveEffects.add(moveEffect);
-    }
-
-    private MoveEffect addMove(Move move) {
-
-        Timeline fromTimeline = this.timelines.get(move.fromTimeline());
-
-        Timeline toTimeline = this.timelines.get(move.toTimeline());
-        Board toBoard = toTimeline.getBoardByTime(move.toTime());
-
-        MoveEffect moveEffect = new MoveEffect(
-                move,
-                bottomTimeline,
-                topTimeline,
-                presentTime,
-                playerTurn,
-                lastMoveChangedTurns,
-                gameOver,
-                winner,
-                getActiveTimelineIndices()
-        );
-        moveEffect.addTimelineOfAddedBoard(move.fromTimeline());
-
-        if (move.fromTimeline() == move.toTimeline() && move.fromTime() == move.toTime()) {
-            // Handling in-board moves
-
-            fromTimeline.applyMove(move);
-
-        } else if (move.toTime() != toTimeline.getLastTimeCoordinate()) { //TODO: if something breaks check this
-            // Handling in- and cross-timeline, splitting moves
-
-            fromTimeline.applyMove(move);
-
-            double newTimelineId = nextTimelineId(move.pieceColor());
-            int startingTime = move.toTime() + 1;
-
-            Board newBoard = toBoard.copyWithProgressedTurn(
-                    newTimelineId,
-                    startingTime
-            );
-            newBoard.setPieceFromMoving(move.toX(), move.toY(), move.pieceColor(), move.pieceType());
-
-            Timeline newTimeline = new Timeline.Builder(newTimelineId)
-                    .withStartTime(startingTime)
-                    .withBoard(newBoard)
-                    .withActive(false)
-                    .build();
-
-            addTimeline(newTimelineId, newTimeline);
-            moveEffect.setAddedTimeline(newTimelineId);
-            moveEffect.addTimelineOfAddedBoard(newTimelineId);
-
-        } else {
-            // Handling cross-timeline, non-splitting moves
-
-            fromTimeline.applyMove(move);
-            toTimeline.applyMove(move);
-            moveEffect.addTimelineOfAddedBoard(move.toTimeline());
-        }
-
-        getPiece(move.to())
-                .ifPresent(piece -> {
-                    if (piece.type() == PieceType.KING) {
-                        gameOver = true;
-                        winner = piece.color().other();
-                    }
-                });
-
-        return moveEffect;
-    }
-
-    public void undoMoveFromCurrentTurn() {
-
-        if (currentTurnMoveEffects.isEmpty()) return;
-
-        undoMove(currentTurnMoveEffects.pop());
-    }
-
-    private void undoMove(MoveEffect moveEffect) {
-
-        bottomTimeline = moveEffect.getPrevBottomTimeline();
-        topTimeline = moveEffect.getPrevTopTimeline();
-        presentTime = moveEffect.getPrevPresentTime();
-        playerTurn = moveEffect.getPrevPlayerTurn();
-        lastMoveChangedTurns = moveEffect.getPrevLastMoveChangedTurns();
-        gameOver = moveEffect.getPrevGameOver();
-        winner = moveEffect.getPrevWinner();
-
-        for (double timelineIndex : getTimelineIndices()) {
-            getTimeline(timelineIndex).setActive(
-                    moveEffect.getPrevActiveTimelineIndices().contains(timelineIndex)
-            );
-        }
-
-        for (double timelineOfAddedBoard : moveEffect.getTimelinesOfAddedBoards()) {
-            timelines.get(timelineOfAddedBoard).removeLastBoard();
-        }
-
-        if (moveEffect.isAddedTimeline()) {
-            timelines.remove(moveEffect.getAddedTimeline());
-        }
-    }
-
-    private void updatePresent() {
-
-        int minTime = Integer.MAX_VALUE;
-
-        for (double timelineIndex : getActiveTimelineIndices()) {
-
-            Timeline timeline = getTimeline(timelineIndex);
-
-            // Very inefficient activation of timelines - perhaps at some point TODO: move this to addTimeline() with appropriate checks
-            timeline.setActive(true);
-
-            int lastTimelineTime = timeline.getLastBoard().getTime();
-            if (lastTimelineTime < minTime) minTime = lastTimelineTime;
-        }
-
-        presentTime = minTime;
-    }
-
-    public boolean isCurrentTurnFinalizable() {
-
-        for (double timelineIndex : getActiveTimelineIndices()) {
-
-            Board lastBoard = getTimeline(timelineIndex).getLastBoard();
-
-            if (
-                    lastBoard.getPlayerTurn() == this.playerTurn &&
-                    lastBoard.getTime() <= this.presentTime
-            ) {
-                lastMoveChangedTurns = false;
-                return false;
-            }
-        }
-
-        lastMoveChangedTurns = true;
-        return true;
-    }
-
-    private double nextTimelineId(Color playerColor) {
-        return switch (playerColor) {
-            case WHITE -> getTopTimeline() == 0.5 ? 1 : getTopTimeline() + 1;
-            case BLACK -> getBottomTimeline() == -0.5 ? -1 : getBottomTimeline() - 1;
-        };
-    }
-
-    public boolean isLocationValid(Point4D point) {
-        Timeline timeline = getTimeline(point.timeline());
-        if (timeline == null) return false;
-        if (point.time() < timeline.getFirstTimeCoordinate() || point.time() > timeline.getLastTimeCoordinate()) return false;
-        if (point.x() < 0 || point.x() >= boardSize) return false;
-        if (point.y() < 0 || point.y() >= boardSize) return false;
-
-        return true;
+    public int getBoardSize() {
+        return boardSize;
     }
 
     @Override
@@ -328,11 +158,11 @@ public class Multiverse {
 
         StringBuilder stringBuilder = new StringBuilder();
 
-        for (Timeline t : timelines.values()) {
-            stringBuilder.append(t.getId() < 0 ? "-" : "").append("L").append((int) t.getId()).append(":").append("\n");
-            for (int i = 0; i < t.size(); i++) {
-                stringBuilder.append("T").append(Coordinate.timeFromListToGame(i + t.getFirstTimeCoordinate())).append(" - ").append(Coordinate.colorFromListToGame(i + t.getFirstTimeCoordinate())).append(":").append("\n");
-                stringBuilder.append(t.getBoardByIndex(i).toString()).append("\n");
+        for (Timeline timeline : this.getTimelines()) {
+            stringBuilder.append(timeline.getL() >= 0 ? "" : "-").append("L").append(Math.abs(timeline.getL())).append(":").append("\n");
+            for (int i = 0; i < timeline.size(); i++) {
+                stringBuilder.append("T").append((i + timeline.getFirstTimeCoordinate()) / 2 + 1).append(" - ").append(timeline.getBoardByIndex(i).getPlayerTurn()).append(":").append("\n");
+                stringBuilder.append(timeline.getBoardByIndex(i).toString()).append("\n");
                 stringBuilder.append("\n");
             }
         }
@@ -340,54 +170,25 @@ public class Multiverse {
         return stringBuilder.toString();
     }
 
-    public void addListener(TurnPlayedListener listener) {
-        turnListeners.add(listener);
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) return true;
+        if (!(other instanceof Multiverse)) return false;
+        return this.hashCode() == other.hashCode();
     }
 
-    public int getBoardSize() {
-        return boardSize;
-    }
-
-    public double getBottomTimeline() {
-        return bottomTimeline;
-    }
-
-    public double getTopTimeline() {
-        return topTimeline;
-    }
-
-    public double getPresentTime() {
-        return presentTime;
-    }
-
-    public Color getPlayerTurn() {
-        return playerTurn;
-    }
-
-    public void setPlayerTurn(Color playerTurn) {
-        this.playerTurn = playerTurn;
-    }
-
-    public void nextPlayerTurn() {
-        setPlayerTurn(playerTurn.other());
-    }
-
-    public boolean isGameOver() {
-        return gameOver;
-    }
-
-    public Optional<Color> getWinner() {
-        return Optional.ofNullable(winner);
+    @Override
+    public int hashCode() {
+        return Objects.hash(boardSize, negativeTimelines, positiveTimelines);
     }
 
     public static class Builder {
 
         private final int boardSize;
-        private final Map<Double, Timeline> timelines = new HashMap<>();
-        private final List<List<List<Point4D>>> turns = new ArrayList<>();
-        private double bottomTimeline = 0;
-        private double topTimeline = 0;
-        private Color startingPlayer = Color.WHITE;
+        private final List<Timeline> negativeTimelines = new ArrayList<>();
+        private final List<Timeline> positiveTimelines = new ArrayList<>();
+
+        private boolean isEven = false;
 
         public Builder(int boardSize) {
             this.boardSize = boardSize;
@@ -395,67 +196,59 @@ public class Multiverse {
 
         public Builder(Multiverse multiverse) {
             this.boardSize = multiverse.boardSize;
-            this.timelines.putAll(multiverse.timelines);
-            this.bottomTimeline = multiverse.bottomTimeline;
-            this.topTimeline = multiverse.topTimeline;
-            this.startingPlayer = multiverse.playerTurn;
+            this.negativeTimelines.addAll(multiverse.negativeTimelines);
+            this.positiveTimelines.addAll(multiverse.positiveTimelines);
         }
 
         public Builder withTimeline(Timeline timeline) {
-            timelines.put(timeline.getId(), timeline);
 
-            if (timeline.getId() < bottomTimeline)
-                bottomTimeline = timeline.getId();
-
-            if (timeline.getId() > topTimeline)
-                topTimeline = timeline.getId();
-
+            if (timeline.getL() >= 0) {
+                this.positiveTimelines.add(timeline);
+            } else {
+                this.negativeTimelines.add(timeline);
+            }
             return this;
         }
 
+        @Deprecated
         public Builder withTurn(Point4D from, Point4D to) {
-            turns.add(List.of(List.of(from, to)));
             return this;
         }
 
+        @Deprecated
         public Builder withTurn(List<List<Point4D>> movePoints) {
-            turns.add(movePoints);
             return this;
         }
 
-        public Builder withStartingPlayer(Color playerColor) {
-            startingPlayer = playerColor;
+        public Builder even() {
+            this.isEven = true;
             return this;
         }
 
         public Multiverse build() {
-            Multiverse multiverse = new Multiverse(
-                    boardSize,
-                    timelines.size() % 2 == 0,
-                    timelines,
-                    bottomTimeline,
-                    topTimeline,
-                    startingPlayer
+
+            this.negativeTimelines.sort((timeline, other) -> other.getL() - timeline.getL());
+            this.positiveTimelines.sort(Comparator.comparingInt(Timeline::getL));
+
+            List<Integer> negativeTimelineLs = this.negativeTimelines.stream().map(Timeline::getL).toList();
+            List<Integer> positiveTimelineLs = this.positiveTimelines.stream().map(Timeline::getL).toList();
+
+            if (new HashSet<>(this.negativeTimelines).size() != this.negativeTimelines.size() ||
+                    new HashSet<>(this.positiveTimelines).size() != this.positiveTimelines.size()) throw new IllegalArgumentException("Timelines must be unique");
+
+            for (int i = 0; i < negativeTimelineLs.size(); i++) {
+                if (negativeTimelineLs.get(i) != -i - 1) throw new IllegalArgumentException("Negative timelines must be in order and start at -1");
+            }
+            for (int i = 0; i < positiveTimelineLs.size(); i++) {
+                if (positiveTimelineLs.get(i) != i) throw new IllegalArgumentException("Positive timelines must be in order and start at 0");
+            }
+
+            return new Multiverse(
+                    this.boardSize,
+                    this.isEven,
+                    this.negativeTimelines,
+                    this.positiveTimelines
             );
-
-            MoveFactory factory = new MoveFactory(multiverse);
-            MoveValidator moveValidator = new MoveValidator(multiverse);
-
-            turns.forEach(turn -> {
-                turn.forEach(movePoints -> {
-                    if (movePoints.size() != 2) throw new RuntimeException("A move cannot contain more than 2 points");
-
-                    Move move = factory.build(movePoints.get(0), movePoints.get(1));
-                    if (!moveValidator.isValid(move))
-                        throw new RuntimeException("Invalid move when building of the multiverse: " + move + "!");
-
-                    multiverse.applyMove(move);
-                });
-                multiverse.finalizeTurn(true);
-            });
-
-            multiverse.turnEffects.clear();
-            return multiverse;
         }
     }
 }

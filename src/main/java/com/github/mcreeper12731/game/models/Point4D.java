@@ -2,66 +2,48 @@ package com.github.mcreeper12731.game.models;
 
 import java.util.Objects;
 
-public record Point4D(double timeline, int time, int x, int y) {
+public record Point4D(int l, int t, int x, int y) {
 
-    public Point4D add(double timeline, int time, int x, int y) {
+    public Point4D add(int l, int t, int x, int y) {
         return new Point4D(
-                this.timeline + timeline,
-                this.time + time,
+                this.l + l,
+                this.t + t,
                 this.x + x,
                 this.y + y
         );
     }
 
-    public Point4D addTimeline(double timeline) {
-        return add(timeline, 0, 0, 0);
+    public Point4D add(Point4D other) {
+        return add(other.l, other.t, other.x, other.y);
     }
 
-    public Point4D addTime(int time) {
-        return add(0, time, 0, 0);
-    }
-
-    public Point4D addX(int x) {
-        return add(0, 0, x, 0);
-    }
-
-    public Point4D addY(int y) {
-        return add(0, 0,0, y);
-    }
-
-    public Point4D add(Point4D point) {
-        return add(point.timeline, point.time, point.x, point.y);
-    }
-
-    public Point4D addCoordinate(int coordinateNumber, double value) {
-        return switch (coordinateNumber) {
-            case 0 -> addTimeline(value);
-            case 1 -> addTime((int)value);
-            case 2 -> addX((int)value);
-            case 3 -> addY((int)value);
-            default -> throw new RuntimeException("Coordinate number does not exist!");
-        };
+    public Point4D multiply(int n) {
+        return new Point4D(this.l * n, this.t * n, this.x * n, this.y * n);
     }
 
     @Override
     public boolean equals(Object object) {
         if (this == object) return true;
-        if (!(object instanceof Point4D other)) return false;
+        if (!(object instanceof Point4D(int other_l, int other_t, int other_x, int other_y))) return false;
 
         return
-                this.timeline == other.timeline &&
-                this.time == other.time &&
-                this.x == other.x &&
-                this.y == other.y;
+                this.l == other_l &&
+                this.t == other_t &&
+                this.x == other_x &&
+                this.y == other_y;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(timeline, time, x, y);
+        return Objects.hash(this.l, this.t, this.x, this.y);
+    }
+
+    public String toLongString() {
+        return String.format("(%dT%d) %s%d", this.l, this.t, (char)('a' + this.x), this.y + 1);
     }
 
     @Override
     public String toString() {
-        return String.format("(%.0fT%d) %s%d", timeline, time, (char)('A' + x), y + 1);
+        return String.format("(%d,%d;%d,%d)", this.l, this.t, this.x, this.y);
     }
 }

@@ -1,99 +1,67 @@
 package com.github.mcreeper12731.game.models;
 
-import com.github.mcreeper12731.game.moves.Move;
-import com.github.mcreeper12731.game.pieces.PieceType;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class Timeline {
 
-    private final double id;
+    private final int l;
     private final int startTime;
-    private final List<Board> boards = new ArrayList<>();
+    private final List<Board> boards;
 
-    private boolean active;
-
-    private Timeline(double id, int startTime, List<Board> boards, boolean active) {
-        this.id = id;
-        this.startTime = startTime;
-        this.boards.addAll(boards);
-
-        this.active = active;
+    private Timeline(Builder builder) {
+        this.l = builder.l;
+        this.startTime = builder.startTime;
+        this.boards = builder.boards;
     }
 
-    public void applyMove(Move move) {
-        Board lastBoard = getLastBoard();
-        Board nextBoard = lastBoard.copyWithProgressedTurn(
-                this.id,
-                this.getLastTimeCoordinate() + 1
-        );
-
-        if (move.fromTimeline() == this.id) {
-            nextBoard.removePiece(move.fromX(), move.fromY());
-        }
-
-        if (move.toTimeline() == this.id && lastBoard.getTime() == move.toTime()) {
-            nextBoard.setPieceFromMoving(
-                    move.toX(),
-                    move.toY(),
-                    move.pieceColor(),
-                    move.promotionResult() == null ? move.pieceType() : move.promotionResult()
-            );
-        }
-        this.boards.add(nextBoard);
+    public void addBoard(Board board) {
+        this.boards.add(board);
     }
 
-    public double getId() {
-        return id;
+    public int getL() {
+        return this.l;
     }
 
     public int size() {
-        return boards.size();
+        return this.boards.size();
     }
 
     public int getFirstTimeCoordinate() {
-        return startTime;
+        return this.startTime;
     }
 
-    public int getLastTimeCoordinate() {
-        return startTime + size() - 1;
+    public int getLastT() {
+        return this.startTime + this.size() - 1;
     }
 
     public Board getBoardByIndex(int index) {
-        return boards.get(index);
+        if (index < 0 || index >= this.boards.size()) return null;
+
+        return this.boards.get(index);
     }
 
-    public Board getBoardByTime(int time) {
-        return boards.get(time - startTime);
+    public Board getBoardByT(int time) {
+        return getBoardByIndex(time - startTime);
     }
 
     public Board getLastBoard() {
-        return boards.get(boards.size() - 1);
+        return this.boards.getLast();
     }
 
     public void removeLastBoard() {
-        boards.remove(boards.size() - 1);
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-
-    public boolean isActive() {
-        return this.active;
+        this.boards.removeLast();
     }
 
     public static class Builder {
 
-        private final double index;
+        private final int l;
         private final List<Board> boards = new ArrayList<>();
 
         private int startTime = 0;
-        private boolean isActive = true;
 
-        public Builder(double index) {
-            this.index = index;
+        public Builder(int l) {
+            this.l = l;
         }
 
         public Builder withBoard(Board board) {
@@ -106,18 +74,8 @@ public class Timeline {
             return this;
         }
 
-        public Builder withActive(boolean isActive) {
-            this.isActive = isActive;
-            return this;
-        }
-
         public Timeline build() {
-            return new Timeline(
-                    index,
-                    startTime,
-                    boards,
-                    isActive
-            );
+            return new Timeline(this);
         }
     }
 }

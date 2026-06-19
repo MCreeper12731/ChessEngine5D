@@ -1,166 +1,154 @@
 package com.github.mcreeper12731.game.models;
 
+import com.github.mcreeper12731.game.moves.Move;
 import com.github.mcreeper12731.game.pieces.Piece;
 import com.github.mcreeper12731.game.pieces.PieceType;
 
 import java.util.*;
 
+/**
+ * Essentially a record, except the constructor is not exposed
+ */
 public class Board {
 
-    private final Color playerTurn;
     private final int size;
-    private final double timeline;
-    private final int time;
-    private final Piece[][] pieces;
+    private final int l;
+    private final int t;
+    /**
+     * Full board contents flattened into a 1D list with size 'size * size'
+     */
+    private final List<Piece> contents;
+    /**
+     * Non-empty pieces of board contents
+     */
+    private final List<Piece> pieces;
 
-    private Board(Color playerTurn, int size, double timeline, int time, Set<Piece> pieces) {
-        this.playerTurn = playerTurn;
-        this.size = size;
-        this.timeline = timeline;
-        this.time = time;
-        this.pieces = new Piece[size][size];
+    private Board(Builder builder) {
+        this.size = builder.size;
+        this.l = builder.l;
+        this.t = builder.t;
 
-        for (Piece piece : pieces) {
-            this.pieces[piece.location().y()][piece.location().x()] = piece;
-        }
+        this.contents = List.copyOf(builder.contents);
+        this.pieces = List.copyOf(builder.pieces);
     }
 
-    private Board(Color playerTurn, int size, double timeline, int time, Piece[][] pieces) {
-        this.playerTurn = playerTurn;
-        this.size = size;
-        this.timeline = timeline;
-        this.time = time;
-        this.pieces = new Piece[size][size];
+    /**
+     * Indexing of board contents
+     * @param x x coordinate of location
+     * @param y y coordinate of location
+     * @return piece at location (x, y) or null if the location is out of bounds. Return piece with type EMPTY if the
+     * location is valid but does not contain a piece
+     */
+    public Piece getLocationContents(int x, int y) {
+        if (x < 0 || x >= this.size || y < 0 || y >= this.size) return null;
 
-        for (int x = 0; x < size; x++) {
-            for (int y = 0; y < size; y++) {
-                Piece originalPiece = pieces[y][x];
-                if (originalPiece != null)
-                    setPiece(x, y, originalPiece.color(), originalPiece.type(), originalPiece.moved());
-            }
-        }
+        return this.contents.get(y * this.size + x);
     }
 
-    public Board copyWithProgressedTurn(double timeline, int time) {
-        return new Board(
-                playerTurn.other(),
-                size,
-                timeline,
-                time,
-                pieces
-        );
+    public Color getPlayerTurn() {
+        return this.t % 2 == 0 ? Color.WHITE : Color.BLACK;
+    }
+
+    public int size() {
+        return size;
+    }
+
+    public int l() {
+        return l;
+    }
+
+    public int t() {
+        return t;
+    }
+
+    public List<Piece> pieces() {
+        return pieces;
     }
 
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        for (int y = this.getSize() - 1; y >= 0; y--) {
-            for (int x = 0; x < this.getSize(); x++) {
-                Piece piece = pieces[y][x];
-                builder.append(piece != null ? piece.toString() : "..").append(" ");
+        for (int y = this.size - 1; y >= 0; y--) {
+            for (int x = 0; x < this.size; x++) {
+                Piece piece = this.getLocationContents(x, y);
+                builder.append(piece.toString()).append(" ");
             }
             builder.append("\n");
         }
         return builder.toString();
     }
 
-    public Set<Piece> getPieces() {
-
-        Set<Piece> pieces = new HashSet<>();
-
-        for (int x = 0; x < getSize(); x++) {
-            for (int y = 0; y < getSize(); y++) {
-
-                Piece piece = getPiece(x, y);
-                if (piece != null) pieces.add(piece);
-            }
-        }
-        return pieces;
-    }
-
-    public Piece getPiece(int x, int y) {
-        return pieces[y][x];
-    }
-
-    public void setPiece(int x, int y, Color pieceColor, PieceType pieceType, boolean movedBefore) {
-        pieces[y][x] = new Piece(
-                pieceColor,
-                pieceType,
-                new Point4D(
-                        timeline,
-                        time,
-                        x,
-                        y
-                ),
-                movedBefore
-        );
-    }
-
-    public void setPieceFromMoving(int x, int y, Color pieceColor, PieceType pieceType) {
-        setPiece(x, y, pieceColor, pieceType, true);
-    }
-
-    public void removePiece(int x, int y) {
-        pieces[y][x] = null;
-    }
-
-    public Color getPlayerTurn() {
-        return playerTurn;
-    }
-
-    public int getSize() {
-        return size;
-    }
-
-    public double getTimeline() {
-        return timeline;
-    }
-
-    public int getTime() {
-        return time;
-    }
-
     public static class Builder {
 
-        private final int size;
-        private final double timeline;
-        private final int time;
-        private final Color playerColor;
-        private final Set<Piece> pieces = new HashSet<>();
+        private final static Piece EMPTY_PIECE = new Piece(null, PieceType.EMPTY, null, true);
 
-        public Builder(int size, double timeline, int time, Color playerColor) {
+        private final int size;
+        private final int l;
+        private final int t;
+        private final List<Piece> contents;
+        private final List<Piece> pieces;
+
+        public Builder(int size, int l, int t) {
             this.size = size;
-            this.timeline = timeline;
-            this.time = time;
-            this.playerColor = playerColor;
+            this.l = l;
+            this.t = t;
+            this.contents = new ArrayList<>(size * size);
+            for (int i = 0; i < size * size; i++) {
+                this.contents.add(EMPTY_PIECE);
+            }
+            this.pieces = new ArrayList<>();
+        }
+
+        public Builder(Board boardToCopy, int l, int t, Move move) {
+            this(boardToCopy.size, l, t);
+
+            if (
+                    !move.noop() && move.to().l() == this.l && boardToCopy.t == move.to().t()
+                            || boardToCopy.l != l
+            ) {
+                this.withPiece(move.color(), move.toType(), move.to().x(), move.to().y(), true);
+            }
+
+            for (Piece piece : boardToCopy.pieces) {
+                if (piece.type() == PieceType.EMPTY) continue;
+                if (move.from().l() == this.l && piece.location().equals(move.from())) continue;
+                if (this.contents.get(piece.location().x() + piece.location().y() * this.size).type() != PieceType.EMPTY) continue;
+
+                this.withPiece(piece, piece.moved());
+            }
         }
 
         public Builder withWhitePiece(PieceType pieceType, int x, int y) {
-            return withPiece(Color.WHITE, pieceType, x, y);
+            return this.withPiece(Color.WHITE, pieceType, x, y);
         }
 
         public Builder withBlackPiece(PieceType pieceType, int x, int y) {
-            return withPiece(Color.BLACK, pieceType, x, y);
+            return this.withPiece(Color.BLACK, pieceType, x, y);
+        }
+
+        public Builder withPiece(Piece piece, boolean moved) {
+            return this.withPiece(piece.color(), piece.type(), piece.location().x(), piece.location().y(), moved);
         }
 
         public Builder withPiece(Color pieceColor, PieceType pieceType, int x, int y) {
-            pieces.add(new Piece(
+            return this.withPiece(pieceColor, pieceType, x, y, false);
+        }
+
+        public Builder withPiece(Color pieceColor, PieceType pieceType, int x, int y, boolean moved) {
+            Piece piece = new Piece(
                     pieceColor,
                     pieceType,
-                    new Point4D(timeline, time, x, y),
-                    false
-            ));
+                    new Point4D(this.l, this.t, x, y),
+                    moved
+            );
+
+            this.contents.set(y * this.size + x, piece);
+            this.pieces.add(piece);
             return this;
         }
 
         public Board build() {
-            return new Board(
-                    playerColor,
-                    size,
-                    timeline,
-                    time,
-                    pieces
-            );
+            return new Board(this);
         }
     }
 }

@@ -5,7 +5,7 @@ import com.github.mcreeper12731.game.models.Point4D;
 import java.util.List;
 import java.util.stream.Stream;
 
-class MoveDirections {
+public class MoveDirections {
     public static final List<Point4D> DIRECTIONS_1_DIM = List.of(
             // y
             new Point4D(0, 0, 0, 1),

@@ -4,7 +4,6 @@ import com.github.mcreeper12731.game.logic.Game;
 import com.github.mcreeper12731.game.models.*;
 import com.github.mcreeper12731.game.models.scored.ScoredBoard;
 import com.github.mcreeper12731.game.models.scored.ScoredMove;
-import com.github.mcreeper12731.game.movegeneration.MoveGenerator;
 import com.github.mcreeper12731.game.pieces.PieceType;
 import com.github.mcreeper12731.game.presets.Preset;
 import com.github.mcreeper12731.utility.Log;
@@ -93,5 +92,4 @@ class ScoredBoardTest {
 
         Log.debug("Test", scoredMoves);
     }
-
 }

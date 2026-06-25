@@ -1,27 +1,29 @@
 package com.github.mcreeper12731.engine.finders;
 
 import com.github.mcreeper12731.engine.config.AlphaBetaStrategyConfig;
-import com.github.mcreeper12731.engine.evaluators.GameEvaluator;
+import com.github.mcreeper12731.engine.evaluators.Evaluator;
+import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.models.scored.ScoredTurn;
 import com.github.mcreeper12731.game.logic.Game;
 import com.github.mcreeper12731.game.movegeneration.MoveGenerator;
 import com.github.mcreeper12731.game.models.Move;
+import com.github.mcreeper12731.utility.Log;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 public class AlphaBetaStrategy {
-    private static final int POSITIVE_INFINITY = 1_000_000_000;
-    private static final int NEGATIVE_INFINITY = -POSITIVE_INFINITY;
+    private static final int POSITIVE_INFINITY = 1_000_000;
+    private static final int NEGATIVE_INFINITY = -1_000_000;
 
     private final AlphaBetaStrategyConfig config;
-    private final GameEvaluator evaluator;
+    private final Evaluator evaluator;
 
     private long nodesSearched;
     private boolean stoppedByNodeLimit;
 
-    public AlphaBetaStrategy(AlphaBetaStrategyConfig config, GameEvaluator evaluator) {
+    public AlphaBetaStrategy(AlphaBetaStrategyConfig config, Evaluator evaluator) {
         this.config = config;
         this.evaluator = evaluator;
     }
@@ -34,29 +36,29 @@ public class AlphaBetaStrategy {
         List<Move> bestTurn = null;
         int bestScore = NEGATIVE_INFINITY;
 
-        Iterator<List<Move>> turns = MoveGenerator.getSortedTurnsIterator(game, this.evaluator);
+        Iterator<List<Move>> turns = MoveGenerator.getIterativeTurnIterator(game);
 
         while (turns.hasNext()) {
             List<Move> turn = turns.next();
 
             if (config.debugLevel() >= 5) {
-                System.out.println("Exploring: " + turn);
+                Log.debug("AlphaBeta", "Exploring: " + turn);
             }
 
             game.applyMovesAndFinalizeTurn(turn);
 
-            int score = alphaBeta(
+            int score = -negamax(
                     game,
                     config.maxDepth() - 1,
                     NEGATIVE_INFINITY,
                     POSITIVE_INFINITY,
-                    false
+                    game.getPlayerTurn() == Color.WHITE ? 1 : -1
             );
 
             game.undoTurn();
 
             if (config.debugLevel() >= 1) {
-                System.out.println("Root candidate score=" + score + ": " + turn + ", spent nodes=" + (nodesSearched - prevNodesSearched));
+                Log.debug("AlphaBeta", "Root candidate score=" + score + ": " + turn + ", spent nodes=" + (nodesSearched - prevNodesSearched));
             }
             prevNodesSearched = nodesSearched;
 
@@ -68,105 +70,51 @@ public class AlphaBetaStrategy {
             if (stoppedByNodeLimit) {
                 break;
             }
+
+            if (score > 900_000) {
+                break;
+            }
         }
 
         if (config.debugLevel() >= 2) {
-            System.out.println("AlphaBeta nodes searched: " + nodesSearched);
-            System.out.println("Stopped by node limit: " + stoppedByNodeLimit);
-            System.out.println("Best score: " + bestScore);
-            System.out.println("Best turn: " + bestTurn);
+            Log.debug("AlphaBeta", "AlphaBeta nodes searched: " + nodesSearched);
+            Log.debug("AlphaBeta", "Stopped by node limit: " + stoppedByNodeLimit);
+            Log.print("AlphaBeta", "Best score: " + bestScore);
+            Log.print("AlphaBeta", "Best turn: " + bestTurn);
         }
 
         return new ScoredTurn(bestTurn, bestScore, nodesSearched);
     }
 
-    private int alphaBeta(
-            Game game,
-            int depth,
-            int alpha,
-            int beta,
-            boolean maximizingPlayer
-    ) {
+    private int negamax(Game game, int depth, int alpha, int beta, int color) {
         nodesSearched++;
 
         if (nodesSearched >= config.maxNodes()) {
             stoppedByNodeLimit = true;
-            return evaluator.evaluate(game);
+            return color * evaluator.evaluate(game);
         }
 
-        if (depth == 0 || isTerminal(game)) {
-            return evaluator.evaluate(game);
+        if (depth == 0 || this.isTerminal(game)) {
+            return color * evaluator.evaluate(game);
         }
 
-        if (maximizingPlayer) {
-            int bestScore = NEGATIVE_INFINITY;
-
-            Iterator<List<Move>> turns = depth >= config.maxDepth() - 1
-                    ? MoveGenerator.getSortedTurnsIterator(game, evaluator)
-                    : MoveGenerator.getTurnsIterator(game);
-            while (turns.hasNext()) {
-                List<Move> turn = turns.next();
-
-                if (config.debugLevel() >= 10) {
-                    System.out.print(" ".repeat(2 * config.maxDepth() - 2 * depth) + "(" + depth + ") Exploring: ");
-                    System.out.println(turn);
-                }
-                game.applyMovesAndFinalizeTurn(turn);
-
-                int score = alphaBeta(
-                        game,
-                        depth - 1,
-                        alpha,
-                        beta,
-                        false
-                );
-
+        int best = NEGATIVE_INFINITY;
+        Iterator<List<Move>> turnsIterator = MoveGenerator.getIterativeTurnIterator(game);
+        while (turnsIterator.hasNext()) {
+            List<Move> turn = turnsIterator.next();
+            game.applyMovesAndFinalizeTurn(turn);
+            // Validation check - skip invalid turns
+            if (!game.isCurrentTurnFinalizable()) {
                 game.undoTurn();
-
-                bestScore = Math.max(bestScore, score);
-                alpha = Math.max(alpha, bestScore);
-
-                if (alpha >= beta || stoppedByNodeLimit) {
-                    break;
-                }
+                continue;
             }
-
-            return bestScore;
-        } else {
-            int bestScore = POSITIVE_INFINITY;
-
-            Iterator<List<Move>> turns = depth >= config.maxDepth() - 1
-                    ? MoveGenerator.getSortedTurnsIterator(game, evaluator)
-                    : MoveGenerator.getTurnsIterator(game);
-            while (turns.hasNext()) {
-                List<Move> turn = turns.next();
-
-                if (config.debugLevel() >= 10) {
-                    System.out.print(" ".repeat(2 * config.maxDepth() - 2 * depth) + "(" + depth + ") Exploring: ");
-                    System.out.println(turn);
-                }
-                game.applyMovesAndFinalizeTurn(turn);
-
-                int score = alphaBeta(
-                        game,
-                        depth - 1,
-                        alpha,
-                        beta,
-                        true
-                );
-
-                game.undoTurn();
-
-                bestScore = Math.min(bestScore, score);
-                beta = Math.min(beta, bestScore);
-
-                if (alpha >= beta || stoppedByNodeLimit) {
-                    break;
-                }
-            }
-
-            return bestScore;
+            int score = -negamax(game, depth - 1, -beta, -alpha, -color);
+            game.undoTurn();
+            best = Math.max(best, score);
+            alpha = Math.max(alpha, score);
+            if (alpha >= beta) break;
         }
+        return best;
     }
 
     private boolean isTerminal(Game game) {

@@ -5,6 +5,8 @@ import com.github.mcreeper12731.game.models.*;
 import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.pieces.PieceType;
 
+import java.util.List;
+
 public class RookTactics4Puzzle implements Puzzle {
 
     @Override
@@ -15,7 +17,7 @@ public class RookTactics4Puzzle implements Puzzle {
     @Override
     public Game createGame() {
 
-        return new Game(new Multiverse.Builder(4)
+        Game game = new Game(new Multiverse.Builder(4)
                 .withTimeline(
                         new Timeline.Builder(0)
                                 .withBoard(
@@ -27,27 +29,47 @@ public class RookTactics4Puzzle implements Puzzle {
                                                 .build()
                                 )
                                 .build()
+                ).build()
+        );
+
+        game.applyMovesAndFinalizeTurn(List.of(
+                new Move.Builder(game)
+                        .withFrom(new Point4D(0, 0, 0, 0))
+                        .withTo(new Point4D(0, 0, 0, 1))
+                        .build()
                 )
-                .withTurn(
-                        new Point4D(0, 0, 0, 0),
-                        new Point4D(0, 0, 0, 1)
+        );
+        game.applyMovesAndFinalizeTurn(List.of(
+                new Move.Builder(game)
+                        .withFrom(new Point4D(0, 1, 0, 3))
+                        .withTo(new Point4D(0, 1, 2, 3))
+                        .build()
                 )
-                .withTurn(
-                        new Point4D(0, 1, 0, 3),
-                        new Point4D(0, 1, 2, 3)
+        );
+        game.applyMovesAndFinalizeTurn(List.of(
+                new Move.Builder(game)
+                        .withFrom(new Point4D(0, 2, 3, 0))
+                        .withTo(new Point4D(0, 0, 2, 1))
+                        .build()
                 )
-                .withTurn(
-                        new Point4D(0, 2, 3, 0),
-                        new Point4D(0, 0, 2, 1)
+        );
+        game.applyMovesAndFinalizeTurn(List.of(
+                new Move.Builder(game)
+                        .withFrom(new Point4D(1, 1, 0, 3))
+                        .withTo(new Point4D(1, 1, 0, 1))
+                        .build()
                 )
-                .withTurn(
-                        new Point4D(1, 1, 0, 3),
-                        new Point4D(1, 1, 0, 1)
+        );
+        game.applyMovesAndFinalizeTurn(List.of(
+                new Move.Builder(game)
+                        .withFrom(new Point4D(1, 2, 2, 1))
+                        .withTo(new Point4D(1, 2, 1, 2))
+                        .build()
                 )
-                .withTurn(
-                        new Point4D(1, 2, 2, 1),
-                        new Point4D(1, 2, 1, 2)
-                )
-                .build());
+        );
+
+        game.clearTurnHistory();
+
+        return game;
     }
 }

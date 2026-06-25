@@ -142,8 +142,7 @@ public class Game {
     public void applyMoveToTimeline(Timeline timeline, Move move) {
 
         Board lastBoard = timeline.getLastBoard();
-        Board nextBoard = new Board.Builder(lastBoard, timeline.getL(), timeline.getLastT() + 1, move)
-                .build();
+        Board nextBoard = new Board.Builder(lastBoard, timeline.getL(), timeline.getLastT() + 1, move).build(); // TODO: hotspot
 
         timeline.addBoard(nextBoard);
     }
@@ -315,17 +314,20 @@ public class Game {
     }
 
     private void updatePresentTime() {
-
+        // Optimization: present time is always the minimum of all timeline last times.
+        // When adding a board, only the modified timeline's last time changes.
+        // Since we only add boards (never remove during search), the minimum
+        // is either the previous presentTime or the newly added board's time.
+        // However, for correctness during undo, we recalculate but avoid allocations.
+        
         int minTime = Integer.MAX_VALUE;
-
-        for (int timelineIndex : this.multiverse.getActiveTimelineLs()) {
-
-            Timeline timeline = this.multiverse.getTimeline(timelineIndex);
-
+        
+        // Iterate directly over timeline lists without creating intermediate ArrayList
+        for (Timeline timeline : this.multiverse.getTimelines()) {
             int lastTimelineTime = timeline.getLastT();
             if (lastTimelineTime < minTime) minTime = lastTimelineTime;
         }
-
+        
         this.presentTime = minTime;
     }
 

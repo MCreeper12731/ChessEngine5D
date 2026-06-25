@@ -1,5 +1,7 @@
 package com.github.mcreeper12731.game.logic;
 
+import com.github.mcreeper12731.MainApplication;
+import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.models.Point4D;
 import com.github.mcreeper12731.game.models.Move;
 import com.github.mcreeper12731.game.movegeneration.MoveGenerator;
@@ -192,5 +194,35 @@ class GameTest {
         game.undoTurn();
 
         assertEquals(hashCode, game.hashCode());
+    }
+
+    @Test
+    public void isGameOverWhenKingCaptured() {
+
+        Game game = Preset.PUZZLE_QUEEN_1.getGame();
+
+        game.applyMovesAndFinalizeTurn(List.of(
+                new Move.Builder(game)
+                        .withPiece(game.getMultiverse().getLocationContents(0, 2, 2, 0))
+                        .withTo(0, 2, 2, 1)
+                        .build()
+        ));
+
+        game.applyMovesAndFinalizeTurn(List.of(
+                new Move.Builder(game)
+                        .withPiece(game.getMultiverse().getLocationContents(0, 3, 3, 2))
+                        .withTo(0, 3, 3, 3)
+                        .build()
+        ));
+
+        game.applyMovesAndFinalizeTurn(List.of(
+                new Move.Builder(game)
+                        .withPiece(game.getMultiverse().getLocationContents(0, 4, 2, 1))
+                        .withTo(0, 2, 3, 2)
+                        .build()
+        ));
+
+        assertTrue(game.isGameOver());
+        assertEquals(Color.WHITE, game.getWinner());
     }
 }

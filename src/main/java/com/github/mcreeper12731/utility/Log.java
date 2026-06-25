@@ -1,5 +1,8 @@
 package com.github.mcreeper12731.utility;
 
+import java.util.Collection;
+import java.util.Iterator;
+
 public class Log {
 
     private static final boolean ENABLED = true;
@@ -19,9 +22,22 @@ public class Log {
 
     public static <T> void debug(String prefix, Iterable<T> message) {
         String[] className = message.getClass().getName().split("\\.");
+        if (message instanceof Collection<?> collection && collection.size() <= 2) {
+            debug(prefix, collection.toString());
+            return;
+        }
         debug(prefix,  className[className.length - 1] + "[");
         for (T row : message) {
             debug(prefix, "  " + row);
+        }
+        debug(prefix, "]");
+    }
+
+    public static <T> void debug(String prefix, Iterator<T> message) {
+        String[] className = message.getClass().getName().split("\\.");
+        debug(prefix,  className[className.length - 1] + "[");
+        while (message.hasNext()) {
+            debug(prefix, "  " + message.next());
         }
         debug(prefix, "]");
     }

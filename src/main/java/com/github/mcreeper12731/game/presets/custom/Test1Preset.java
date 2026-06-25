@@ -13,13 +13,13 @@ public class Test1Preset implements GamePreset {
     @Override
     public Game createGame() {
 
-        return new Game(new Multiverse.Builder(2)
+        return new Game(new Multiverse.Builder(4)
                 .withTimeline(
                         new Timeline.Builder(0)
                                 .withBoard(
-                                        new Board.Builder(2,0,0)
+                                        new Board.Builder(4,0,0)
                                                 .withPiece(Color.WHITE, PieceType.KING, 0, 0)
-                                                .withPiece(Color.BLACK, PieceType.KING, 1, 1)
+                                                .withPiece(Color.BLACK, PieceType.KING, 3, 3)
                                                 .build()
                                 )
                                 .build()

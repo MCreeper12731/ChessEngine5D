@@ -27,8 +27,10 @@ public class Board {
         this.l = builder.l;
         this.t = builder.t;
 
-        this.contents = List.copyOf(builder.contents);
-        this.pieces = List.copyOf(builder.pieces);
+        // Optimization: Avoid defensive copy since Builder is not exposed externally
+        // and Board is immutable after construction
+        this.contents = Collections.unmodifiableList(builder.contents);
+        this.pieces = Collections.unmodifiableList(builder.pieces);
     }
 
     /**

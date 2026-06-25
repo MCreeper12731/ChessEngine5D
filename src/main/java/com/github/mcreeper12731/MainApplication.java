@@ -8,6 +8,7 @@ import com.github.mcreeper12731.game.graphics.components.ViewComponent;
 import com.github.mcreeper12731.game.logic.Game;
 import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.presets.Preset;
+import com.github.mcreeper12731.utility.Log;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -25,12 +26,12 @@ public class MainApplication extends Application implements GraphicsApplication 
 
     @Override
     public void init() {
-        this.preset = Preset.fromString(LaunchConfig.PRESET);
-        if (this.preset != null) {
-            this.game = preset.getGame();
-        } else {
+        if (staticGameForLaunch != null) {
             this.game = staticGameForLaunch;
             staticGameForLaunch = null;
+        } else {
+            this.preset = Preset.fromString(LaunchConfig.PRESET);
+            this.game = preset.getGame();
         }
         this.controller1 = getController(LaunchConfig.CONTROLLER_1, Color.WHITE);
         this.controller2 = getController(LaunchConfig.CONTROLLER_2, Color.BLACK);
@@ -81,7 +82,7 @@ public class MainApplication extends Application implements GraphicsApplication 
 
     public void updateCurrentPlayer() {
         if (!this.game.isCurrentTurnFinalizable()) {
-            System.out.println("Current turn is not finalizable!");
+            Log.print("Graphics>", "Current turn is not finalizable!");
             return;
         }
         getCurrentController().onTurnEnd();

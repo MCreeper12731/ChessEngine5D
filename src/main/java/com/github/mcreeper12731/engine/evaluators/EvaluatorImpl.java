@@ -7,7 +7,7 @@ import com.github.mcreeper12731.game.models.Multiverse;
 import com.github.mcreeper12731.game.models.Timeline;
 import com.github.mcreeper12731.game.pieces.Piece;
 
-public class TestEvaluator implements GameEvaluator {
+public class EvaluatorImpl implements Evaluator {
 
     @Override
     public int evaluate(Game game) {
@@ -22,14 +22,14 @@ public class TestEvaluator implements GameEvaluator {
             if (l > 0) score -= 20;
         }
 
-        for (int timelineL : multiverse.getTimelineLs()) {
+        /*for (int timelineL : multiverse.getTimelineLs()) {
             Timeline timeline = multiverse.getTimeline(timelineL);
             Board board = timeline.getLastBoard();
             for (Piece piece : board.pieces()) {
                 if (piece.color() == Color.WHITE) score += 10;
                 if (piece.color() == Color.BLACK) score -= 10;
             }
-        }
+        }*/
 
         return score;
     }

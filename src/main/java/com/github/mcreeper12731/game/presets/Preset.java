@@ -1,5 +1,6 @@
 package com.github.mcreeper12731.game.presets;
 
+import com.github.mcreeper12731.game.presets.custom.SimplePositionPreset;
 import com.github.mcreeper12731.game.logic.Game;
 import com.github.mcreeper12731.game.presets.custom.ComplexPositionPreset;
 import com.github.mcreeper12731.game.presets.custom.TestCastlingPreset;
@@ -29,7 +30,8 @@ public enum Preset {
     PUZZLE_OPENING_TRAP_4(new OpeningTraps4Puzzle()),
     CUSTOM_TEST_1(new Test1Preset()),
     CUSTOM_TEST_CASTLING(new TestCastlingPreset()),
-    CUSTOM_COMPLEX_POSITION(new ComplexPositionPreset());
+    CUSTOM_COMPLEX_POSITION(new ComplexPositionPreset()),
+    CUSTOM_SIMPLE_POSITION(new SimplePositionPreset());
 
     public static Preset fromString(String stringValue) {
         return Preset.valueOf(stringValue.toUpperCase());

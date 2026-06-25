@@ -13,7 +13,7 @@ import java.util.*;
 public record ScoredBoard(Board board, List<Integer> danger, List<Point4D> enemies) {
 
     public static final int JUMP_COST              = -4;
-    public static final int JUMP_INACTIVE_COST     = -24;
+    public static final int JUMP_INACTIVE_COST     = -100;
     public static final int TAKE_ENEMY_REWARD      = 20;
     public static final int KING_DANGER_COST       = -10;
 
@@ -133,14 +133,15 @@ public record ScoredBoard(Board board, List<Integer> danger, List<Point4D> enemi
     public List<ScoredMove> scoreMoves(Game game) {
         List<ScoredMove> scoredMoves = new ArrayList<>();
 
-        int score = 0;
-
         List<Move> boardMoves = MoveGenerator.probableMoves(this.board, game);
         for (Move move : boardMoves) {
+            int score = 0;
             if (move.noop()) {
                 scoredMoves.add(new ScoredMove(move, score));
                 continue;
             }
+
+            if (move.fromType() == PieceType.KING) score -= 100;
 
             // jump costs
             if (game.doesMoveAddTimeline(move)) score += JUMP_COST;
@@ -168,8 +169,8 @@ public record ScoredBoard(Board board, List<Integer> danger, List<Point4D> enemi
             };
 
             // What can the piece do from the destination?
-            Point4D locationOfPieceDestination = game.getMovedPieceDestination(move);
-            /*game.applyMove(move);
+            /*Point4D locationOfPieceDestination = game.getMovedPieceDestination(move);
+            game.applyMove(move);
             game.applyMove(
                     new Move.Builder()
                             .withNoop(locationOfPieceDestination.l(), locationOfPieceDestination.t())

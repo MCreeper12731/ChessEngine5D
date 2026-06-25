@@ -1,6 +1,6 @@
 package com.github.mcreeper12731.game.movegeneration.iterators;
 
-import com.github.mcreeper12731.engine.evaluators.GameEvaluator;
+import com.github.mcreeper12731.engine.evaluators.Evaluator;
 import com.github.mcreeper12731.game.models.scored.ScoredTurn;
 import com.github.mcreeper12731.game.logic.Game;
 import com.github.mcreeper12731.game.models.Move;
@@ -10,16 +10,16 @@ import java.util.*;
 public class SortedTurnIterator implements Iterator<List<Move>> {
 
     private final Game game;
-    private final GameEvaluator evaluator;
+    private final Evaluator evaluator;
     private final Iterator<List<Move>> sourceIterator;
     private final Queue<ScoredTurn> generatedMoves;
     private final int batchSize;
 
-    public SortedTurnIterator(Iterator<List<Move>> iterator, Game game, GameEvaluator evaluator) {
+    public SortedTurnIterator(Iterator<List<Move>> iterator, Game game, Evaluator evaluator) {
         this(iterator, game, evaluator, 5);
     }
 
-    public SortedTurnIterator(Iterator<List<Move>> iterator, Game game, GameEvaluator evaluator, int batchSize) {
+    public SortedTurnIterator(Iterator<List<Move>> iterator, Game game, Evaluator evaluator, int batchSize) {
         this.game = game;
         this.evaluator = evaluator;
         this.sourceIterator = iterator;

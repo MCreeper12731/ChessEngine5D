@@ -16,7 +16,7 @@ public class CompoundListView<E> extends AbstractList<E> {
     @Override
     public E get(int index) {
         if (index < 0 || index >= this.size()) throw new IndexOutOfBoundsException();
-        if (index >= list1.size()) return list2.get(index);
+        if (index >= list1.size()) return list2.get(index - list1.size());
         return list1.get(index);
     }
 

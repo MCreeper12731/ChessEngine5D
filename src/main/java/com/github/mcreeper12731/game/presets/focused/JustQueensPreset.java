@@ -1,6 +1,6 @@
 package com.github.mcreeper12731.game.presets.focused;
 
-import com.github.mcreeper12731.game.logic.Game;
+import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.pieces.PieceType;
 import com.github.mcreeper12731.game.models.Board;

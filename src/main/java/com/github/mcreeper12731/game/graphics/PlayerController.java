@@ -21,7 +21,7 @@ public class PlayerController extends Controller {
 
     public void handleTileComponentClick(TileComponent clickedTile) {
 
-        Log.debug("Graphics", "Clicked " + clickedTile.getLocation().toString());
+        //Log.debug("Graphics", "Clicked " + clickedTile.getLocation().toString());
 
         if (clickedTile.getPiece() == null) {
             handleEmptyTileClick(clickedTile);
@@ -50,7 +50,7 @@ public class PlayerController extends Controller {
         if (selectedTile == null && timeline.getLastT() != clickedTile.getLocation().t()) return;
 
         if (selectedTile != null && selectedTile.getLocation() == clickedTile.getLocation()) {
-            selectedTile.setSelected(false);
+            selectedTile.setHighlighted(false);
             setHighlightedTiles(selectedTile.getPiece(), false);
             selectedTile = null;
             return;
@@ -64,14 +64,14 @@ public class PlayerController extends Controller {
         if (selectedTile != null && selectedTile.getPiece().color() == clickedTile.getPiece().color()) return;
 
         if (selectedTile != null) {
-            selectedTile.setSelected(false);
+            selectedTile.setHighlighted(false);
             setHighlightedTiles(selectedTile.getPiece(), false);
         }
 
         selectedTile = clickedTile;
         setHighlightedTiles(selectedTile.getPiece(), true);
 
-        selectedTile.setSelected(true);
+        selectedTile.setHighlighted(true);
     }
 
     private void setHighlightedTiles(Piece piece, boolean highlighted) {
@@ -81,7 +81,7 @@ public class PlayerController extends Controller {
         for (Move move : legalMoves) {
             TileComponent tile = application.getView()
                     .getTimelineComponent(move.to().l())
-                    .getBoardComponentFromTime(move.to().t())
+                    .getBoardComponentByT(move.to().t())
                     .getTileComponent(move.to().x(), move.to().y());
             tile.setHighlighted(highlighted);
         }
@@ -98,7 +98,7 @@ public class PlayerController extends Controller {
 
         setHighlightedTiles(selectedTile.getPiece(), false);
         application.getGame().applyMove(move);
-        selectedTile.setSelected(false);
+        selectedTile.setHighlighted(false);
         selectedTile = null;
 
         updateView();

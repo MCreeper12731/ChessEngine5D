@@ -1,9 +1,11 @@
 package com.github.mcreeper12731.game.presets.puzzles;
 
-import com.github.mcreeper12731.game.logic.Game;
+import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.*;
 import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.pieces.PieceType;
+
+import java.util.List;
 
 public class RookTactics2Puzzle implements Puzzle {
 
@@ -15,7 +17,7 @@ public class RookTactics2Puzzle implements Puzzle {
     @Override
     public Game createGame() {
 
-        return new Game(new Multiverse.Builder(6)
+        Game game = new Game(new Multiverse.Builder(6)
                 .withTimeline(
                         new Timeline.Builder(0)
                                 .withBoard(
@@ -27,15 +29,21 @@ public class RookTactics2Puzzle implements Puzzle {
                                                 .build()
                                 )
                                 .build()
-                )
-                .withTurn(
-                        new Point4D(0, 0, 1, 1),
-                        new Point4D(0, 0, 4, 1)
-                )
-                .withTurn(
-                        new Point4D(0, 1, 5, 4),
-                        new Point4D(0, 1, 5, 3)
-                )
-                .build());
+                ).build()
+        );
+        game.applyMovesAndFinalizeTurn(List.of(
+                new Move.Builder(game)
+                        .withFrom(new Point4D(0, 0, 1, 1))
+                        .withTo(new Point4D(0, 0, 4, 1))
+                        .build()
+        ));
+        game.applyMovesAndFinalizeTurn(List.of(
+                new Move.Builder(game)
+                        .withFrom(new Point4D(0, 1, 5, 4))
+                        .withTo(new Point4D(0, 1, 5, 3))
+                        .build()
+        ));
+        game.clearTurnHistory();
+        return game;
     }
 }

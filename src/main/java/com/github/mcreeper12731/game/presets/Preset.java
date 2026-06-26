@@ -1,11 +1,12 @@
 package com.github.mcreeper12731.game.presets;
 
 import com.github.mcreeper12731.game.presets.custom.SimplePositionPreset;
-import com.github.mcreeper12731.game.logic.Game;
+import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.presets.custom.ComplexPositionPreset;
 import com.github.mcreeper12731.game.presets.custom.TestCastlingPreset;
 import com.github.mcreeper12731.game.presets.custom.JustQueensInvasionPreset;
 import com.github.mcreeper12731.game.presets.custom.Test1Preset;
+import com.github.mcreeper12731.game.presets.focused.JustDragonsPreset;
 import com.github.mcreeper12731.game.presets.focused.JustQueensPreset;
 import com.github.mcreeper12731.game.presets.focused.JustRooksPreset;
 import com.github.mcreeper12731.game.presets.puzzles.*;
@@ -16,6 +17,7 @@ public enum Preset {
     JUST_QUEENS(new JustQueensPreset()),
     JUST_QUEENS_INVASION(new JustQueensInvasionPreset()),
     JUST_ROOKS(new JustRooksPreset()),
+    JUST_DRAGONS(new JustDragonsPreset()),
     PUZZLE_ROOK_1(new RookTactics1Puzzle()),
     PUZZLE_ROOK_2(new RookTactics2Puzzle()),
     PUZZLE_ROOK_3(new RookTactics3Puzzle()),

@@ -1,22 +1,23 @@
 package com.github.mcreeper12731.game.graphics.components;
 
 import com.github.mcreeper12731.game.graphics.GraphicsApplication;
-import com.github.mcreeper12731.game.graphics.PlayerController;
 import com.github.mcreeper12731.game.graphics.GraphicsConfig;
+import com.github.mcreeper12731.game.models.Move;
 import com.github.mcreeper12731.game.pieces.Piece;
 import com.github.mcreeper12731.game.models.Point4D;
-import com.github.mcreeper12731.utility.Log;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+
+import java.util.List;
 
 public class TileComponent extends Canvas {
 
     private final Piece piece;
     private final Point4D location;
     private final Color color;
-    private boolean selected = false;
+    private final Color annotated;
     private boolean highlighted = false;
 
     public TileComponent(Piece piece, Point4D location, int boardHeight, GraphicsApplication application) {
@@ -26,11 +27,39 @@ public class TileComponent extends Canvas {
 
         this.color =
                 (location.x() + boardHeight - location.y() - 1) % 2 == 0 ?
-                GraphicsConfig.Color.TILE_LIGHT :
-                GraphicsConfig.Color.TILE_DARK;
+                        GraphicsConfig.Color.TILE_LIGHT :
+                        GraphicsConfig.Color.TILE_DARK;
 
         this.setLayoutX(location.x() * GraphicsConfig.TILE_SIZE);
         this.setLayoutY((boardHeight - location.y() - 1) * GraphicsConfig.TILE_SIZE);
+
+        Color annotated = null;
+        /*List<List<Move>> turns = application.getGame().getTurns();
+        for (List<Move> turn : turns) {
+            for (Move move : turn) {
+                if (
+                        move.from().add(0, 1, 0, 0).equals(location) &&
+                        !application.getGame().getMovedPieceDestination(move).equals(move.to().add(0, 1, 0, 0))
+                ) {
+                    annotated = GraphicsConfig.Color.TILE_CONTAINS_JUMP_MOVE;
+                    break;
+                }
+
+                if (
+                        move.from().add(0, 1, 0, 0).equals(location) ||
+                        move.to().add(0, 1, 0, 0).equals(location)
+                ) {
+                    annotated = GraphicsConfig.Color.TILE_CONTAINS_MOVE;
+                    break;
+                }
+
+                if (application.getGame().getMovedPieceDestination(move).equals(location)) {
+                    annotated = GraphicsConfig.Color.TILE_CONTAINS_JUMP_MOVE;
+                    break;
+                }
+            }
+        }*/
+        this.annotated = annotated;
 
         this.setOnMouseClicked(event -> application.getCurrentController().handleTileComponentClick(this));
     }
@@ -38,10 +67,11 @@ public class TileComponent extends Canvas {
     public void draw() {
 
         GraphicsContext gc = getGraphicsContext2D();
-        if (selected) gc.setFill(color.darker());
-        else if (highlighted) gc.setFill(GraphicsConfig.Color.TILE_HIGHLIGHTED);
-        else if (piece != null && !piece.moved()) gc.setFill(Color.CORAL);
-        else gc.setFill(color);
+        gc.setFill(color);
+        gc.fillRect(0, 0, GraphicsConfig.TILE_SIZE, GraphicsConfig.TILE_SIZE);
+        if (highlighted) gc.setFill(GraphicsConfig.Color.TILE_HIGHLIGHTED);
+        else if (annotated != null) gc.setFill(annotated);
+        //else if (piece != null && !piece.moved()) gc.setFill(Color.CORAL);
         gc.fillRect(0, 0, GraphicsConfig.TILE_SIZE, GraphicsConfig.TILE_SIZE);
 
         if (piece == null) return;
@@ -66,11 +96,6 @@ public class TileComponent extends Canvas {
         return location;
     }
 
-    public void setSelected(boolean selected) {
-        this.selected = selected;
-        draw();
-    }
-
     public void setHighlighted(boolean highlighted) {
         this.highlighted = highlighted;
         draw();
@@ -82,7 +107,6 @@ public class TileComponent extends Canvas {
                 "piece=" + piece +
                 ", location=" + location +
                 ", color=" + color +
-                ", selected=" + selected +
                 '}';
     }
 }

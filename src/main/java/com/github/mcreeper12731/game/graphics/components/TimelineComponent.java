@@ -55,11 +55,11 @@ public class TimelineComponent extends Pane {
         getChildren().remove(board);
     }
 
-    public BoardComponent getBoardComponent(int time) {
-        return boardComponents.get(time);
+    public BoardComponent getBoardComponentByIndex(int index) {
+        return boardComponents.get(index);
     }
 
-    public BoardComponent getBoardComponentFromTime(int time) {
+    public BoardComponent getBoardComponentByT(int time) {
         return boardComponents.get(time - timeline.getFirstTimeCoordinate());
     }
 

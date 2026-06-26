@@ -1,7 +1,6 @@
 package com.github.mcreeper12731.engine.evaluators;
 
-import com.github.mcreeper12731.game.logic.Game;
-import com.github.mcreeper12731.game.models.Color;
+import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Move;
 import com.github.mcreeper12731.game.presets.Preset;
 import org.junit.jupiter.api.Test;
@@ -39,7 +38,7 @@ class EvaluatorImplTest {
         ));
 
         Evaluator evaluator = new EvaluatorImpl();
-        int score = evaluator.evaluate(game);
+        double score = evaluator.evaluate(game);
         assertTrue(score > 900000);
     }
 

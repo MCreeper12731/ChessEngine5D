@@ -1,37 +1,51 @@
 package com.github.mcreeper12731.engine.evaluators;
 
-import com.github.mcreeper12731.game.logic.Game;
+import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Board;
 import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.models.Multiverse;
 import com.github.mcreeper12731.game.models.Timeline;
 import com.github.mcreeper12731.game.pieces.Piece;
+import com.github.mcreeper12731.game.pieces.PieceType;
 
 public class EvaluatorImpl implements Evaluator {
 
     @Override
-    public int evaluate(Game game) {
-        int score = 0;
+    public double evaluate(Game game) {
+        double score = 0;
         Multiverse multiverse = game.getMultiverse();
 
         if (game.getWinner() == Color.WHITE) score += 1_000_000;
         if (game.getWinner() == Color.BLACK) score -= 1_000_000;
 
-        for (int l : multiverse.getTimelineLs()) {
-            if (l < 0) score += 20;
-            if (l > 0) score -= 20;
-        }
+        for (Timeline timeline : multiverse.getTimelines()) {
+            if (timeline.getL() < 0) score += 500;
+            if (timeline.getL() > 0) score -= 500;
 
-        /*for (int timelineL : multiverse.getTimelineLs()) {
-            Timeline timeline = multiverse.getTimeline(timelineL);
             Board board = timeline.getLastBoard();
             for (Piece piece : board.pieces()) {
-                if (piece.color() == Color.WHITE) score += 10;
-                if (piece.color() == Color.BLACK) score -= 10;
+                if (piece.color() == Color.WHITE) score += pieceScore(piece.type());
+                if (piece.color() == Color.BLACK) score -= pieceScore(piece.type());
             }
-        }*/
+        }
 
         return score;
     }
 
+    private double pieceScore(PieceType type) {
+
+        return switch(type) {
+            case EMPTY -> 0;
+            case KING -> 1_000;
+            case QUEEN -> 9;
+            case ROOK -> 5;
+            case BISHOP -> 3;
+            case KNIGHT -> 3;
+            case PAWN -> 1;
+            case UNICORN -> 2;
+            case DRAGON -> 0.5;
+            case PRINCESS -> 8;
+            case BRAWN -> 1.5;
+        };
+    }
 }

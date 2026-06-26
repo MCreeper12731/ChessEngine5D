@@ -1,5 +1,6 @@
 package com.github.mcreeper12731.game.logic;
 
+import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.*;
 import com.github.mcreeper12731.game.models.Move;
 import com.github.mcreeper12731.game.pieces.PieceType;
@@ -127,7 +128,8 @@ public class GameApiTest {
         for (Move move : moves) {
             Point4D destination = game.getMovedPieceDestination(move);
 
-            Log.debug("Test", "Applied move " + move);
+            Log.debug("Test", "Applied move", move);
+            Log.debug("Test", "Piece ended up at", destination);
 
             game.applyMove(move);
 

@@ -1,6 +1,8 @@
 package com.github.mcreeper12731.game.models;
 
 import com.github.mcreeper12731.game.pieces.Piece;
+import com.github.mcreeper12731.utility.CompoundListView;
+import com.github.mcreeper12731.utility.Log;
 
 import java.util.*;
 
@@ -51,19 +53,10 @@ public class Multiverse {
     }
 
     public Board getBoard(int l, int t) {
-        Timeline timeline = getTimeline(l);
+        Timeline timeline = this.getTimeline(l);
         if (timeline == null) return null;
 
         return timeline.getBoardByT(t);
-    }
-
-    public List<Board> getLastBoards() {
-        List<Board> boards = new ArrayList<>();
-
-        for (Timeline timeline : this.getTimelines()) {
-            boards.add(timeline.getLastBoard());
-        }
-        return boards;
     }
 
     /***
@@ -84,7 +77,7 @@ public class Multiverse {
      * @return the piece at the given 4D location. Returns a piece with PieceType.NONE if there is no piece at the given location. Returns null if the location is not in the multiverse.
      */
     public Piece getLocationContents(int l, int t, int x, int y) {
-        Timeline timeline = getTimeline(l);
+        Timeline timeline = this.getTimeline(l);
         if (timeline == null) return null;
 
         Board board = timeline.getBoardByT(t);
@@ -93,6 +86,7 @@ public class Multiverse {
         return board.getLocationContents(x, y);
     }
 
+    @Deprecated
     public List<Integer> getTimelineLs() {
         List<Integer> indices = new ArrayList<>();
         int botL = getBotTimelineL();
@@ -130,11 +124,7 @@ public class Multiverse {
     }
 
     public List<Timeline> getTimelines() {
-
-        List<Timeline> timelines = new ArrayList<>(this.negativeTimelines.reversed());
-        timelines.addAll(this.positiveTimelines);
-
-        return timelines;
+        return new CompoundListView<>(this.negativeTimelines.reversed(), this.positiveTimelines);
     }
 
     public int getBotTimelineL() {
@@ -143,6 +133,10 @@ public class Multiverse {
 
     public int getTopTimelineL() {
         return this.positiveTimelines.size() - 1;
+    }
+
+    public int getTimelineCount() {
+        return this.negativeTimelines.size() + this.positiveTimelines.size();
     }
 
     public boolean isEven() {
@@ -212,11 +206,13 @@ public class Multiverse {
 
         @Deprecated
         public Builder withTurn(Point4D from, Point4D to) {
+            Log.debug("WARNING", "Using deprecated withTurn() - check preset");
             return this;
         }
 
         @Deprecated
         public Builder withTurn(List<List<Point4D>> movePoints) {
+            Log.debug("WARNING", "Using deprecated withTurn() - check preset");
             return this;
         }
 

@@ -1,7 +1,7 @@
 package com.github.mcreeper12731.game.movegeneration;
 
 import com.github.mcreeper12731.engine.evaluators.Evaluator;
-import com.github.mcreeper12731.game.logic.Game;
+import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Timeline;
 import com.github.mcreeper12731.game.models.scored.ScoredBoard;
 import com.github.mcreeper12731.game.models.scored.ScoredMove;

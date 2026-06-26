@@ -1,8 +1,7 @@
 package com.github.mcreeper12731.game.presets.custom;
 
-import com.github.mcreeper12731.game.logic.Game;
+import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Board;
-import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.models.Multiverse;
 import com.github.mcreeper12731.game.models.Timeline;
 import com.github.mcreeper12731.game.pieces.PieceType;

@@ -1,8 +1,9 @@
-package com.github.mcreeper12731.game.logic;
+package com.github.mcreeper12731.game;
 
 import com.github.mcreeper12731.game.models.*;
 import com.github.mcreeper12731.game.pieces.Piece;
 import com.github.mcreeper12731.game.pieces.PieceType;
+import com.github.mcreeper12731.utility.Log;
 
 import java.util.*;
 
@@ -11,6 +12,8 @@ public class Game {
     private final Multiverse multiverse;
     private final Stack<MoveEffect> currentTurnMoveEffects = new Stack<>();
     private final Stack<Stack<MoveEffect>> turnEffects = new Stack<>();
+
+    private final Stack<Stack<MoveEffect>> archivedTurnEffects = new Stack<>();
 
     private int presentTime;
     private Color playerTurn = Color.WHITE;
@@ -70,16 +73,16 @@ public class Game {
         Timeline toTimeline = this.multiverse.getTimeline(move.to().l());
 
         if (toTimeline == null) {
-            System.out.println(this);
-            System.out.println("Attempted move: " + move);
+            Log.debug("Game", this);
+            Log.debug("Game","Attempted move: " + move);
             throw new RuntimeException("Cannot apply move - timeline does not exist!");
         }
 
         Board toBoard = toTimeline.getBoardByT(move.to().t());
 
         if (toBoard == null) {
-            System.out.println(this);
-            System.out.println("Attempted move: " + move);
+            Log.debug("Game",this);
+            Log.debug("Game", "Attempted move: " + move);
             throw new RuntimeException("Cannot apply move - contents does not exist!");
         }
 
@@ -142,7 +145,8 @@ public class Game {
     public void applyMoveToTimeline(Timeline timeline, Move move) {
 
         Board lastBoard = timeline.getLastBoard();
-        Board nextBoard = new Board.Builder(lastBoard, timeline.getL(), timeline.getLastT() + 1, move).build(); // TODO: hotspot
+        Board nextBoard = new Board.Builder(lastBoard, timeline.getL(), timeline.getLastT() + 1, move)
+                .build();
 
         timeline.addBoard(nextBoard);
     }
@@ -297,11 +301,13 @@ public class Game {
             // In-board moves
             return move.to().add(0, 1, 0, 0);
 
+        Timeline fromTimeline = this.multiverse.getTimeline(move.from().l());
         Timeline toTimeline = this.multiverse.getTimeline(move.to().l());
         if (move.to().t() != toTimeline.getLastT()) {
+            int isCheckAfterMove = move.from().t() == fromTimeline.getLastT() ? 1 : 0;
             int newTimelineL = this.playerTurn == Color.WHITE ?
-                    this.multiverse.getTopTimelineL() + 1 :
-                    this.multiverse.getBotTimelineL() - 1;
+                    this.multiverse.getTopTimelineL() + isCheckAfterMove :
+                    this.multiverse.getBotTimelineL() - isCheckAfterMove;
             return new Point4D(
                     newTimelineL,
                     move.to().t() + 1,
@@ -313,17 +319,19 @@ public class Game {
         return move.to().add(0, 1, 0, 0);
     }
 
+    public List<List<Move>> getTurns() {
+        List<List<MoveEffect>> turnEffects = new ArrayList<>(this.turnEffects);
+        turnEffects.addAll(this.archivedTurnEffects);
+        turnEffects.add(new ArrayList<>(this.currentTurnMoveEffects));
+        return turnEffects.stream().map(turnEffect -> turnEffect.stream().map(MoveEffect::getMove).toList()).toList();
+    }
+
     private void updatePresentTime() {
-        // Optimization: present time is always the minimum of all timeline last times.
-        // When adding a board, only the modified timeline's last time changes.
-        // Since we only add boards (never remove during search), the minimum
-        // is either the previous presentTime or the newly added board's time.
-        // However, for correctness during undo, we recalculate but avoid allocations.
-        
+
         int minTime = Integer.MAX_VALUE;
-        
-        // Iterate directly over timeline lists without creating intermediate ArrayList
+
         for (Timeline timeline : this.multiverse.getTimelines()) {
+            if (!multiverse.isTimelineActive(timeline.getL())) continue;
             int lastTimelineTime = timeline.getLastT();
             if (lastTimelineTime < minTime) minTime = lastTimelineTime;
         }
@@ -352,6 +360,9 @@ public class Game {
     }
 
     public void clearTurnHistory() {
+
+        this.archivedTurnEffects.addAll(turnEffects);
+
         this.turnEffects.clear();
     }
 

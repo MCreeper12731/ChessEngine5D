@@ -1,0 +1,166 @@
+package com.github.mcreeper12731.engine.finders;
+
+import com.github.mcreeper12731.engine.config.NegamaxStrategyConfig;
+import com.github.mcreeper12731.engine.evaluators.Evaluator;
+import com.github.mcreeper12731.game.models.Color;
+import com.github.mcreeper12731.game.models.scored.ScoredTurn;
+import com.github.mcreeper12731.game.Game;
+import com.github.mcreeper12731.game.movegeneration.MoveGenerator;
+import com.github.mcreeper12731.game.models.Move;
+import com.github.mcreeper12731.utility.Log;
+
+import java.util.Iterator;
+import java.util.List;
+
+public class NegaMaxStrategy {
+    private static final int POSITIVE_INFINITY = Integer.MAX_VALUE;
+    private static final int NEGATIVE_INFINITY = Integer.MIN_VALUE + 1;
+
+    private final NegamaxStrategyConfig config;
+    private final Evaluator evaluator;
+
+
+    public int maxTimelinesReached;
+    public long nodesSearched;
+    public boolean stoppedByNodeLimit;
+
+    public NegaMaxStrategy(NegamaxStrategyConfig config, Evaluator evaluator) {
+        this.config = config;
+        this.evaluator = evaluator;
+    }
+
+    public ScoredTurn findBestTurn(Game game) {
+        maxTimelinesReached = 0;
+        nodesSearched = 0;
+        stoppedByNodeLimit = false;
+        long prevNodesSearched;
+
+        List<Move> bestTurn;
+        double bestScore;
+        int currentDepth = config.maxDepth();
+
+        while (true) {
+            nodesSearched = 0;
+            bestScore = NEGATIVE_INFINITY;
+            bestTurn = null;
+            prevNodesSearched = 0;
+
+            Iterator<List<Move>> turns = MoveGenerator.getIterativeTurnIterator(game);
+
+            while (turns.hasNext()) {
+                List<Move> turn = turns.next();
+
+                game.applyMoves(turn);
+                if (!game.isCurrentTurnFinalizable()) {
+                    game.undoAllMovesFromCurrentTurn();
+                    continue;
+                }
+                game.finalizeTurn();
+
+                if (config.debugLevel() >= 5) {
+                    Log.debug("AlphaBeta", "Exploring: " + turn);
+                }
+
+                double score = -negamax(
+                        game,
+                        currentDepth - 1,
+                        NEGATIVE_INFINITY,
+                        POSITIVE_INFINITY,
+                        game.getPlayerTurn() == Color.WHITE ? 1 : -1
+                );
+
+                game.undoTurn();
+
+                if (config.debugLevel() >= 3) {
+                    Log.debug("AlphaBeta", "Root candidate score=" + score + ": " + turn + ", spent nodes=" + (nodesSearched - prevNodesSearched));
+                }
+                prevNodesSearched = nodesSearched;
+
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestTurn = turn;
+                }
+
+                if (stoppedByNodeLimit) {
+                    break;
+                }
+
+                // Found a winning solution (checkmate)
+                if (bestScore > 900_000) {
+                    break;
+                }
+            }
+
+            if (config.debugLevel() >= 2) {
+                Log.debug("AlphaBeta", "Depth " + currentDepth + " - nodes searched: " + nodesSearched);
+                Log.debug("AlphaBeta", "Best score at depth " + currentDepth + ": " + bestScore);
+            }
+
+            if (bestScore > 900_000 || stoppedByNodeLimit) {
+                break;
+            }
+
+            currentDepth += 2;
+        }
+
+        if (config.debugLevel() >= 2) {
+            Log.debug("AlphaBeta", "AlphaBeta nodes searched: " + nodesSearched);
+            Log.debug("AlphaBeta", "Stopped by node limit: " + stoppedByNodeLimit);
+        }
+        if (config.debugLevel() >= 1) {
+            Log.print("AlphaBeta", "Found turn at depth:", currentDepth);
+            Log.print("AlphaBeta", "Best score:", bestScore);
+            Log.print("AlphaBeta", "Best turn:", bestTurn);
+        }
+
+        return new ScoredTurn(bestTurn, bestScore, nodesSearched);
+    }
+
+    private double negamax(Game game, int depth, double alpha, double beta, int color) {
+        nodesSearched++;
+
+        if (nodesSearched >= config.maxNodes()) {
+            if (game.getMultiverse().getTimelineCount() > maxTimelinesReached)
+                maxTimelinesReached = game.getMultiverse().getTimelineCount();
+
+            stoppedByNodeLimit = true;
+            return color * evaluator.evaluate(game);
+        }
+
+        if (depth == 0 || this.isTerminal(game)) {
+            if (game.getMultiverse().getTimelineCount() > maxTimelinesReached)
+                maxTimelinesReached = game.getMultiverse().getTimelineCount();
+
+            return color * evaluator.evaluate(game);
+        }
+
+        double best = NEGATIVE_INFINITY;
+        Iterator<List<Move>> turnsIterator = MoveGenerator.getIterativeTurnIterator(game);
+        while (turnsIterator.hasNext()) {
+            List<Move> turn = turnsIterator.next();
+
+            game.applyMoves(turn);
+            if (!game.isCurrentTurnFinalizable()) {
+                game.undoAllMovesFromCurrentTurn();
+                continue;
+            }
+            game.finalizeTurn();
+
+            double score = -negamax(game, depth - 1, -beta, -alpha, -color);
+
+            if (config.debugLevel() >= 10 && score > best) {
+                Log.debug(" ".repeat(config.maxDepth() - depth) + "AlphaBeta", "Exploring turn:", "best score:", score);
+            }
+
+            game.undoTurn();
+            best = Math.max(best, score);
+            alpha = Math.max(alpha, score);
+            if (alpha >= beta) break;
+        }
+        return best;
+    }
+
+    private boolean isTerminal(Game game) {
+        return game.isGameOver();
+    }
+}

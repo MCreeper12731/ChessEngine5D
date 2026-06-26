@@ -38,6 +38,7 @@ public class BoardMoveIterator implements Iterator<Move> {
             if (nextPiece.color() != board.getPlayerTurn()) continue;
 
             this.currentIterator = nextPiece.getMoveIterator(this.multiverse);
+            if (!this.currentIterator.hasNext()) continue;
             return;
         }
     }

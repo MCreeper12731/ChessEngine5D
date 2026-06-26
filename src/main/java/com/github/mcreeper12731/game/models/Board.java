@@ -10,13 +10,15 @@ import java.util.*;
  */
 public class Board {
 
+    private final static Piece EMPTY_PIECE = new Piece(null, PieceType.EMPTY, null, true);
+
     private final int size;
     private final int l;
     private final int t;
     /**
-     * Full board contents flattened into a 1D list with size 'size * size'
+     * Full board contents, null if piece does not exist
      */
-    private final List<Piece> contents;
+    private final Piece[][] contents;
     /**
      * Non-empty pieces of board contents
      */
@@ -27,9 +29,7 @@ public class Board {
         this.l = builder.l;
         this.t = builder.t;
 
-        // Optimization: Avoid defensive copy since Builder is not exposed externally
-        // and Board is immutable after construction
-        this.contents = Collections.unmodifiableList(builder.contents);
+        this.contents = builder.contents;
         this.pieces = Collections.unmodifiableList(builder.pieces);
     }
 
@@ -42,8 +42,10 @@ public class Board {
      */
     public Piece getLocationContents(int x, int y) {
         if (x < 0 || x >= this.size || y < 0 || y >= this.size) return null;
+        Piece piece = this.contents[y][x];
 
-        return this.contents.get(y * this.size + x);
+        if (piece == null) return EMPTY_PIECE;
+        return piece;
     }
 
     public Color getPlayerTurn() {
@@ -81,22 +83,18 @@ public class Board {
 
     public static class Builder {
 
-        private final static Piece EMPTY_PIECE = new Piece(null, PieceType.EMPTY, null, true);
-
         private final int size;
         private final int l;
         private final int t;
-        private final List<Piece> contents;
+        private final Piece[][] contents;
         private final List<Piece> pieces;
 
         public Builder(int size, int l, int t) {
             this.size = size;
             this.l = l;
             this.t = t;
-            this.contents = new ArrayList<>(size * size);
-            for (int i = 0; i < size * size; i++) {
-                this.contents.add(EMPTY_PIECE);
-            }
+            this.contents = new Piece[size][size];
+
             this.pieces = new ArrayList<>();
         }
 
@@ -113,7 +111,7 @@ public class Board {
             for (Piece piece : boardToCopy.pieces) {
                 if (piece.type() == PieceType.EMPTY) continue;
                 if (move.from().l() == this.l && piece.location().equals(move.from())) continue;
-                if (this.contents.get(piece.location().x() + piece.location().y() * this.size).type() != PieceType.EMPTY) continue;
+                if (this.contents[piece.location().y()][piece.location().x()] != null) continue;
 
                 this.withPiece(piece, piece.moved());
             }
@@ -143,7 +141,7 @@ public class Board {
                     moved
             );
 
-            this.contents.set(y * this.size + x, piece);
+            this.contents[y][x] = piece;
             this.pieces.add(piece);
             return this;
         }

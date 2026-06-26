@@ -1,8 +1,8 @@
 package com.github.mcreeper12731.engine.config;
 
-public record AlphaBetaStrategyConfig(int maxDepth, long maxNodes, int debugLevel) {
+public record NegamaxStrategyConfig(int maxDepth, long maxNodes, int debugLevel) {
 
-    public AlphaBetaStrategyConfig {
+    public NegamaxStrategyConfig {
         if (maxDepth < 1) {
             throw new IllegalArgumentException("maxDepth must be at least 1");
         }

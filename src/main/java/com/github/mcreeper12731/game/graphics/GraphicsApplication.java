@@ -1,7 +1,7 @@
 package com.github.mcreeper12731.game.graphics;
 
 import com.github.mcreeper12731.game.graphics.components.ViewComponent;
-import com.github.mcreeper12731.game.logic.Game;
+import com.github.mcreeper12731.game.Game;
 import javafx.scene.Scene;
 
 public interface GraphicsApplication {

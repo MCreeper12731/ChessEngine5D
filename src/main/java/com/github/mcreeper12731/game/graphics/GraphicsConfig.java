@@ -1,8 +1,9 @@
 package com.github.mcreeper12731.game.graphics;
 
-import com.github.mcreeper12731.game.models.Color;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
+import javafx.scene.paint.Color;
+
+import java.util.function.Function;
 
 public class GraphicsConfig {
 
@@ -24,22 +25,14 @@ public class GraphicsConfig {
         }
 
         public static final javafx.scene.paint.Color PRESENT = javafx.scene.paint.Color.LIGHTBLUE;
+
         public static final javafx.scene.paint.Color TIMELINE_ACTIVE = javafx.scene.paint.Color.YELLOWGREEN;
         public static final javafx.scene.paint.Color TIMELINE_INACTIVE = javafx.scene.paint.Color.LIGHTGRAY;
         public static final javafx.scene.paint.Color TILE_LIGHT = javafx.scene.paint.Color.WHITE.darker();
         public static final javafx.scene.paint.Color TILE_DARK = javafx.scene.paint.Color.GRAY;
         public static final javafx.scene.paint.Color TILE_HIGHLIGHTED = javafx.scene.paint.Color.rgb(0, 127, 0, 0.5);
+        public static final javafx.scene.paint.Color TILE_CONTAINS_MOVE = javafx.scene.paint.Color.rgb(0, 47, 127, 0.3);
+        public static final javafx.scene.paint.Color TILE_CONTAINS_JUMP_MOVE = javafx.scene.paint.Color.rgb(127, 0, 127, 0.3);
 
     }
-
-    public static class Keybind {
-
-        public static final KeyCode UNDO_MOVE = KeyCode.R;
-        public static final KeyCode UNDO_TURN = KeyCode.T;
-        public static final KeyCode SUBMIT_TURN = KeyCode.SPACE;
-
-    }
-
-    private GraphicsConfig() {}
-
 }

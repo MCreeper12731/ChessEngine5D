@@ -1,6 +1,6 @@
 package com.github.mcreeper12731.game.models;
 
-import com.github.mcreeper12731.game.logic.Game;
+import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.pieces.Piece;
 import com.github.mcreeper12731.game.pieces.PieceType;
 
@@ -144,7 +144,7 @@ public record Move(
 
         public Move build() {
             if ((this.from == null || this.to == null || this.fromType == null || this.toType == null || this.color == null) && !this.noop)
-                throw new IllegalStateException();
+                throw new IllegalStateException("Provide more move information or declare it noop");
 
             return new Move(
                     this.from, this.to,

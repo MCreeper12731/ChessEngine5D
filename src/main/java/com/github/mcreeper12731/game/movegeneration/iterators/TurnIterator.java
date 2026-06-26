@@ -1,6 +1,6 @@
 package com.github.mcreeper12731.game.movegeneration.iterators;
 
-import com.github.mcreeper12731.game.logic.Game;
+import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Board;
 import com.github.mcreeper12731.game.models.Move;
 import com.github.mcreeper12731.game.movegeneration.MoveGenerator;

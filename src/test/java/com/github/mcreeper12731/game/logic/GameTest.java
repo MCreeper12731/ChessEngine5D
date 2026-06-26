@@ -1,6 +1,6 @@
 package com.github.mcreeper12731.game.logic;
 
-import com.github.mcreeper12731.MainApplication;
+import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.models.Point4D;
 import com.github.mcreeper12731.game.models.Move;

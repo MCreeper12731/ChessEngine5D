@@ -1,6 +1,6 @@
 package com.github.mcreeper12731.game.pieces.movesets;
 
-import com.github.mcreeper12731.game.logic.Game;
+import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.*;
 import com.github.mcreeper12731.game.models.Move;
 import com.github.mcreeper12731.game.pieces.Piece;

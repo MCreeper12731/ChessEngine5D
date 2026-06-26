@@ -1,6 +1,6 @@
 package com.github.mcreeper12731.game.movegeneration.iterators;
 
-import com.github.mcreeper12731.game.logic.Game;
+import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Move;
 
 import java.util.*;
@@ -221,10 +221,8 @@ public class IterativeTurnIterator implements Iterator<List<Move>> {
                 break;
             }
 
-            // Optimization: Remove validation during generation.
-            // The negamax search will validate turns when applying them,
-            // and alpha-beta pruning means many generated turns won't be explored anyway.
-            // Invalid turns will be caught during actual search.
+            // TODO - add non-applymove turn validation
+
             permutationQueue.push(turn);
         }
     }

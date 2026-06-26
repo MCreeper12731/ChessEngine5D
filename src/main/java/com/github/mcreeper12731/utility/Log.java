@@ -59,4 +59,13 @@ public class Log {
         print(prefix, object.toString());
     }
 
+    public static void print(String prefix, Object... messages) {
+        StringBuilder messageBuilder = new StringBuilder();
+        for (Object message : messages) {
+            messageBuilder.append(message).append(" ");
+        }
+        messageBuilder.deleteCharAt(messageBuilder.length() - 1);
+        print(prefix, messageBuilder.toString());
+    }
+
 }

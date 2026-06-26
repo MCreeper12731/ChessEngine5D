@@ -1,11 +1,9 @@
 package com.github.mcreeper12731;
 
-import com.github.mcreeper12731.game.graphics.Controller;
-import com.github.mcreeper12731.game.graphics.EngineController;
-import com.github.mcreeper12731.game.graphics.GraphicsApplication;
-import com.github.mcreeper12731.game.graphics.PlayerController;
+import com.github.mcreeper12731.engine.config.NegamaxStrategyConfig;
+import com.github.mcreeper12731.game.graphics.*;
 import com.github.mcreeper12731.game.graphics.components.ViewComponent;
-import com.github.mcreeper12731.game.logic.Game;
+import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.presets.Preset;
 import com.github.mcreeper12731.utility.Log;
@@ -30,7 +28,7 @@ public class MainApplication extends Application implements GraphicsApplication 
             this.game = staticGameForLaunch;
             staticGameForLaunch = null;
         } else {
-            this.preset = Preset.fromString(LaunchConfig.PRESET);
+            this.preset = LaunchConfig.PRESET;
             this.game = preset.getGame();
         }
         this.controller1 = getController(LaunchConfig.CONTROLLER_1, Color.WHITE);
@@ -42,11 +40,6 @@ public class MainApplication extends Application implements GraphicsApplication 
     @Override
     public void start(Stage primaryStage) {
 
-        if (this.game.getPlayerTurn() == Color.WHITE)
-            this.controller1.onTurnStart();
-        else
-            this.controller2.onTurnStart();
-
         String title = "5D Chess Visualizer";
         primaryStage.setTitle(title);
         primaryStage.setScene(this.scene);
@@ -54,12 +47,20 @@ public class MainApplication extends Application implements GraphicsApplication 
         primaryStage.show();
 
         this.view.draw();
+
+        if (this.game.getPlayerTurn() == Color.WHITE)
+            this.controller1.onTurnStart();
+        else
+            this.controller2.onTurnStart();
     }
 
     private Controller getController(String controllerType, Color controllerColor) {
         return switch (controllerType) {
             case "player" -> new PlayerController(this, controllerColor);
-            case "engine" -> new EngineController(this, controllerColor);
+            case "engine" -> {
+                NegamaxStrategyConfig config = new NegamaxStrategyConfig(LaunchConfig.MAX_DEPTH, LaunchConfig.MAX_NODES, LaunchConfig.DEBUG_LEVEL);
+                yield new EngineController(this, controllerColor, config);
+            }
             default -> throw new RuntimeException("Controller of type " + controllerType + " does not exist!");
         };
     }
@@ -82,7 +83,7 @@ public class MainApplication extends Application implements GraphicsApplication 
 
     public void updateCurrentPlayer() {
         if (!this.game.isCurrentTurnFinalizable()) {
-            Log.print("Graphics>", "Current turn is not finalizable!");
+            Log.print("Graphics", "Current turn is not finalizable!");
             return;
         }
         getCurrentController().onTurnEnd();
@@ -98,7 +99,7 @@ public class MainApplication extends Application implements GraphicsApplication 
     }
 
     public static void main(String[] args) {
-        launch(args);
+        launch();
     }
 
     public static void launchWithGame(Game game) {

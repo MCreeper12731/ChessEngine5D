@@ -4,15 +4,15 @@ import com.github.mcreeper12731.game.models.Move;
 
 import java.util.List;
 
-public record ScoredTurn(List<Move> moves, int score, long nodesSearched) implements Comparable<ScoredTurn> {
+public record ScoredTurn(List<Move> moves, double score, long nodesSearched) implements Comparable<ScoredTurn> {
 
-    public ScoredTurn(List<Move> moves, int score) {
+    public ScoredTurn(List<Move> moves, double score) {
         this(moves, score, 0);
     }
 
     @Override
     public int compareTo(ScoredTurn o) {
-        return Integer.compare(this.score, o.score);
+        return Double.compare(this.score, o.score);
     }
 
 }

@@ -2,7 +2,7 @@ package com.github.mcreeper12731.game.movegeneration.iterators;
 
 import com.github.mcreeper12731.engine.evaluators.Evaluator;
 import com.github.mcreeper12731.game.models.scored.ScoredTurn;
-import com.github.mcreeper12731.game.logic.Game;
+import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Move;
 
 import java.util.*;
@@ -23,7 +23,7 @@ public class SortedTurnIterator implements Iterator<List<Move>> {
         this.game = game;
         this.evaluator = evaluator;
         this.sourceIterator = iterator;
-        this.generatedMoves = new PriorityQueue<>((a, b) -> Integer.compare(b.score(), a.score()));
+        this.generatedMoves = new PriorityQueue<>((a, b) -> Double.compare(b.score(), a.score()));
         this.batchSize = batchSize;
         this.step();
     }
@@ -31,14 +31,14 @@ public class SortedTurnIterator implements Iterator<List<Move>> {
     private void step() {
         while (generatedMoves.size() < batchSize && sourceIterator.hasNext()) {
             List<Move> turn = sourceIterator.next();
-            int score = evaluateTurn(turn);
+            double score = evaluateTurn(turn);
             generatedMoves.add(new ScoredTurn(new ArrayList<>(turn), score));
         }
     }
 
-    private int evaluateTurn(List<Move> turn) {
+    private double evaluateTurn(List<Move> turn) {
         this.game.applyMovesAndFinalizeTurn(turn);
-        int score = this.evaluator.evaluate(this.game);
+        double score = this.evaluator.evaluate(this.game);
         this.game.undoTurn();
         return score;
     }

@@ -12,8 +12,8 @@ import java.util.*;
 
 public record ScoredBoard(Board board, List<Integer> danger, List<Point4D> enemies) {
 
-    public static final int JUMP_COST              = -4;
-    public static final int JUMP_INACTIVE_COST     = -100;
+    public static final int JUMP_COST              = -500;
+    public static final int JUMP_INACTIVE_COST     = -1000;
     public static final int TAKE_ENEMY_REWARD      = 20;
     public static final int KING_DANGER_COST       = -10;
 

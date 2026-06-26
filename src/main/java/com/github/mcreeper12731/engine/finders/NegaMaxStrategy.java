@@ -35,11 +35,11 @@ public class NegaMaxStrategy {
         stoppedByNodeLimit = false;
         long prevNodesSearched;
 
-        List<Move> bestTurn;
-        double bestScore;
+        List<Move> bestTurn = null;
+        double bestScore = NEGATIVE_INFINITY;
         int currentDepth = config.maxDepth();
 
-        while (true) {
+        while (currentDepth < 100) {
             nodesSearched = 0;
             bestScore = NEGATIVE_INFINITY;
             bestTurn = null;
@@ -155,7 +155,7 @@ public class NegaMaxStrategy {
             game.undoTurn();
             best = Math.max(best, score);
             alpha = Math.max(alpha, score);
-            if (alpha >= beta) break;
+            if (alpha >= beta || this.stoppedByNodeLimit) break;
         }
         return best;
     }

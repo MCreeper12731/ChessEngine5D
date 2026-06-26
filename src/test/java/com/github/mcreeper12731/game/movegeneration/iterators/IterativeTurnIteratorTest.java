@@ -3,9 +3,11 @@ package com.github.mcreeper12731.game.movegeneration.iterators;
 import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Board;
 import com.github.mcreeper12731.game.models.Move;
+import com.github.mcreeper12731.game.models.Multiverse;
 import com.github.mcreeper12731.game.models.Timeline;
 import com.github.mcreeper12731.game.models.scored.ScoredBoard;
 import com.github.mcreeper12731.game.movegeneration.MoveGenerator;
+import com.github.mcreeper12731.game.pieces.PieceType;
 import com.github.mcreeper12731.game.presets.Preset;
 import com.github.mcreeper12731.utility.Log;
 import org.junit.jupiter.api.Test;
@@ -136,5 +138,84 @@ class IterativeTurnIteratorTest {
         });
 
         assertTrue(allTurns.contains(List.of(moveSeeking)));
+    }
+
+    @Test
+    public void generateTurnsArbitrary() {
+
+        Game game = new Game(
+                new Multiverse.Builder(5)
+                        .withTimeline(
+                                new Timeline.Builder(-1)
+                                        .withBoard(
+                                                new Board.Builder(5, -1, 0)
+                                                        .withWhitePiece(PieceType.KNIGHT, 2, 2)
+                                                        .build()
+                                        )
+                                        .build()
+                        )
+                        .withTimeline(
+                                new Timeline.Builder(0)
+                                        .withBoard(
+                                                new Board.Builder(5, 0, 0)
+                                                        .withWhitePiece(PieceType.KNIGHT, 2, 2)
+                                                        .build()
+                                        )
+                                        .build()
+                        )
+                        .withTimeline(
+                                new Timeline.Builder(1)
+                                        .withBoard(
+                                                new Board.Builder(5, 1, 0)
+                                                        .withWhitePiece(PieceType.KNIGHT, 2, 2)
+                                                        .build()
+                                        )
+                                        .build()
+                        )
+                        .build()
+        );
+
+        Iterator<List<Move>> turns = MoveGenerator.getIterativeTurnIterator(game);
+
+        List<List<Move>> allTurns = new ArrayList<>();
+        turns.forEachRemaining(allTurns::add);
+
+        List<Set<Move>> uniquePermutations = new ArrayList<>();
+        int duplicatePermutations = 0;
+        int invalidTurns = 0;
+
+        for (List<Move> turn : allTurns) {
+
+            game.applyMoves(turn);
+            if (!game.isCurrentTurnFinalizable()) {
+                invalidTurns++;
+            }
+            game.undoTurn();
+
+            boolean allSameTimeline = true;
+            for (Move move : turn) {
+                if (!move.noop() && move.from().l() != move.to().l()) {
+                    allSameTimeline = false;
+                    break;
+                }
+            }
+            if (allSameTimeline) {
+
+                Set<Move> hashedTurn = new HashSet<>(turn);
+                for (Set<Move> uniquePermutation : uniquePermutations) {
+                    if (uniquePermutation.equals(hashedTurn)) {
+                        Log.debug("Test", "found duplicate", turn, "of turn", uniquePermutation);
+                        duplicatePermutations++;
+                        break;
+                    }
+                }
+
+                uniquePermutations.add(hashedTurn);
+                //Log.debug("Test", turn.toString());
+            }
+        }
+        Log.debug("Test", allTurns.size());
+        Log.debug("Test", "duplicate", duplicatePermutations);
+        Log.debug("Test", "invalid", invalidTurns);
     }
 }

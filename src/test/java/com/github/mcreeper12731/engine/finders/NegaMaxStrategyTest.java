@@ -73,7 +73,7 @@ class NegaMaxStrategyTest {
 
         NegamaxStrategyConfig config = new NegamaxStrategyConfig(
                 5,
-                100_000,
+                1_000_000,
                 7
         );
 

@@ -86,6 +86,10 @@ public class Multiverse {
         return board.getLocationContents(x, y);
     }
 
+    /**
+     * Deprecated - iterate over Multiverse::getTimelines() and get L from Timeline::getL()
+     * @return list of all timeline Ls
+     */
     @Deprecated
     public List<Integer> getTimelineLs() {
         List<Integer> indices = new ArrayList<>();
@@ -206,12 +210,6 @@ public class Multiverse {
 
         @Deprecated
         public Builder withTurn(Point4D from, Point4D to) {
-            Log.debug("WARNING", "Using deprecated withTurn() - check preset");
-            return this;
-        }
-
-        @Deprecated
-        public Builder withTurn(List<List<Point4D>> movePoints) {
             Log.debug("WARNING", "Using deprecated withTurn() - check preset");
             return this;
         }

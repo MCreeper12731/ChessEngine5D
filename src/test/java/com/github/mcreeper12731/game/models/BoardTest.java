@@ -31,7 +31,7 @@ class BoardTest {
                 .withBlackPiece(PieceType.QUEEN, 7, 7)
                 .build();
 
-        assertEquals(2, board.pieces().size());
+        assertEquals(2, board.getPieces().size());
         assertEquals(PieceType.QUEEN, board.getLocationContents(0, 0).type());
         assertEquals(Color.WHITE, board.getLocationContents(0, 0).color());
 
@@ -46,7 +46,7 @@ class BoardTest {
         Board newBoard = new Board.Builder(board, 0, 0, move)
                 .build();
 
-        assertEquals(2, newBoard.pieces().size());
+        assertEquals(2, newBoard.getPieces().size());
         assertEquals(PieceType.QUEEN, newBoard.getLocationContents(1, 0).type());
         assertEquals(Color.WHITE, newBoard.getLocationContents(1, 0).color());
 
@@ -86,7 +86,7 @@ class BoardTest {
 
         assertEquals(3, board0T3.t());
         assertEquals(0, board0T3.l());
-        assertEquals(1, board0T3.pieces().size());
+        assertEquals(1, board0T3.getPieces().size());
         assertEquals(PieceType.QUEEN, board0T3.getLocationContents(6, 7).type());
 
         Board board1T1 = new Board.Builder(board0T0, 1, 1, move)
@@ -94,7 +94,7 @@ class BoardTest {
 
         assertEquals(1, board1T1.t());
         assertEquals(1, board1T1.l());
-        assertEquals(3, board1T1.pieces().size());
+        assertEquals(3, board1T1.getPieces().size());
         assertEquals(PieceType.QUEEN, board1T1.getLocationContents(0, 0).type());
         assertEquals(PieceType.QUEEN, board1T1.getLocationContents(1, 1).type());
         assertEquals(PieceType.QUEEN, board1T1.getLocationContents(7, 7).type());
@@ -146,5 +146,4 @@ class BoardTest {
         assertEquals(Color.WHITE, nextBoard.getLocationContents(3, 0).color());
         assertTrue(nextBoard.getLocationContents(3, 0).moved());
     }
-
 }

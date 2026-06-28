@@ -2,6 +2,7 @@ package com.github.mcreeper12731.game.movegeneration.iterators;
 
 import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Move;
+import com.github.mcreeper12731.game.models.Timeline;
 
 import java.util.*;
 
@@ -50,7 +51,7 @@ public class IterativeTurnIterator implements Iterator<List<Move>> {
 
         if (!this.permutationQueue.isEmpty()) return permutationQueue.poll();
 
-        while (true) {
+        do {
             this.movesConsidered++;
 
             if (this.maxMovesConsidered > 0 && this.movesConsidered > this.maxMovesConsidered) {
@@ -68,8 +69,7 @@ public class IterativeTurnIterator implements Iterator<List<Move>> {
 
             if (!this.permutationQueue.isEmpty()) return this.permutationQueue.poll();
 
-            if (this.movesConsidered > this.maxMoves) break;
-        }
+        } while (this.movesConsidered <= this.maxMoves);
 
         return null;
     }
@@ -221,7 +221,9 @@ public class IterativeTurnIterator implements Iterator<List<Move>> {
                 break;
             }
 
-            // TODO - add non-applymove turn validation
+            if (!game.isTurnFinalizable(turn)) {
+                break;
+            }
 
             permutationQueue.push(turn);
         }

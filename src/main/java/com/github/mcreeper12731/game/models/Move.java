@@ -68,6 +68,41 @@ public record Move(
             this.multiverse = multiverse;
         }
 
+        /**
+         * Converts a move from the following representation:
+         * (fromL,fromT;fromX,fromY)->(toL,toT;toX,toY)
+         * @param stringMove string representing the move
+         * @return move
+         */
+        public Move fromStringAndBuild(String stringMove) {
+            stringMove = stringMove.replace(";", ",");
+
+            String[] fromToSplit = stringMove.split("->");
+            if (fromToSplit.length != 2) throw new IllegalArgumentException("Invalid move string");
+
+            // Remove parentheses
+            fromToSplit[0] = fromToSplit[0].substring(1, fromToSplit[0].length() - 1);
+            fromToSplit[1] = fromToSplit[1].substring(1, fromToSplit[1].length() - 1);
+
+            String[] fromPoint4DString = fromToSplit[0].split(",");
+            if (fromPoint4DString.length != 4) throw new IllegalArgumentException("Invalid move string");
+            int[] fromPoint4D = new int[4];
+            for (int i = 0; i < fromPoint4DString.length; i++) {
+                fromPoint4D[i] = Integer.parseInt(fromPoint4DString[i]);
+            }
+            this.withFrom(fromPoint4D[0], fromPoint4D[1], fromPoint4D[2], fromPoint4D[3]);
+
+            String[] toPoint4DString = fromToSplit[1].split(",");
+            if (toPoint4DString.length != 4) throw new IllegalArgumentException("Invalid move string");
+            int[] toPoint4D = new int[4];
+            for (int i = 0; i < toPoint4DString.length; i++) {
+                toPoint4D[i] = Integer.parseInt(toPoint4DString[i]);
+            }
+            this.withTo(toPoint4D[0], toPoint4D[1], toPoint4D[2], toPoint4D[3]);
+
+            return this.build();
+        }
+
         public Builder withPiece(Piece piece) {
             this.from = piece.location();
             this.fromType = piece.type();

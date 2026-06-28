@@ -11,6 +11,7 @@ import com.github.mcreeper12731.game.movegeneration.iterators.BoardMoveIterator;
 import com.github.mcreeper12731.game.movegeneration.iterators.IterativeTurnIterator;
 import com.github.mcreeper12731.game.movegeneration.iterators.SortedTurnIterator;
 import com.github.mcreeper12731.game.movegeneration.iterators.TurnIterator;
+import com.github.mcreeper12731.utility.Log;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -32,6 +33,8 @@ public class MoveGenerator {
 
         List<List<Move>> boardsMoves = new ArrayList<>();
         for (Timeline timeline : game.getMultiverse().getTimelines()) {
+            Board board = timeline.getLastBoard();
+            if (board.getPlayerTurn() != game.getPlayerTurn()) continue;
             List<Move> moves = scoredMoves(timeline.getLastBoard(), game);
             boardsMoves.add(moves);
         }

@@ -17,6 +17,14 @@ public class Log {
     }
 
     public static void debug(String prefix, Object message) {
+        String messageString = message.toString();
+        if (messageString.contains("\n")) {
+            String[] messageLines = messageString.split("\n");
+            for (String line : messageLines) {
+                debug(prefix, line);
+            }
+            return;
+        }
         debug(prefix, message.toString());
     }
 

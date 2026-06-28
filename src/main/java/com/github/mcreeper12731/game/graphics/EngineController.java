@@ -8,6 +8,7 @@ import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.models.scored.ScoredTurn;
 import com.github.mcreeper12731.utility.Log;
+import javafx.application.Platform;
 
 public class EngineController extends Controller {
 
@@ -33,13 +34,20 @@ public class EngineController extends Controller {
         Thread searchThread = new Thread(() -> {
             ScoredTurn turn = moveStrategy.findBestTurn(game);
 
-            javafx.application.Platform.runLater(() -> {
+            Platform.runLater(() -> {
+
                 game.applyMoves(turn.moves());
-
                 Log.print("Graphics", "Engine played:", turn.moves(), "score:", turn.score(), "nodes searched:", turn.nodesSearched());
-
-                application.updateCurrentPlayer();
                 updateView();
+
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    Platform.runLater(application::updateCurrentPlayer);
+                }).start();
             });
         });
 
@@ -50,7 +58,7 @@ public class EngineController extends Controller {
 
     @Override
     public void onTurnEnd() {
-        application.getScene().setOnKeyPressed(null);
+
     }
 
     @Override

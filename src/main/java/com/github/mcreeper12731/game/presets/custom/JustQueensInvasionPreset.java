@@ -34,7 +34,7 @@ public class JustQueensInvasionPreset implements GamePreset {
                                 )
                                 .build()
                 )
-                .even()
+                .withEven()
                 .build());
 
     }

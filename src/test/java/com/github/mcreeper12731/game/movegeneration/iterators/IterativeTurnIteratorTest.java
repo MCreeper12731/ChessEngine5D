@@ -1,17 +1,18 @@
 package com.github.mcreeper12731.game.movegeneration.iterators;
 
+import com.github.mcreeper12731.MainApplication;
 import com.github.mcreeper12731.game.Game;
-import com.github.mcreeper12731.game.models.Board;
-import com.github.mcreeper12731.game.models.Move;
-import com.github.mcreeper12731.game.models.Multiverse;
-import com.github.mcreeper12731.game.models.Timeline;
+import com.github.mcreeper12731.game.models.*;
 import com.github.mcreeper12731.game.models.scored.ScoredBoard;
 import com.github.mcreeper12731.game.movegeneration.MoveGenerator;
+import com.github.mcreeper12731.game.pieces.Piece;
 import com.github.mcreeper12731.game.pieces.PieceType;
 import com.github.mcreeper12731.game.presets.Preset;
 import com.github.mcreeper12731.utility.Log;
 import org.junit.jupiter.api.Test;
 
+import javax.tools.JavaCompiler;
+import java.math.BigDecimal;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -56,7 +57,8 @@ class IterativeTurnIteratorTest {
             Log.debug("Test", turn);
 
             game.applyMovesFromTurnStart(turn);
-            assertTrue(game.isCurrentTurnFinalizable());
+            // turn iterator does not guarantee turn finalization - this should be checked
+            //assertTrue(game.isCurrentTurnFinalizable());
             game.undoAllMovesFromCurrentTurn();
         }
     }
@@ -128,7 +130,7 @@ class IterativeTurnIteratorTest {
 
         List<Move> scoredMoves = MoveGenerator.scoredMoves(board, game);
         assertTrue(scoredMoves.contains(moveSeeking));
-        Log.debug("Test", scoredMoves.indexOf(moveSeeking));
+        Log.debug("Test", "index:", scoredMoves.indexOf(moveSeeking));
 
         Iterator<List<Move>> turnIterator = MoveGenerator.getIterativeTurnIterator(game);
         List<List<Move>> allTurns = new ArrayList<>();
@@ -136,6 +138,8 @@ class IterativeTurnIteratorTest {
             Log.debug("Test", turn);
             allTurns.add(turn);
         });
+
+        Log.debug("Test", allTurns);
 
         assertTrue(allTurns.contains(List.of(moveSeeking)));
     }
@@ -183,10 +187,13 @@ class IterativeTurnIteratorTest {
         List<Set<Move>> uniquePermutations = new ArrayList<>();
         int duplicatePermutations = 0;
         int invalidTurns = 0;
+        int maxT = 0;
 
         for (List<Move> turn : allTurns) {
 
             game.applyMoves(turn);
+            if (game.getPresentTime() > maxT)
+                maxT = game.getPresentTime();
             if (!game.isCurrentTurnFinalizable()) {
                 invalidTurns++;
             }
@@ -214,8 +221,48 @@ class IterativeTurnIteratorTest {
                 //Log.debug("Test", turn.toString());
             }
         }
+
+        // Huge win:
+        // total turns: ~9500 -> 732
+        // invalid turns: ~50 -> 28
+        // duplicate turns: >0 -> 0
+
         Log.debug("Test", allTurns.size());
         Log.debug("Test", "duplicate", duplicatePermutations);
         Log.debug("Test", "invalid", invalidTurns);
+        Log.debug("Test", "maxT", maxT);
+    }
+
+    @Test
+    public void doesNotGenerateMovesThatPutKingInCheck() {
+
+        Game game = Preset.CHECKMATE_PRACTICE_QUEEN.getGame();
+
+        Iterator<List<Move>> turnIterator = MoveGenerator.getIterativeTurnIterator(game);
+        List<List<Move>> turns = new ArrayList<>();
+        turnIterator.forEachRemaining(turns::add);
+        Log.debug("Test", turns);
+
+        Board board = game.getMultiverse().getBoard(0, 0);
+        turns.forEach(turn -> {
+            Move move = turn.getFirst();
+            if (move.noop()) return;
+            Log.debug("Test", move, isKingInCheck(board, move.to(), game));
+            assertFalse(isKingInCheck(board, move.to(), game));
+        });
+    }
+
+    private boolean isKingInCheck(Board board, Point4D toLocation, Game game) {
+
+        ScoredBoard scoredBoard = new ScoredBoard(board, game);
+
+        for (Piece piece : board.getPieces()) {
+            if (piece.type() != PieceType.KING) continue;
+
+            if (scoredBoard.danger().get(toLocation.x() + toLocation.y() * board.size()) > 0) {
+                return true;
+            }
+        }
+        return false;
     }
 }

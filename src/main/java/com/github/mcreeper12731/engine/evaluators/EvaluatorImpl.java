@@ -15,15 +15,15 @@ public class EvaluatorImpl implements Evaluator {
         double score = 0;
         Multiverse multiverse = game.getMultiverse();
 
-        if (game.getWinner() == Color.WHITE) score += 1_000_000;
-        if (game.getWinner() == Color.BLACK) score -= 1_000_000;
+        if (game.getWinner() == Color.WHITE) return 1_000_000;
+        if (game.getWinner() == Color.BLACK) return -1_000_000;
 
         for (Timeline timeline : multiverse.getTimelines()) {
-            if (timeline.getL() < 0) score += 500;
-            if (timeline.getL() > 0) score -= 500;
+            if (timeline.getL() < 0) score += 2;
+            if (timeline.getL() > 0) score -= 2;
 
             Board board = timeline.getLastBoard();
-            for (Piece piece : board.pieces()) {
+            for (Piece piece : board.getPieces()) {
                 if (piece.color() == Color.WHITE) score += pieceScore(piece.type());
                 if (piece.color() == Color.BLACK) score -= pieceScore(piece.type());
             }

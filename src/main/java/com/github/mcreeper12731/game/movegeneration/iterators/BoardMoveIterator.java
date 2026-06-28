@@ -21,7 +21,7 @@ public class BoardMoveIterator implements Iterator<Move> {
         this.multiverse = multiverse;
         this.board = board;
 
-        this.pieces = board.pieces().iterator();
+        this.pieces = board.getPieces().iterator();
         this.currentIterator = Collections.emptyIterator();
         this.suppliedNoop = false;
         this.step();

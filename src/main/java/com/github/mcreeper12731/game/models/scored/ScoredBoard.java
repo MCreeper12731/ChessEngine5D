@@ -7,6 +7,7 @@ import com.github.mcreeper12731.game.models.Point4D;
 import com.github.mcreeper12731.game.movegeneration.MoveGenerator;
 import com.github.mcreeper12731.game.pieces.Piece;
 import com.github.mcreeper12731.game.pieces.PieceType;
+import com.github.mcreeper12731.utility.Log;
 
 import java.util.*;
 
@@ -15,7 +16,7 @@ public record ScoredBoard(Board board, List<Integer> danger, List<Point4D> enemi
     public static final int JUMP_COST              = -500;
     public static final int JUMP_INACTIVE_COST     = -1000;
     public static final int TAKE_ENEMY_REWARD      = 20;
-    public static final int KING_DANGER_COST       = -10;
+    public static final int KING_DANGER_COST       = -100_000;
 
     public static final int ROOK_DANGER_COST       = -3;
     public static final int KNIGHT_DANGER_COST     = -4;
@@ -201,7 +202,7 @@ public record ScoredBoard(Board board, List<Integer> danger, List<Point4D> enemi
                         case KING -> -1_000;
                         case EMPTY -> 0;
                     };
-                } else if (toTimeline.getLastT() ==followUpMove.to().t()) {
+                } else if (toTimeline.getLastT() == followUpMove.to().t()) {
                     score += switch (attackedPiece.type()) {
                         case QUEEN -> ATTACK_QUEEN_REWARD;
                         case ROOK -> ATTACK_ROOK_REWARD;
@@ -217,48 +218,39 @@ public record ScoredBoard(Board board, List<Integer> danger, List<Point4D> enemi
                         default -> throw new IllegalStateException("Unexpected value: " + attackedPiece.type());
                     };
                 }
+            }*/
+
+            Board nextBoard = new Board.Builder(this.board, this.board.l(), this.board().t() + 1, move)
+                    .build();
+
+            int kingCount = 0;
+            for (Piece piece : nextBoard.getPieces()) {
+                int i = piece.location().x() + piece.location().y() * this.board.size();
+                if (piece.color() != this.board.getPlayerTurn()) continue;
+                score += switch (piece.type()) {
+                    case KING -> {
+                        kingCount++;
+                        int scr = 0;
+                        scr += this.danger().get(i) * KING_DANGER_COST;
+                        if (kingCount > 0) scr += MANY_KINGS_COST;
+                        yield scr;
+                    }
+                    case QUEEN -> this.danger().get(i) * QUEEN_DANGER_COST;
+                    case ROOK -> this.danger().get(i) * ROOK_DANGER_COST;
+                    case BISHOP -> this.danger().get(i) * BISHOP_DANGER_COST;
+                    case KNIGHT -> this.danger().get(i) * KNIGHT_DANGER_COST;
+                    case PAWN -> this.danger().get(i) * PAWN_DANGER_COST;
+
+                    case UNICORN -> this.danger().get(i) * UNICORN_DANGER_COST;
+                    case DRAGON -> this.danger().get(i) * DRAGON_DANGER_COST;
+                    case PRINCESS -> this.danger().get(i) * PRINCESS_DANGER_COST;
+                    case BRAWN -> this.danger().get(i) * BRAWN_DANGER_COST;
+
+                    case EMPTY -> 0;
+                };
             }
 
-
-            List<Integer> newBoardLs = new ArrayList<>();
-            newBoardLs.add(move.from().l());
-            if (locationOfPieceDestination.l() != move.to().l()) {
-                newBoardLs.add(locationOfPieceDestination.l());
-            }
-
-            for (int newBoardL : newBoardLs) {
-                Board newBoard = game.getMultiverse().getTimeline(newBoardL).getLastBoard();
-                ScoredBoard scoredBoard = new ScoredBoard(newBoard, game);
-                int kingCount = 0;
-                for (int i = 0; i < newBoard.pieces().size(); i++) {
-                    Piece piece = newBoard.pieces().get(i);
-                    if (piece.color() != newBoard.getPlayerTurn()) continue;
-                    score += switch (piece.type()) {
-                        case KING -> {
-                            kingCount++;
-                            int scr = 0;
-                            scr += scoredBoard.danger().get(i) * KING_DANGER_COST;
-                            if (kingCount > 0) scr += MANY_KINGS_COST;
-                            yield scr;
-                        }
-                        case QUEEN -> scoredBoard.danger().get(i) * QUEEN_DANGER_COST;
-                        case ROOK -> scoredBoard.danger().get(i) * ROOK_DANGER_COST;
-                        case BISHOP -> scoredBoard.danger().get(i) * BISHOP_DANGER_COST;
-                        case KNIGHT -> scoredBoard.danger().get(i) * KNIGHT_DANGER_COST;
-                        case PAWN -> scoredBoard.danger().get(i) * PAWN_DANGER_COST;
-
-                        case UNICORN -> scoredBoard.danger().get(i) * UNICORN_DANGER_COST;
-                        case DRAGON -> scoredBoard.danger().get(i) * DRAGON_DANGER_COST;
-                        case PRINCESS -> scoredBoard.danger().get(i) * PRINCESS_DANGER_COST;
-                        case BRAWN -> scoredBoard.danger().get(i) * BRAWN_DANGER_COST;
-
-                        case EMPTY -> 0;
-                    };
-                }
-            }
-            game.undoMoveFromCurrentTurn();
-            game.undoMoveFromCurrentTurn();
-            */
+            if (score < -95_000) continue;
 
             scoredMoves.add(new ScoredMove(move, score));
         }
@@ -279,7 +271,7 @@ public record ScoredBoard(Board board, List<Integer> danger, List<Point4D> enemi
     public String toString() {
         StringBuilder builder = new StringBuilder();
 
-        builder.append(board);
+        //builder.append(board);
 
         for (int y = this.board.size() - 1; y >= 0; y--) {
             for (int x = 0; x < this.board.size(); x++) {

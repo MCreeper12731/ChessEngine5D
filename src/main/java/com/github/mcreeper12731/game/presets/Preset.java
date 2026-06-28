@@ -1,5 +1,8 @@
 package com.github.mcreeper12731.game.presets;
 
+import com.github.mcreeper12731.game.presets.checkmatepractice.PawnPreset;
+import com.github.mcreeper12731.game.presets.checkmatepractice.QueenPreset;
+import com.github.mcreeper12731.game.presets.checkmatepractice.RookPreset;
 import com.github.mcreeper12731.game.presets.custom.SimplePositionPreset;
 import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.presets.custom.ComplexPositionPreset;
@@ -30,6 +33,9 @@ public enum Preset {
     PUZZLE_BACKRANK_4(new BackrankBasics4Puzzle()),
     PUZZLE_OPENING_TRAP_2(new OpeningTraps2Puzzle()),
     PUZZLE_OPENING_TRAP_4(new OpeningTraps4Puzzle()),
+    CHECKMATE_PRACTICE_QUEEN(new QueenPreset()),
+    CHECKMATE_PRACTICE_ROOK(new RookPreset()),
+    CHECKMATE_PRACTICE_PAWN(new PawnPreset()),
     CUSTOM_TEST_1(new Test1Preset()),
     CUSTOM_TEST_CASTLING(new TestCastlingPreset()),
     CUSTOM_COMPLEX_POSITION(new ComplexPositionPreset()),

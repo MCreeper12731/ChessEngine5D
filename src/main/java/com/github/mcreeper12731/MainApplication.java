@@ -27,14 +27,24 @@ public class MainApplication extends Application implements GraphicsApplication 
         if (staticGameForLaunch != null) {
             this.game = staticGameForLaunch;
             staticGameForLaunch = null;
+            this.controller1 = getController("player", Color.WHITE);
+            this.controller2 = getController("player", Color.BLACK);
         } else {
             this.preset = LaunchConfig.PRESET;
             this.game = preset.getGame();
+            this.controller1 = getController(LaunchConfig.CONTROLLER_1, Color.WHITE);
+            this.controller2 = getController(LaunchConfig.CONTROLLER_2, Color.BLACK);
         }
-        this.controller1 = getController(LaunchConfig.CONTROLLER_1, Color.WHITE);
-        this.controller2 = getController(LaunchConfig.CONTROLLER_2, Color.BLACK);
         this.view = new ViewComponent(this);
         this.scene = new Scene(view);
+
+        this.scene.setOnKeyPressed(event -> {
+            switch (event.getCode()) {
+                case R:
+                    getView().draw();
+                    break;
+            }
+        });
     }
 
     @Override
@@ -57,10 +67,7 @@ public class MainApplication extends Application implements GraphicsApplication 
     private Controller getController(String controllerType, Color controllerColor) {
         return switch (controllerType) {
             case "player" -> new PlayerController(this, controllerColor);
-            case "engine" -> {
-                NegamaxStrategyConfig config = new NegamaxStrategyConfig(LaunchConfig.MAX_DEPTH, LaunchConfig.MAX_NODES, LaunchConfig.DEBUG_LEVEL);
-                yield new EngineController(this, controllerColor, config);
-            }
+            case "engine" -> new EngineController(this, controllerColor, NegamaxStrategyConfig.fromConfig());
             default -> throw new RuntimeException("Controller of type " + controllerType + " does not exist!");
         };
     }

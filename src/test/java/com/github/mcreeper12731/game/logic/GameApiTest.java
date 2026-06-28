@@ -147,4 +147,56 @@ public class GameApiTest {
         }
     }
 
+    @Test
+    public void playedTurnsCorrectOrder() {
+
+        Game game = Preset.CHECKMATE_PRACTICE_QUEEN.getGame();
+
+        game.applyMovesAndFinalizeTurn(List.of(
+                new Move.Builder(game)
+                        .withFrom(0, 0, 0, 0)
+                        .withTo(0, 0, 1, 1)
+                        .build()
+        ));
+
+        game.applyMovesAndFinalizeTurn(List.of(
+                new Move.Builder(game)
+                        .withFrom(0, 1, 4, 5)
+                        .withTo(0, 1, 4, 4)
+                        .build()
+        ));
+
+        game.applyMovesAndFinalizeTurn(List.of(
+                new Move.Builder(game)
+                        .withFrom(0, 2, 1, 1)
+                        .withTo(0, 2, 0, 0)
+                        .build()
+        ));
+
+        game.clearTurnHistory();
+
+        game.applyMovesAndFinalizeTurn(List.of(
+                new Move.Builder(game)
+                        .withFrom(0, 3, 4, 4)
+                        .withTo(0, 3, 4, 5)
+                        .build()
+        ));
+
+        game.applyMove(
+                new Move.Builder(game)
+                        .withFrom(0, 4, 0, 0)
+                        .withTo(0, 4, 1, 1)
+                        .build()
+        );
+
+        List<List<Move>> turns = game.getTurns();
+
+        Log.debug("Test", turns);
+
+        assertEquals(Color.WHITE, turns.getFirst().getFirst().color());
+        assertEquals(Color.BLACK, turns.get(1).getFirst().color());
+        assertEquals(Color.WHITE, turns.get(2).getFirst().color());
+        assertEquals(Color.BLACK, turns.get(3).getFirst().color());
+        assertEquals(Color.WHITE, turns.get(4).getFirst().color());
+    }
 }

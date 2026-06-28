@@ -1,5 +1,6 @@
 package com.github.mcreeper12731.game.models;
 
+import com.github.mcreeper12731.utility.Log;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -128,9 +129,10 @@ class MultiverseTest {
                 .build();
 
         List<Integer> activeTimelineLs = multiverse.getActiveTimelineLs();
+        Log.debug("Test", activeTimelineLs);
         assertEquals(List.of(-1, 0), activeTimelineLs);
 
-        activeTimelineLs.clear();
+        activeTimelineLs = new ArrayList<>();
         List<Integer> inactiveTimelineLs = new ArrayList<>();
         List<Integer> timelineLs = multiverse.getTimelineLs();
 
@@ -170,7 +172,7 @@ class MultiverseTest {
         List<Integer> activeTimelineLs = multiverse.getActiveTimelineLs();
         assertEquals(List.of(-1, 0, 1, 2), activeTimelineLs);
 
-        activeTimelineLs.clear();
+        activeTimelineLs = new ArrayList<>();
         List<Integer> inactiveTimelineLs = new ArrayList<>();
         List<Integer> timelineLs = multiverse.getTimelineLs();
 
@@ -202,13 +204,13 @@ class MultiverseTest {
                 .withTimeline(
                         new Timeline.Builder(0).build()
                 )
-                .even()
+                .withEven()
                 .build();
 
         List<Integer> activeTimelineLs = multiverse.getActiveTimelineLs();
         assertEquals(List.of(-2, -1, 0), activeTimelineLs);
 
-        activeTimelineLs.clear();
+        activeTimelineLs = new ArrayList<>();
         List<Integer> inactiveTimelineLs = new ArrayList<>();
         List<Integer> timelineLs = multiverse.getTimelineLs();
 
@@ -243,13 +245,13 @@ class MultiverseTest {
                 .withTimeline(
                         new Timeline.Builder(3).build()
                 )
-                .even()
+                .withEven()
                 .build();
 
         List<Integer> activeTimelineLs = multiverse.getActiveTimelineLs();
         assertEquals(List.of(-1, 0, 1), activeTimelineLs);
 
-        activeTimelineLs.clear();
+        activeTimelineLs = new ArrayList<>();
         List<Integer> inactiveTimelineLs = new ArrayList<>();
         List<Integer> timelineLs = multiverse.getTimelineLs();
 
@@ -283,7 +285,7 @@ class MultiverseTest {
         List<Integer> activeTimelineLs = multiverse.getActiveTimelineLs();
         assertEquals(List.of(-1, 0, 1), activeTimelineLs);
 
-        activeTimelineLs.clear();
+        activeTimelineLs = new ArrayList<>();
         List<Integer> inactiveTimelineLs = new ArrayList<>();
         List<Integer> timelineLs = multiverse.getTimelineLs();
 

@@ -64,7 +64,7 @@ public class Board {
         return t;
     }
 
-    public List<Piece> pieces() {
+    public List<Piece> getPieces() {
         return pieces;
     }
 
@@ -95,7 +95,7 @@ public class Board {
             this.t = t;
             this.contents = new Piece[size][size];
 
-            this.pieces = new ArrayList<>();
+            this.pieces = new ArrayList<>(size*size / 4);
         }
 
         public Builder(Board boardToCopy, int l, int t, Move move) {

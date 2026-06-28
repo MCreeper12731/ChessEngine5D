@@ -19,7 +19,7 @@ public class NegaMaxStrategy {
     private final NegamaxStrategyConfig config;
     private final Evaluator evaluator;
 
-
+    public int startTimelineCount;
     public int maxTimelinesReached;
     public long nodesSearched;
     public boolean stoppedByNodeLimit;
@@ -30,6 +30,7 @@ public class NegaMaxStrategy {
     }
 
     public ScoredTurn findBestTurn(Game game) {
+        startTimelineCount = game.getMultiverse().getTimelines().size();
         maxTimelinesReached = 0;
         nodesSearched = 0;
         stoppedByNodeLimit = false;
@@ -37,13 +38,15 @@ public class NegaMaxStrategy {
 
         List<Move> bestTurn = null;
         double bestScore = NEGATIVE_INFINITY;
-        int currentDepth = config.maxDepth();
+        int currentDepth = 1;
 
-        while (currentDepth < 100) {
+        while (currentDepth <= config.maxDepth()) {
+            startTimelineCount = game.getMultiverse().getTimelines().size();
             nodesSearched = 0;
-            bestScore = NEGATIVE_INFINITY;
-            bestTurn = null;
             prevNodesSearched = 0;
+
+            bestTurn = null;
+            bestScore = NEGATIVE_INFINITY;
 
             Iterator<List<Move>> turns = MoveGenerator.getIterativeTurnIterator(game);
 
@@ -76,27 +79,17 @@ public class NegaMaxStrategy {
                 }
                 prevNodesSearched = nodesSearched;
 
-                if (score > bestScore) {
+                if (score >= bestScore) {
                     bestScore = score;
                     bestTurn = turn;
                 }
 
-                if (stoppedByNodeLimit) {
-                    break;
-                }
-
-                // Found a winning solution (checkmate)
-                if (bestScore > 900_000) {
+                if (Math.abs(bestScore) == 1_000_000 || stoppedByNodeLimit) {
                     break;
                 }
             }
 
-            if (config.debugLevel() >= 2) {
-                Log.debug("AlphaBeta", "Depth " + currentDepth + " - nodes searched: " + nodesSearched);
-                Log.debug("AlphaBeta", "Best score at depth " + currentDepth + ": " + bestScore);
-            }
-
-            if (bestScore > 900_000 || stoppedByNodeLimit) {
+            if (Math.abs(bestScore) == 1_000_000 || stoppedByNodeLimit) {
                 break;
             }
 
@@ -119,28 +112,33 @@ public class NegaMaxStrategy {
     private double negamax(Game game, int depth, double alpha, double beta, int color) {
         nodesSearched++;
 
-        if (nodesSearched >= config.maxNodes()) {
-            if (game.getMultiverse().getTimelineCount() > maxTimelinesReached)
-                maxTimelinesReached = game.getMultiverse().getTimelineCount();
+        if (game.getMultiverse().getTimelines().size() > maxTimelinesReached)
+            maxTimelinesReached = game.getMultiverse().getTimelines().size();
 
+        if (nodesSearched >= config.maxNodes()) {
             stoppedByNodeLimit = true;
             return color * evaluator.evaluate(game);
         }
 
         if (depth == 0 || this.isTerminal(game)) {
-            if (game.getMultiverse().getTimelineCount() > maxTimelinesReached)
-                maxTimelinesReached = game.getMultiverse().getTimelineCount();
-
             return color * evaluator.evaluate(game);
         }
 
         double best = NEGATIVE_INFINITY;
         Iterator<List<Move>> turnsIterator = MoveGenerator.getIterativeTurnIterator(game);
+        if (!turnsIterator.hasNext()) {
+            return 0.1;
+        }
+
         while (turnsIterator.hasNext()) {
             List<Move> turn = turnsIterator.next();
 
             game.applyMoves(turn);
             if (!game.isCurrentTurnFinalizable()) {
+                game.undoAllMovesFromCurrentTurn();
+                continue;
+            }
+            if (game.getMultiverse().getTimelines().size() > startTimelineCount + config.maxAdditionalTimelines()) {
                 game.undoAllMovesFromCurrentTurn();
                 continue;
             }

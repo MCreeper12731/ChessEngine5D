@@ -1,12 +1,22 @@
 package com.github.mcreeper12731.game.pieces.movesets;
 
+import com.github.mcreeper12731.MainApplication;
+import com.github.mcreeper12731.engine.config.NegamaxStrategyConfig;
+import com.github.mcreeper12731.engine.evaluators.EvaluatorImpl;
+import com.github.mcreeper12731.engine.finders.NegaMaxStrategy;
 import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.*;
 import com.github.mcreeper12731.game.models.Move;
+import com.github.mcreeper12731.game.models.scored.ScoredTurn;
+import com.github.mcreeper12731.game.movegeneration.MoveGenerator;
 import com.github.mcreeper12731.game.pieces.Piece;
 import com.github.mcreeper12731.game.pieces.PieceType;
+import com.github.mcreeper12731.game.presets.Preset;
+import com.github.mcreeper12731.utility.Log;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -188,5 +198,100 @@ class MoveSetTest {
 
         Piece pawn6 = multiverse.getLocationContents(0, 0, 7, 1);
         assertMoveCount(multiverse, pawn6, 5);
+    }
+
+    @Test
+    public void rookTimeTravelMoves() {
+
+        Game game = Preset.CHECKMATE_PRACTICE_ROOK.getGame();
+
+        {
+            game.applyMove(
+                    new Move.Builder(game)
+                            .fromStringAndBuild("(0,0;0,0)->(0,0;1,0)")
+            );
+            game.finalizeTurn();
+
+            game.applyMove(
+                    new Move.Builder(game)
+                            .fromStringAndBuild("(0,1;5,5)->(0,1;4,5)")
+            );
+            game.finalizeTurn();
+
+
+            game.applyMove(
+                    new Move.Builder(game)
+                            .fromStringAndBuild("(0,2;1,0)->(0,2;2,0)")
+            );
+            game.finalizeTurn();
+
+
+            game.applyMove(
+                    new Move.Builder(game)
+                            .fromStringAndBuild("(0,3;4,5)->(0,3;0,5)")
+            );
+            game.finalizeTurn();
+
+
+            game.applyMove(
+                    new Move.Builder(game)
+                            .fromStringAndBuild("(0,4;2,0)->(0,4;3,0)")
+            );
+            game.finalizeTurn();
+
+
+            game.applyMove(
+                    new Move.Builder(game)
+                            .fromStringAndBuild("(0,5;0,5)->(0,5;0,0)")
+            );
+            game.finalizeTurn();
+
+
+            game.applyMove(
+                    new Move.Builder(game)
+                            .fromStringAndBuild("(0,6;3,0)->(0,6;4,0)")
+            );
+            game.finalizeTurn();
+
+
+            game.applyMove(
+                    new Move.Builder(game)
+                            .fromStringAndBuild("(0,7;0,0)->(0,7;1,0)")
+            );
+            game.finalizeTurn();
+
+            game.applyMove(
+                    new Move.Builder(game)
+                            .fromStringAndBuild("(0,8;4,0)->(0,8;5,1)")
+            );
+            game.finalizeTurn();
+        }
+
+        // MainApplication.launchWithGame(game);
+
+        Move seekingMove = new Move.Builder(game).fromStringAndBuild("(0,9;1,0)->(0,1;1,0)");
+
+        List<Move> rookMoves = game.getMultiverse().getLocationContents(0, 9, 1, 0).getAvailableMoves(game.getMultiverse());
+        assertTrue(rookMoves.contains(seekingMove));
+
+        List<Move> boardMoves = MoveGenerator.probableMoves(game.getMultiverse().getBoard(0, 9), game);
+        assertTrue(boardMoves.contains(seekingMove));
+
+        Iterator<List<Move>> turnIterator = MoveGenerator.getIterativeTurnIterator(game);
+        List<List<Move>> turns = new ArrayList<>();
+        while (turnIterator.hasNext()) {
+            turns.add(turnIterator.next());
+        }
+        List<Move> moves = turns.stream().map(List::getFirst).toList();
+        assertTrue(moves.contains(seekingMove));
+
+        NegaMaxStrategy strategy = new NegaMaxStrategy(
+                NegamaxStrategyConfig.fromConfig(),
+                new EvaluatorImpl()
+        );
+
+        ScoredTurn turn = strategy.findBestTurn(game);
+
+        assertTrue(turn.moves().contains(seekingMove));
     }
 }

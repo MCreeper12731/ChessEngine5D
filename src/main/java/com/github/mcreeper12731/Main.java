@@ -11,16 +11,10 @@ import com.github.mcreeper12731.utility.Log;
 public class Main {
     public static void main(String[] args) {
 
-        Game game = Preset.PUZZLE_ROOK_2.getGame();
-
-        NegamaxStrategyConfig config = new NegamaxStrategyConfig(
-                5,
-                Integer.MAX_VALUE,
-                11
-        );
+        Game game = Preset.STANDARD.getGame();
 
         NegaMaxStrategy strategy = new NegaMaxStrategy(
-                config,
+                NegamaxStrategyConfig.fromConfig(),
                 new EvaluatorImpl()
         );
 
@@ -28,6 +22,6 @@ public class Main {
 
         Log.print("Main", result);
         game.applyMovesAndFinalizeTurn(result.moves());
-        MainApplication.launchWithGame(game);
+        //MainApplication.launchWithGame(game);
     }
 }

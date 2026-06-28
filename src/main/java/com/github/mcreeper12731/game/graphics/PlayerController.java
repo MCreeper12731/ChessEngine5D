@@ -143,10 +143,12 @@ public class PlayerController extends Controller {
                     updateView();
                     break;
                 case E:
-                    Log.print("Graphics", "Player played!");
-                    application.updateCurrentPlayer();
+                    Log.print("Graphics", "Player played:", application.getGame().getTurns().getLast());
                     updateView();
+                    application.updateCurrentPlayer();
                     break;
+                case R:
+                    updateView();
                 default:
                     break;
             }

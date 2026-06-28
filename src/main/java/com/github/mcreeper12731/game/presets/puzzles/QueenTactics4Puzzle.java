@@ -4,6 +4,8 @@ import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.*;
 import com.github.mcreeper12731.game.pieces.PieceType;
 
+import java.util.List;
+
 public class QueenTactics4Puzzle implements Puzzle {
 
     @Override
@@ -14,7 +16,7 @@ public class QueenTactics4Puzzle implements Puzzle {
     @Override
     public Game createGame() {
 
-        return new Game(new Multiverse.Builder(5)
+        Game game = new Game(new Multiverse.Builder(5)
                 .withTimeline(
                         new Timeline.Builder(0)
                                 .withBoard(
@@ -26,19 +28,27 @@ public class QueenTactics4Puzzle implements Puzzle {
                                                 .build()
                                 )
                                 .build()
-                )
-                .withTurn(
-                        new Point4D(0, 0, 0, 2),
-                        new Point4D(0, 0, 1, 4)
-                )
-                .withTurn(
-                        new Point4D(0, 1, 4, 2),
-                        new Point4D(0, 1, 4, 0)
-                )
-                .withTurn(
-                        new Point4D(0, 2, 0, 0),
-                        new Point4D(0, 2, 1, 1)
-                )
-                .build());
+                ).build()
+        );
+        game.applyMovesAndFinalizeTurn(List.of(
+                new Move.Builder(game)
+                        .withFrom(new Point4D(0, 0, 0, 2))
+                        .withTo(new Point4D(0, 0, 1, 4))
+                        .build()
+        ));
+        game.applyMovesAndFinalizeTurn(List.of(
+                new Move.Builder(game)
+                        .withFrom(new Point4D(0, 1, 4, 2))
+                        .withTo(new Point4D(0, 1, 4, 0))
+                        .build()
+        ));
+        game.applyMovesAndFinalizeTurn(List.of(
+                new Move.Builder(game)
+                        .withFrom(new Point4D(0, 2, 0, 0))
+                        .withTo(new Point4D(0, 2, 1, 1))
+                        .build()
+        ));
+
+        return game;
     }
 }

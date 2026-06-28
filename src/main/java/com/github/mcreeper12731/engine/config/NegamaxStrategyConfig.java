@@ -1,6 +1,8 @@
 package com.github.mcreeper12731.engine.config;
 
-public record NegamaxStrategyConfig(int maxDepth, long maxNodes, int debugLevel) {
+import com.github.mcreeper12731.LaunchConfig;
+
+public record NegamaxStrategyConfig(int maxDepth, long maxNodes, int debugLevel, int maxAdditionalTimelines) {
 
     public NegamaxStrategyConfig {
         if (maxDepth < 1) {
@@ -10,5 +12,9 @@ public record NegamaxStrategyConfig(int maxDepth, long maxNodes, int debugLevel)
         if (maxNodes < 1) {
             throw new IllegalArgumentException("maxNodes must be at least 1");
         }
+    }
+
+    public static NegamaxStrategyConfig fromConfig() {
+        return new NegamaxStrategyConfig(LaunchConfig.MAX_DEPTH, LaunchConfig.MAX_NODES, LaunchConfig.DEBUG_LEVEL, LaunchConfig.MAX_ADDITIONAL_TIMELINES);
     }
 }

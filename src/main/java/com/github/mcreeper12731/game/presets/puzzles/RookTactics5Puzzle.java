@@ -4,6 +4,8 @@ import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.*;
 import com.github.mcreeper12731.game.pieces.PieceType;
 
+import java.util.List;
+
 public class RookTactics5Puzzle implements Puzzle {
 
     @Override
@@ -14,7 +16,7 @@ public class RookTactics5Puzzle implements Puzzle {
     @Override
     public Game createGame() {
 
-        return new Game(new Multiverse.Builder(5)
+        Game game = new Game(new Multiverse.Builder(5)
                 .withTimeline(
                         new Timeline.Builder(0)
                                 .withBoard(
@@ -25,11 +27,16 @@ public class RookTactics5Puzzle implements Puzzle {
                                                 .build()
                                 )
                                 .build()
-                )
-                .withTurn(
-                        new Point4D(0, 0, 3, 0),
-                        new Point4D(0, 0, 4, 0)
-                )
-                .build());
+                ).build()
+        );
+
+        game.applyMovesAndFinalizeTurn(List.of(
+                new Move.Builder(game)
+                        .withFrom(new Point4D(0, 0, 3, 0))
+                        .withTo(new Point4D(0, 0, 4, 0))
+                        .build()
+        ));
+
+        return game;
     }
 }

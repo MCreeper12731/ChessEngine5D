@@ -13,8 +13,8 @@ import java.util.*;
 
 public record ScoredBoard(Board board, List<Integer> danger, List<Point4D> enemies) {
 
-    public static final int JUMP_COST              = -500;
-    public static final int JUMP_INACTIVE_COST     = -1000;
+    public static final int JUMP_COST              = -2;
+    public static final int JUMP_INACTIVE_COST     = -50;
     public static final int TAKE_ENEMY_REWARD      = 20;
     public static final int KING_DANGER_COST       = -100_000;
 
@@ -28,8 +28,6 @@ public record ScoredBoard(Board board, List<Integer> danger, List<Point4D> enemi
     public static final int BRAWN_DANGER_COST      = -2;
     public static final int PAWN_DANGER_COST      = -1;
 
-    public static final int PROTECT_KING_REWARD    = 3;
-
     public static final int TAKE_ROOK_REWARD       = 3;
     public static final int TAKE_KNIGHT_REWARD     = 4;
     public static final int TAKE_BISHOP_REWARD     = 5;
@@ -40,50 +38,7 @@ public record ScoredBoard(Board board, List<Integer> danger, List<Point4D> enemi
     public static final int TAKE_PAWN_REWARD      = 1;
     public static final int TAKE_BRAWN_REWARD     = 1;
 
-    public static final int CHECK_QUEEN_REWARD     = 8;
-    public static final int CHECK_PRINCESS_REWARD  = 6;
-    public static final int CHECK_KNIGHT_REWARD    = 5;
-    public static final int CHECK_BISHOP_REWARD    = 5;
-    public static final int CHECK_ROOK_REWARD      = 3;
-    public static final int CHECK_UNICORN_REWARD   = 4;
-    public static final int CHECK_DRAGON_REWARD    = 4;
-    public static final int CHECK_PAWN_REWARD      = 1;
-    public static final int CHECK_BRAWN_REWARD     = 1;
-
-    public static final int ATTACK_QUEEN_REWARD    = 2;
-    public static final int ATTACK_PRINCESS_REWARD = 2;
-    public static final int ATTACK_BISHOP_REWARD   = 1;
-    public static final int ATTACK_KNIGHT_REWARD   = 1;
-    public static final int ATTACK_ROOK_REWARD     = 1;
-    public static final int ATTACK_PAWN_REWARD     = 1;
-    public static final int ATTACK_BRAWN_REWARD     = 1;
-    public static final int ATTACK_DRAGON_REWARD     = 1;
-    public static final int ATTACK_UNICORN_REWARD     = 1;
-
     public static final int MANY_KINGS_COST        = -6;
-
-    // ---------------------------------------------------------------
-    //  Positional / board evaluation constants (floats)
-    // ---------------------------------------------------------------
-    public static final float ROOK_VALUE             = 3.0f;
-    public static final float KNIGHT_VALUE           = 4.5f;
-    public static final float PRINCESS_VALUE         = 8.0f;
-    public static final float QUEEN_VALUE            = 14.0f;
-    public static final float KING_VALUE             = -4.0f;
-    public static final float BISHOP_VALUE           = 5.0f;
-    public static final float UNICORN_VALUE          = 3.5f;
-    public static final float DRAGON_VALUE           = 3.0f;
-    public static final float PAWN_VALUE             = 0.9f;
-
-    public static final float KING_PROTECTION_VALUE   = 1.5f;
-    public static final float KING_PROTECTION_VALUE_2 = 2.5f;
-
-    public static final float BRANCH_VALUE            = 4.0f;
-    public static final float INACTIVE_BRANCH_COST    = 20.0f;
-    public static final float INACTIVE_BRANCH_MULTIPLIER = 0.8f;
-    public static final float INACTIVE_BOARD_MOVE_COST = 2.5f;
-    public static final float MANY_KINGS_VALUE        = -8.0f;
-    public static final float CONTROLLED_SQUARE_SCORE  = 0.025f;
 
     public ScoredBoard(Board board, Game game) {
         this(board, new ArrayList<>(board.size() * board.size()), new ArrayList<>());
@@ -168,57 +123,6 @@ public record ScoredBoard(Board board, List<Integer> danger, List<Point4D> enemi
 
                 case EMPTY -> 0;
             };
-
-            // What can the piece do from the destination?
-            /*Point4D locationOfPieceDestination = game.getMovedPieceDestination(move);
-            game.applyMove(move);
-            game.applyMove(
-                    new Move.Builder()
-                            .withNoop(locationOfPieceDestination.l(), locationOfPieceDestination.t())
-                            .build()
-            );
-            locationOfPieceDestination = locationOfPieceDestination.add(0, 1, 0, 0);
-            List<Move> followUpMoves = MoveGenerator.probableMoves(
-                    game.getMultiverse().getBoard(locationOfPieceDestination.l(), locationOfPieceDestination.t()),
-                    game
-            );
-            for (Move followUpMove : followUpMoves) {
-
-                Timeline toTimeline = game.getMultiverse().getTimeline(followUpMove.to().l());
-                Piece attackedPiece = game.getMultiverse().getLocationContents(followUpMove.to());
-                if (attackedPiece.type() == PieceType.KING) {
-                    score += switch (followUpMove.fromType()) {
-                        case QUEEN -> CHECK_QUEEN_REWARD;
-                        case ROOK -> CHECK_ROOK_REWARD;
-                        case BISHOP -> CHECK_BISHOP_REWARD;
-                        case KNIGHT -> CHECK_KNIGHT_REWARD;
-                        case PAWN -> CHECK_PAWN_REWARD;
-
-                        case UNICORN -> CHECK_UNICORN_REWARD;
-                        case DRAGON -> CHECK_DRAGON_REWARD;
-                        case PRINCESS -> CHECK_PRINCESS_REWARD;
-                        case BRAWN -> CHECK_BRAWN_REWARD;
-
-                        case KING -> -1_000;
-                        case EMPTY -> 0;
-                    };
-                } else if (toTimeline.getLastT() == followUpMove.to().t()) {
-                    score += switch (attackedPiece.type()) {
-                        case QUEEN -> ATTACK_QUEEN_REWARD;
-                        case ROOK -> ATTACK_ROOK_REWARD;
-                        case BISHOP -> ATTACK_BISHOP_REWARD;
-                        case KNIGHT -> ATTACK_KNIGHT_REWARD;
-                        case PAWN -> ATTACK_PAWN_REWARD;
-                        case UNICORN -> ATTACK_UNICORN_REWARD;
-                        case DRAGON -> ATTACK_DRAGON_REWARD;
-                        case PRINCESS -> ATTACK_PRINCESS_REWARD;
-                        case BRAWN -> ATTACK_BRAWN_REWARD;
-
-                        case EMPTY -> 0;
-                        default -> throw new IllegalStateException("Unexpected value: " + attackedPiece.type());
-                    };
-                }
-            }*/
 
             Board nextBoard = new Board.Builder(this.board, this.board.l(), this.board().t() + 1, move)
                     .build();

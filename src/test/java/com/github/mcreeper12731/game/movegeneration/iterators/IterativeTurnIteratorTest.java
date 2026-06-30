@@ -54,7 +54,7 @@ class IterativeTurnIteratorTest {
         while (turnsIterator.hasNext()) {
             List<Move> turn = turnsIterator.next();
 
-            Log.debug("Test", turn);
+            //Log.debug("Test", turn);
 
             game.applyMovesFromTurnStart(turn);
             // turn iterator does not guarantee turn finalization - this should be checked

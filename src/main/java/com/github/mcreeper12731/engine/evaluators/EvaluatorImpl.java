@@ -32,7 +32,7 @@ public class EvaluatorImpl implements Evaluator {
         return score;
     }
 
-    private double pieceScore(PieceType type) {
+    public double pieceScore(PieceType type) {
 
         return switch(type) {
             case EMPTY -> 0;

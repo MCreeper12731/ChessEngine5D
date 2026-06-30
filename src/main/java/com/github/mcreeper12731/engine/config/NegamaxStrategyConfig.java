@@ -12,6 +12,10 @@ public record NegamaxStrategyConfig(int maxDepth, long maxNodes, int debugLevel,
         if (maxNodes < 1) {
             throw new IllegalArgumentException("maxNodes must be at least 1");
         }
+
+        if (maxAdditionalTimelines < 0) {
+            throw new IllegalArgumentException("maxAdditionalTimelines must be at least 0");
+        }
     }
 
     public static NegamaxStrategyConfig fromConfig() {

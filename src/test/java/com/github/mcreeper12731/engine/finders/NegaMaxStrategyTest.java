@@ -72,8 +72,8 @@ class NegaMaxStrategyTest {
 
         NegamaxStrategyConfig config = new NegamaxStrategyConfig(
                 7,
-                10_000_000,
-                7,
+                100_000,
+                0,
                 100
         );
 
@@ -104,7 +104,7 @@ class NegaMaxStrategyTest {
 
         Log.print("Test", result);
         game.applyMovesAndFinalizeTurn(result.moves());
-        MainApplication.launchWithGame(game);
+        //MainApplication.launchWithGame(game);
     }
 
     @Test
@@ -146,7 +146,7 @@ class NegaMaxStrategyTest {
         Log.debug("Test", turn);
         game.applyMovesAndFinalizeTurn(turn.moves());
 
-        MainApplication.launchWithGame(game);
+        //MainApplication.launchWithGame(game);
     }
 
     @Test
@@ -350,6 +350,6 @@ class NegaMaxStrategyTest {
         ScoredTurn turn = strategy.findBestTurn(game);
         Log.debug("Test", turn);
 
-        MainApplication.launchWithGame(game);
+        // MainApplication.launchWithGame(game);
     }
 }

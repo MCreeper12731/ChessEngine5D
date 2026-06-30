@@ -16,9 +16,9 @@ public class Board {
     private final int l;
     private final int t;
     /**
-     * Full board contents, null if piece does not exist
+     * Full board contents, null if a piece does not exist
      */
-    private final Piece[][] contents;
+    private final Piece[] contents;
     /**
      * Non-empty pieces of board contents
      */
@@ -37,12 +37,12 @@ public class Board {
      * Indexing of board contents
      * @param x x coordinate of location
      * @param y y coordinate of location
-     * @return piece at location (x, y) or null if the location is out of bounds. Return piece with type EMPTY if the
+     * @return piece at location (x, y) or null if the location is out of bounds. Return a piece with type EMPTY if the
      * location is valid but does not contain a piece
      */
     public Piece getLocationContents(int x, int y) {
         if (x < 0 || x >= this.size || y < 0 || y >= this.size) return null;
-        Piece piece = this.contents[y][x];
+        Piece piece = this.contents[y * size + x];
 
         if (piece == null) return EMPTY_PIECE;
         return piece;
@@ -86,14 +86,14 @@ public class Board {
         private final int size;
         private final int l;
         private final int t;
-        private final Piece[][] contents;
+        private final Piece[] contents;
         private final List<Piece> pieces;
 
         public Builder(int size, int l, int t) {
             this.size = size;
             this.l = l;
             this.t = t;
-            this.contents = new Piece[size][size];
+            this.contents = new Piece[size*size];
 
             this.pieces = new ArrayList<>(size*size / 4);
         }
@@ -111,7 +111,7 @@ public class Board {
             for (Piece piece : boardToCopy.pieces) {
                 if (piece.type() == PieceType.EMPTY) continue;
                 if (move.from().l() == this.l && piece.location().equals(move.from())) continue;
-                if (this.contents[piece.location().y()][piece.location().x()] != null) continue;
+                if (this.contents[piece.location().y() * this.size + piece.location().x()] != null) continue;
 
                 this.withPiece(piece, piece.moved());
             }
@@ -141,7 +141,7 @@ public class Board {
                     moved
             );
 
-            this.contents[y][x] = piece;
+            this.contents[y * this.size + x] = piece;
             this.pieces.add(piece);
             return this;
         }

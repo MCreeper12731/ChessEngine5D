@@ -37,7 +37,7 @@ public class Board {
      * Indexing of board contents
      * @param x x coordinate of location
      * @param y y coordinate of location
-     * @return piece at location (x, y) or null if the location is out of bounds. Return piece with type EMPTY if the
+     * @return piece at location (x, y) or null if the location is out of bounds. Return a piece with type EMPTY if the
      * location is valid but does not contain a piece
      */
     public Piece getLocationContents(int x, int y) {

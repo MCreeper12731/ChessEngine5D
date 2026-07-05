@@ -22,8 +22,6 @@ public class RandomSelectionEngine implements Engine {
 
     public List<Move> nextTurn(Game game) {
         List<List<Move>> availableTurns = Iterators.consumeRemaining(MoveGenerator.getTurnsIterator(game));
-        game.isTurnFinalizable()
-
         return availableTurns.get(random.nextInt(availableTurns.size()));
     }
 }

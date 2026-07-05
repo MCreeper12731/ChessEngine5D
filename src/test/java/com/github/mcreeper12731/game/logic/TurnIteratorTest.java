@@ -1,6 +1,5 @@
 package com.github.mcreeper12731.game.logic;
 
-import com.github.mcreeper12731.MainApplication;
 import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Board;
 import com.github.mcreeper12731.game.models.Multiverse;
@@ -15,7 +14,6 @@ import com.github.mcreeper12731.utility.Log;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 

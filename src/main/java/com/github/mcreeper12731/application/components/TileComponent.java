@@ -1,7 +1,7 @@
-package com.github.mcreeper12731.graphics.components;
+package com.github.mcreeper12731.application.components;
 
-import com.github.mcreeper12731.graphics.GraphicsApplication;
-import com.github.mcreeper12731.graphics.GraphicsConfig;
+import com.github.mcreeper12731.application.GraphicsApplication;
+import com.github.mcreeper12731.application.GraphicsConfig;
 import com.github.mcreeper12731.game.pieces.Piece;
 import com.github.mcreeper12731.game.models.Point4D;
 import javafx.scene.canvas.Canvas;
@@ -58,7 +58,7 @@ public class TileComponent extends Canvas {
         }*/
         this.annotated = annotated;
 
-        this.setOnMouseClicked(event -> application.getCurrentController().handleTileComponentClick(this));
+        this.setOnMouseClicked(event -> application.getActiveController().handleTileComponentClick(this));
     }
 
     public void draw() {

@@ -1,6 +1,7 @@
-package com.github.mcreeper12731.graphics;
+package com.github.mcreeper12731.application.controllers;
 
-import com.github.mcreeper12731.graphics.components.TileComponent;
+import com.github.mcreeper12731.application.GraphicsApplication;
+import com.github.mcreeper12731.application.components.TileComponent;
 import com.github.mcreeper12731.game.models.Color;
 
 public abstract class Controller {

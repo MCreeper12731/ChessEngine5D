@@ -1,9 +1,4 @@
-package com.github.mcreeper12731.graphics;
-
-import javafx.scene.input.KeyCode;
-import javafx.scene.paint.Color;
-
-import java.util.function.Function;
+package com.github.mcreeper12731.application;
 
 public class GraphicsConfig {
 

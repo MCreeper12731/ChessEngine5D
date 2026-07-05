@@ -4,8 +4,8 @@ import com.github.mcreeper12731.game.presets.Preset;
 
 public class LaunchConfig {
 
-    public static final Preset PRESET = Preset.CHECKMATE_PRACTICE_ROOK;
-    public static final String CONTROLLER_WHITE = "engine_random";
+    public static final Preset PRESET = Preset.CHECKMATE_PRACTICE_QUEEN;
+    public static final String CONTROLLER_WHITE = "player";
     public static final String CONTROLLER_BLACK = "engine_negamax";
 
     public static final int MAX_NODES = 2_000_000;

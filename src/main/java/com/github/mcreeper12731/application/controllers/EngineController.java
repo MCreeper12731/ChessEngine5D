@@ -1,8 +1,9 @@
-package com.github.mcreeper12731.graphics;
+package com.github.mcreeper12731.application.controllers;
 
+import com.github.mcreeper12731.application.GraphicsApplication;
 import com.github.mcreeper12731.engine.engines.Engine;
 import com.github.mcreeper12731.game.models.Move;
-import com.github.mcreeper12731.graphics.components.TileComponent;
+import com.github.mcreeper12731.application.components.TileComponent;
 import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.utility.Log;
@@ -21,7 +22,7 @@ public class EngineController extends Controller {
 
     @Override
     public void onTurnStart() {
-        Log.debug("Graphics", "Engine turn");
+        Log.debug("Application", "Engine turn");
         Game game = this.application.getGame();
 
         if (game.isGameOver()) {
@@ -34,7 +35,7 @@ public class EngineController extends Controller {
             Platform.runLater(() -> {
 
                 game.applyMoves(turn);
-                Log.print("Graphics", "Engine played:", turn);
+                Log.print("Application", "Engine played:", turn);
                 updateView();
 
                 new Thread(() -> {

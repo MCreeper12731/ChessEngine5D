@@ -1,7 +1,7 @@
-package com.github.mcreeper12731.graphics.components;
+package com.github.mcreeper12731.application.components;
 
-import com.github.mcreeper12731.graphics.GraphicsApplication;
-import com.github.mcreeper12731.graphics.GraphicsConfig;
+import com.github.mcreeper12731.application.GraphicsApplication;
+import com.github.mcreeper12731.application.GraphicsConfig;
 import com.github.mcreeper12731.game.models.Timeline;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;

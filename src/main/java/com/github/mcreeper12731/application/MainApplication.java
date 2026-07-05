@@ -1,12 +1,8 @@
-package com.github.mcreeper12731;
+package com.github.mcreeper12731.application;
 
-import com.github.mcreeper12731.engine.engines.NegaMaxEngine;
-import com.github.mcreeper12731.engine.engines.RandomSelectionEngine;
-import com.github.mcreeper12731.graphics.Controller;
-import com.github.mcreeper12731.graphics.EngineController;
-import com.github.mcreeper12731.graphics.GraphicsApplication;
-import com.github.mcreeper12731.graphics.PlayerController;
-import com.github.mcreeper12731.graphics.components.ViewComponent;
+import com.github.mcreeper12731.LaunchConfig;
+import com.github.mcreeper12731.application.controllers.Controller;
+import com.github.mcreeper12731.application.components.ViewComponent;
 import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.presets.Preset;
@@ -31,13 +27,13 @@ public class MainApplication extends Application implements GraphicsApplication 
         if (staticGameForLaunch != null) {
             this.game = staticGameForLaunch;
             staticGameForLaunch = null;
-            this.controller1 = getController("player", Color.WHITE);
-            this.controller2 = getController("player", Color.BLACK);
+            this.controller1 = getController("player", Color.WHITE, false);
+            this.controller2 = getController("player", Color.BLACK, false);
         } else {
             this.preset = LaunchConfig.PRESET;
             this.game = preset.getGame();
-            this.controller1 = getController(LaunchConfig.CONTROLLER_WHITE, Color.WHITE);
-            this.controller2 = getController(LaunchConfig.CONTROLLER_BLACK, Color.BLACK);
+            this.controller1 = getController(LaunchConfig.CONTROLLER_WHITE, Color.WHITE, false);
+            this.controller2 = getController(LaunchConfig.CONTROLLER_BLACK, Color.BLACK, false);
         }
         this.view = new ViewComponent(this);
         this.scene = new Scene(view);
@@ -68,19 +64,6 @@ public class MainApplication extends Application implements GraphicsApplication 
             this.controller2.onTurnStart();
     }
 
-    private Controller getController(String controllerType, Color controllerColor) {
-        return switch (controllerType) {
-            case "player" -> new PlayerController(this, controllerColor);
-            case "engine_random" -> new EngineController(this, controllerColor, new RandomSelectionEngine());
-            case "engine_negamax" -> new EngineController(this, controllerColor, new NegaMaxEngine());
-            default -> throw new RuntimeException("Controller of type " + controllerType + " does not exist!");
-        };
-    }
-
-    public Preset getPreset() {
-        return this.preset;
-    }
-
     public Game getGame() {
         return this.game;
     }
@@ -95,28 +78,23 @@ public class MainApplication extends Application implements GraphicsApplication 
 
     public void updateCurrentPlayer() {
         if (!this.game.isCurrentTurnFinalizable()) {
-            Log.print("Graphics", "Current turn is not finalizable!");
+            Log.print("Application", "Current turn is not finalizable!");
             return;
         }
-        getCurrentController().onTurnEnd();
+        getActiveController().onTurnEnd();
         this.game.finalizeTurn();
-        getCurrentController().onTurnStart();
+        getActiveController().onTurnStart();
     }
 
-    public Controller getCurrentController() {
+    public Controller getActiveController() {
         return switch (this.game.getPlayerTurn()) {
             case WHITE -> this.controller1;
             case BLACK -> this.controller2;
         };
     }
 
-    public static void main(String[] args) {
-        launch();
-    }
-
     public static void launchWithGame(Game game) {
         staticGameForLaunch = game;
         launch();
     }
-
 }

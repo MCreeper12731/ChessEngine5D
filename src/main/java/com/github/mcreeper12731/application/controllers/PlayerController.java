@@ -1,7 +1,8 @@
-package com.github.mcreeper12731.graphics;
+package com.github.mcreeper12731.application.controllers;
 
+import com.github.mcreeper12731.application.GraphicsApplication;
 import com.github.mcreeper12731.game.models.Color;
-import com.github.mcreeper12731.graphics.components.TileComponent;
+import com.github.mcreeper12731.application.components.TileComponent;
 import com.github.mcreeper12731.game.models.Multiverse;
 import com.github.mcreeper12731.game.models.Timeline;
 import com.github.mcreeper12731.game.models.Move;
@@ -21,7 +22,7 @@ public class PlayerController extends Controller {
 
     public void handleTileComponentClick(TileComponent clickedTile) {
 
-        //Log.debug("Graphics", "Clicked " + clickedTile.getLocation().toString());
+        //Log.debug("Application", "Clicked " + clickedTile.getLocation().toString());
 
         if (clickedTile.getPiece() == null) {
             handleEmptyTileClick(clickedTile);
@@ -143,7 +144,7 @@ public class PlayerController extends Controller {
                     updateView();
                     break;
                 case E:
-                    Log.print("Graphics", "Player played:", application.getGame().getTurns().getLast());
+                    Log.print("Application", "Player played:", application.getGame().getTurns().getLast());
                     updateView();
                     application.updateCurrentPlayer();
                     break;

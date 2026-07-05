@@ -1,16 +1,13 @@
-package com.github.mcreeper12731.game.graphics.components;
+package com.github.mcreeper12731.graphics.components;
 
-import com.github.mcreeper12731.game.graphics.GraphicsApplication;
-import com.github.mcreeper12731.game.graphics.GraphicsConfig;
-import com.github.mcreeper12731.game.models.Move;
+import com.github.mcreeper12731.graphics.GraphicsApplication;
+import com.github.mcreeper12731.graphics.GraphicsConfig;
 import com.github.mcreeper12731.game.pieces.Piece;
 import com.github.mcreeper12731.game.models.Point4D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-
-import java.util.List;
 
 public class TileComponent extends Canvas {
 

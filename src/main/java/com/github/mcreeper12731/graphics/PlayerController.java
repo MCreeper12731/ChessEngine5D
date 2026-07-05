@@ -1,7 +1,7 @@
-package com.github.mcreeper12731.game.graphics;
+package com.github.mcreeper12731.graphics;
 
 import com.github.mcreeper12731.game.models.Color;
-import com.github.mcreeper12731.game.graphics.components.TileComponent;
+import com.github.mcreeper12731.graphics.components.TileComponent;
 import com.github.mcreeper12731.game.models.Multiverse;
 import com.github.mcreeper12731.game.models.Timeline;
 import com.github.mcreeper12731.game.models.Move;

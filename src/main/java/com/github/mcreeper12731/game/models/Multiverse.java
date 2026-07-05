@@ -1,9 +1,9 @@
 package com.github.mcreeper12731.game.models;
 
 import com.github.mcreeper12731.game.pieces.Piece;
-import com.github.mcreeper12731.utility.CompoundListView;
-import com.github.mcreeper12731.utility.MappedListView;
-import com.github.mcreeper12731.utility.ReducedListView;
+import com.github.mcreeper12731.utility.listviews.CompoundListView;
+import com.github.mcreeper12731.utility.listviews.MappedListView;
+import com.github.mcreeper12731.utility.listviews.ReducedListView;
 
 import java.util.*;
 
@@ -91,6 +91,10 @@ public class Multiverse {
 
     public List<Integer> getActiveTimelineLs() {
         return new MappedListView<>(this.getActiveTimelines(), Timeline::getL);
+    }
+
+    public boolean isTimelineActive(Timeline timeline) {
+        return this.isTimelineActive(timeline.getL());
     }
 
     public boolean isTimelineActive(int id) {

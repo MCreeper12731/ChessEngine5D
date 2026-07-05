@@ -1,4 +1,4 @@
-package com.github.mcreeper12731.utility;
+package com.github.mcreeper12731.utility.listviews;
 
 import java.util.AbstractList;
 import java.util.List;

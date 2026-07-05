@@ -9,7 +9,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class EvaluatorImplTest {
+class EvaluatorTest {
 
     @Test
     public void isMateEvaluatedCorrectly() {
@@ -37,7 +37,7 @@ class EvaluatorImplTest {
                         .build()
         ));
 
-        Evaluator evaluator = new EvaluatorImpl();
+        Evaluator evaluator = new Evaluator();
         double score = evaluator.evaluate(game);
         assertTrue(score > 900000);
     }

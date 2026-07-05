@@ -1,8 +1,7 @@
 package com.github.mcreeper12731.engine.finders;
 
-import com.github.mcreeper12731.MainApplication;
 import com.github.mcreeper12731.engine.config.NegamaxStrategyConfig;
-import com.github.mcreeper12731.engine.evaluators.EvaluatorImpl;
+import com.github.mcreeper12731.engine.evaluators.Evaluator;
 import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Move;
 import com.github.mcreeper12731.game.models.scored.ScoredTurn;
@@ -26,7 +25,7 @@ class NegaMaxStrategyTest {
 
         NegaMaxStrategy strategy = new NegaMaxStrategy(
                 NegamaxStrategyConfig.fromConfig(),
-                new EvaluatorImpl()
+                new Evaluator()
         );
 
         ScoredTurn result = strategy.findBestTurn(game);
@@ -79,7 +78,7 @@ class NegaMaxStrategyTest {
 
         NegaMaxStrategy strategy = new NegaMaxStrategy(
                 config,
-                new EvaluatorImpl()
+                new Evaluator()
         );
 
         ScoredTurn result = strategy.findBestTurn(game);
@@ -97,7 +96,7 @@ class NegaMaxStrategyTest {
 
         NegaMaxStrategy strategy = new NegaMaxStrategy(
                 NegamaxStrategyConfig.fromConfig(),
-                new EvaluatorImpl()
+                new Evaluator()
         );
 
         ScoredTurn result = strategy.findBestTurn(game);
@@ -139,7 +138,7 @@ class NegaMaxStrategyTest {
 
         NegaMaxStrategy strategy = new NegaMaxStrategy(
                 NegamaxStrategyConfig.fromConfig(),
-                new EvaluatorImpl()
+                new Evaluator()
         );
 
         ScoredTurn turn = strategy.findBestTurn(game);
@@ -184,7 +183,7 @@ class NegaMaxStrategyTest {
 
         NegaMaxStrategy strategy = new NegaMaxStrategy(
                 NegamaxStrategyConfig.fromConfig(),
-                new EvaluatorImpl()
+                new Evaluator()
         );
 
         ScoredTurn foundTurn = strategy.findBestTurn(game);
@@ -257,7 +256,7 @@ class NegaMaxStrategyTest {
 
         NegaMaxStrategy strategy = new NegaMaxStrategy(
                 NegamaxStrategyConfig.fromConfig(),
-                new EvaluatorImpl()
+                new Evaluator()
         );
 
         ScoredTurn turn = strategy.findBestTurn(game);
@@ -344,7 +343,7 @@ class NegaMaxStrategyTest {
 
         NegaMaxStrategy strategy = new NegaMaxStrategy(
                 NegamaxStrategyConfig.fromConfig(),
-                new EvaluatorImpl()
+                new Evaluator()
         );
 
         ScoredTurn turn = strategy.findBestTurn(game);

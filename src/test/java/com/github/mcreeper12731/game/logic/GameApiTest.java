@@ -85,7 +85,7 @@ public class GameApiTest {
                 .build();
 
         assertTrue(game.doesMoveAddTimeline(move));
-        assertTrue(game.doesMoveActivateTimeline(move));
+        assertNotEquals(0, game.doesMoveActivateTimeline(move));
 
         game.applyMove(move);
 

@@ -1,8 +1,12 @@
 package com.github.mcreeper12731;
 
-import com.github.mcreeper12731.engine.config.NegamaxStrategyConfig;
-import com.github.mcreeper12731.game.graphics.*;
-import com.github.mcreeper12731.game.graphics.components.ViewComponent;
+import com.github.mcreeper12731.engine.engines.NegaMaxEngine;
+import com.github.mcreeper12731.engine.engines.RandomSelectionEngine;
+import com.github.mcreeper12731.graphics.Controller;
+import com.github.mcreeper12731.graphics.EngineController;
+import com.github.mcreeper12731.graphics.GraphicsApplication;
+import com.github.mcreeper12731.graphics.PlayerController;
+import com.github.mcreeper12731.graphics.components.ViewComponent;
 import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.presets.Preset;
@@ -32,8 +36,8 @@ public class MainApplication extends Application implements GraphicsApplication 
         } else {
             this.preset = LaunchConfig.PRESET;
             this.game = preset.getGame();
-            this.controller1 = getController(LaunchConfig.CONTROLLER_1, Color.WHITE);
-            this.controller2 = getController(LaunchConfig.CONTROLLER_2, Color.BLACK);
+            this.controller1 = getController(LaunchConfig.CONTROLLER_WHITE, Color.WHITE);
+            this.controller2 = getController(LaunchConfig.CONTROLLER_BLACK, Color.BLACK);
         }
         this.view = new ViewComponent(this);
         this.scene = new Scene(view);
@@ -67,7 +71,8 @@ public class MainApplication extends Application implements GraphicsApplication 
     private Controller getController(String controllerType, Color controllerColor) {
         return switch (controllerType) {
             case "player" -> new PlayerController(this, controllerColor);
-            case "engine" -> new EngineController(this, controllerColor, NegamaxStrategyConfig.fromConfig());
+            case "engine_random" -> new EngineController(this, controllerColor, new RandomSelectionEngine());
+            case "engine_negamax" -> new EngineController(this, controllerColor, new NegaMaxEngine());
             default -> throw new RuntimeException("Controller of type " + controllerType + " does not exist!");
         };
     }

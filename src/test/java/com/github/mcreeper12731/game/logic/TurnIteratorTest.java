@@ -1,5 +1,6 @@
 package com.github.mcreeper12731.game.logic;
 
+import com.github.mcreeper12731.MainApplication;
 import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Board;
 import com.github.mcreeper12731.game.models.Multiverse;
@@ -9,10 +10,12 @@ import com.github.mcreeper12731.game.movegeneration.iterators.BoardMoveIterator;
 import com.github.mcreeper12731.game.movegeneration.iterators.TurnIterator;
 import com.github.mcreeper12731.game.pieces.PieceType;
 import com.github.mcreeper12731.game.presets.Preset;
+import com.github.mcreeper12731.utility.Iterators;
 import com.github.mcreeper12731.utility.Log;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -33,10 +36,9 @@ public class TurnIteratorTest {
                 ).build()
         );
 
-        Iterator<List<Move>> iterator = new TurnIterator(game, false);
+        Iterator<List<Move>> iterator = new TurnIterator(game);
 
-        List<List<Move>> moves = new ArrayList<>();
-        iterator.forEachRemaining(moves::add);
+        List<List<Move>> moves = Iterators.consumeRemaining(iterator);
         Log.debug("Test", moves);
 
         assertEquals(2, moves.size());
@@ -56,8 +58,8 @@ public class TurnIteratorTest {
         );
 
         assertEquals(4, game.getMultiverse().getLocationContents(0, 0, 0, 0).getAvailableMoves(game.getMultiverse()).size());
-        Iterator<List<Move>> fullIterator = new TurnIterator(game, false);
-        Iterator<List<Move>> iterator = new TurnIterator(game, true);
+        Iterator<List<Move>> fullIterator = new TurnIterator(game);
+        Iterator<List<Move>> iterator = new TurnIterator(game);
 
         List<List<Move>> allMoves = new ArrayList<>();
         fullIterator.forEachRemaining(allMoves::add);
@@ -73,8 +75,8 @@ public class TurnIteratorTest {
         ));
 
         assertEquals(4, game.getMultiverse().getLocationContents(0, 1, 2, 2).getAvailableMoves(game.getMultiverse()).size());
-        fullIterator = new TurnIterator(game, false);
-        iterator = new TurnIterator(game, true);
+        fullIterator = new TurnIterator(game);
+        iterator = new TurnIterator(game);
 
         allMoves = new ArrayList<>();
         fullIterator.forEachRemaining(allMoves::add);
@@ -97,8 +99,8 @@ public class TurnIteratorTest {
 
         assertEquals(6, allBoardMoves.size()); // 5 + 1 because of noop
 
-        fullIterator = new TurnIterator(game, false);
-        iterator = new TurnIterator(game, true);
+        fullIterator = new TurnIterator(game);
+        iterator = new TurnIterator(game);
 
         allMoves = new ArrayList<>();
         fullIterator.forEachRemaining(allMoves::add);
@@ -113,9 +115,10 @@ public class TurnIteratorTest {
         Game game = Preset.CUSTOM_COMPLEX_POSITION.getGame();
         game.clearTurnHistory();
 
-        Iterator<List<Move>> turnsIterator = new TurnIterator(game, false);
+        Iterator<List<Move>> turnsIterator = new TurnIterator(game);
         while (turnsIterator.hasNext()) {
             List<Move> turn = turnsIterator.next();
+            // Log.debug("Test", turn);
 
             game.applyMovesFromTurnStart(turn);
             assertTrue(game.isCurrentTurnFinalizable());
@@ -136,7 +139,7 @@ public class TurnIteratorTest {
 
         Game game = new Game(multiverse);
 
-        Iterator<List<Move>> turnsIterator = new TurnIterator(game, true);
+        Iterator<List<Move>> turnsIterator = new TurnIterator(game);
         while (turnsIterator.hasNext()) {
             List<Move> turn = turnsIterator.next();
 
@@ -188,7 +191,7 @@ public class TurnIteratorTest {
 
         game.clearTurnHistory();
 
-        Iterator<List<Move>> turnsIterator = new TurnIterator(game, false);
+        Iterator<List<Move>> turnsIterator = new TurnIterator(game);
         while (turnsIterator.hasNext()) {
             List<Move> turn = turnsIterator.next();
 

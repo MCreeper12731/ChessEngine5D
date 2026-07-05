@@ -1,6 +1,5 @@
 package com.github.mcreeper12731.game.movegeneration;
 
-import com.github.mcreeper12731.engine.evaluators.Evaluator;
 import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Timeline;
 import com.github.mcreeper12731.game.models.scored.ScoredBoard;
@@ -9,9 +8,7 @@ import com.github.mcreeper12731.game.models.Board;
 import com.github.mcreeper12731.game.models.Move;
 import com.github.mcreeper12731.game.movegeneration.iterators.BoardMoveIterator;
 import com.github.mcreeper12731.game.movegeneration.iterators.IterativeTurnIterator;
-import com.github.mcreeper12731.game.movegeneration.iterators.SortedTurnIterator;
 import com.github.mcreeper12731.game.movegeneration.iterators.TurnIterator;
-import com.github.mcreeper12731.utility.Log;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -22,11 +19,7 @@ import java.util.stream.Collectors;
 public class MoveGenerator {
 
     public static Iterator<List<Move>> getTurnsIterator(Game game) {
-        return new TurnIterator(game, true);
-    }
-
-    public static Iterator<List<Move>> getSortedTurnsIterator(Game game, Evaluator evaluator) {
-        return new SortedTurnIterator(getTurnsIterator(game), game, evaluator);
+        return new TurnIterator(game);
     }
 
     public static Iterator<List<Move>> getIterativeTurnIterator(Game game) {
@@ -55,18 +48,16 @@ public class MoveGenerator {
         );
         return moves::iterator;
     }
-    
+
+    public static List<Move> scoredMoves(Board board, Game game) {
+        ScoredBoard scoredBoard = new ScoredBoard(board, game);
+        return scoredBoard.scoreMoves(game).stream().map(ScoredMove::move).collect(Collectors.toList());
+    }
+
     public static List<Move> probableMoves(Board board, Game game) {
         BoardMoveIterator boardMoveIterator = new BoardMoveIterator(board, game.getMultiverse());
         List<Move> result = new ArrayList<>();
         boardMoveIterator.forEachRemaining(result::add);
         return result;
     }
-    
-    public static List<Move> scoredMoves(Board board, Game game) {
-        ScoredBoard scoredBoard = new ScoredBoard(board, game);
-        return scoredBoard.scoreMoves(game).stream().map(ScoredMove::move).collect(Collectors.toList());
-    }
-    
-    
 }

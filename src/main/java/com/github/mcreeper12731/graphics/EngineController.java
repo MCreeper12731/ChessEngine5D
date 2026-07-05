@@ -1,25 +1,22 @@
-package com.github.mcreeper12731.game.graphics;
+package com.github.mcreeper12731.graphics;
 
-import com.github.mcreeper12731.engine.config.NegamaxStrategyConfig;
-import com.github.mcreeper12731.engine.evaluators.EvaluatorImpl;
-import com.github.mcreeper12731.engine.finders.NegaMaxStrategy;
-import com.github.mcreeper12731.game.graphics.components.TileComponent;
+import com.github.mcreeper12731.engine.engines.Engine;
+import com.github.mcreeper12731.game.models.Move;
+import com.github.mcreeper12731.graphics.components.TileComponent;
 import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Color;
-import com.github.mcreeper12731.game.models.scored.ScoredTurn;
 import com.github.mcreeper12731.utility.Log;
 import javafx.application.Platform;
 
+import java.util.List;
+
 public class EngineController extends Controller {
 
-    private final NegaMaxStrategy moveStrategy;
+    private final Engine engine;
 
-    public EngineController(GraphicsApplication application, Color playingAs, NegamaxStrategyConfig config) {
+    public EngineController(GraphicsApplication application, Color playingAs, Engine engine) {
         super(application, playingAs);
-        moveStrategy = new NegaMaxStrategy(
-                config,
-                new EvaluatorImpl()
-        );
+        this.engine = engine;
     }
 
     @Override
@@ -32,12 +29,12 @@ public class EngineController extends Controller {
         }
 
         Thread searchThread = new Thread(() -> {
-            ScoredTurn turn = moveStrategy.findBestTurn(game);
+            List<Move> turn = engine.nextTurn(game);
 
             Platform.runLater(() -> {
 
-                game.applyMoves(turn.moves());
-                Log.print("Graphics", "Engine played:", turn.moves(), "score:", turn.score(), "nodes searched:", turn.nodesSearched());
+                game.applyMoves(turn);
+                Log.print("Graphics", "Engine played:", turn);
                 updateView();
 
                 new Thread(() -> {

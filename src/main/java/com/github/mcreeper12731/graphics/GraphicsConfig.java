@@ -1,4 +1,4 @@
-package com.github.mcreeper12731.game.graphics;
+package com.github.mcreeper12731.graphics;
 
 import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;

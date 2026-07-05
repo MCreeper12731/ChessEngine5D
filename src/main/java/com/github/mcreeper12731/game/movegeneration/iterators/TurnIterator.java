@@ -11,24 +11,20 @@ import java.util.function.Supplier;
 public final class TurnIterator implements Iterator<List<Move>> {
 
     private final Game game;
-    private final boolean minimal;
 
     private final List<Supplier<Iterator<Move>>> moveIteratorSuppliers;
     private final List<Iterator<Move>> moveIterators;
     private final List<Move> currentMoves;
 
-    private final List<Move> anchoredPartialTurn;
+    private final Deque<List<Move>> generatedTurns;
 
-    private final Deque<List<Move>> generatedTurns = new ArrayDeque<>();
-
-    public TurnIterator(Game game, boolean minimal) {
+    public TurnIterator(Game game) {
 
         this.game = game;
-        this.minimal = minimal;
 
         this.moveIteratorSuppliers = new ArrayList<>();
 
-        for (int l : minimal ? this.game.getMandatoryTimelineLs() : this.game.getPlayableTimelineLs()) {
+        for (int l : this.game.getPlayableTimelineLs()) {
             Board board = this.game.getMultiverse().getTimeline(l).getLastBoard();
 
             this.moveIteratorSuppliers.add(MoveGenerator.scoredMovesSupplier(board, this.game));
@@ -40,20 +36,13 @@ public final class TurnIterator implements Iterator<List<Move>> {
         for (Supplier<Iterator<Move>> moveIteratorSupplier : moveIteratorSuppliers) {
             Iterator<Move> iterator = moveIteratorSupplier.get();
 
-
             this.moveIterators.add(iterator);
             this.currentMoves.add(iterator.next());
         }
 
-        this.anchoredPartialTurn = new ArrayList<>();
+        this.generatedTurns = new ArrayDeque<>();
 
         this.step();
-    }
-
-    private TurnIterator(Game game, boolean minimal, List<Move> anchoredPartialTurn) {
-        this(game, minimal);
-
-        this.anchoredPartialTurn.addAll(anchoredPartialTurn);
     }
 
     private void step() {
@@ -66,7 +55,7 @@ public final class TurnIterator implements Iterator<List<Move>> {
 
             List<Move> candidateTurn = new ArrayList<>(this.currentMoves);
 
-            if (isLegalTurn(candidateTurn)) {
+            if (game.isTurnFinalizable(candidateTurn)) {
                 this.generatedTurns.add(candidateTurn);
                 return;
             }
@@ -80,37 +69,8 @@ public final class TurnIterator implements Iterator<List<Move>> {
             if (iterator.hasNext()) {
                 Move move = iterator.next();
                 this.currentMoves.set(index, move);
-
-                if (!this.game.doesMoveAddTimeline(move)) {
-                    this.resetFollowingIterators(index + 1);
-                    return true;
-                }
-
-                // Handle if a move added a timeline as this might have activated a timeline
-                if (!this.game.doesMoveActivateTimeline(move) && !this.game.doesMoveRewindPresent(move)) {
-                    // No new timeline activated, proceed as usual
-                    currentMoves.set(index, move);
-                    return true;
-                }
-
-                // New timeline activated, anchor move that activated it and pre-generate all turns with this move
-                List<Move> anchoredPartialTurn = new ArrayList<>(this.anchoredPartialTurn);
-                anchoredPartialTurn.add(move);
-                this.game.applyMove(move);
-                TurnIterator turnIterator = new TurnIterator(this.game, this.minimal, anchoredPartialTurn);
-
-                if (!turnIterator.hasNext()) {
-                    this.game.undoMoveFromCurrentTurn();
-                    currentMoves.set(index, move);
-                    return true;
-                }
-
-                turnIterator.forEachRemaining(turn -> {
-                    turn.addFirst(move);
-                    this.generatedTurns.add(turn);
-                });
-                this.game.undoMoveFromCurrentTurn();
-                return false;
+                this.resetFollowingIterators(index + 1);
+                return true;
             }
         }
 
@@ -124,50 +84,6 @@ public final class TurnIterator implements Iterator<List<Move>> {
             this.moveIterators.set(index, iterator);
             this.currentMoves.set(index, iterator.next());
         }
-    }
-
-    private boolean isLegalTurn(List<Move> turn) {
-
-
-        Set<Integer> covered = new HashSet<>();
-        List<Integer> mandatoryTimelines = this.game.getMandatoryTimelineLs();
-
-        for (Move move : turn) {
-            List<Integer> moveCoverage = this.coveredTimelines(move);
-
-            for (Integer timeline : moveCoverage) {
-                if (!mandatoryTimelines.contains(timeline)) {
-                    continue;
-                }
-
-                if (!covered.add(timeline)) {
-                    return false;
-                }
-            }
-        }
-
-        for (Integer timeline : mandatoryTimelines) {
-            if (!covered.contains(timeline))
-                return false;
-        }
-        return true;
-    }
-
-    private List<Integer> coveredTimelines(Move move) {
-        List<Integer> covered = new ArrayList<>();
-
-        if (move.noop()) {
-            return covered;
-        }
-
-        covered.add(move.from().l());
-
-        if (move.to().l() != move.from().l()) {
-            if (this.game.getMultiverse().getTimeline(move.to().l()).getLastT() == move.to().t())
-                covered.add(move.to().l());
-        }
-
-        return covered;
     }
 
     @Override

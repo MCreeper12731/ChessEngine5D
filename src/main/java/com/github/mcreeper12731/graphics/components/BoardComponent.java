@@ -1,7 +1,7 @@
-package com.github.mcreeper12731.game.graphics.components;
+package com.github.mcreeper12731.graphics.components;
 
-import com.github.mcreeper12731.game.graphics.GraphicsApplication;
-import com.github.mcreeper12731.game.graphics.GraphicsConfig;
+import com.github.mcreeper12731.graphics.GraphicsApplication;
+import com.github.mcreeper12731.graphics.GraphicsConfig;
 import com.github.mcreeper12731.game.models.Board;
 import com.github.mcreeper12731.game.models.Point4D;
 import com.github.mcreeper12731.game.models.Timeline;

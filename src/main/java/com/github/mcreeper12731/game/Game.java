@@ -202,7 +202,7 @@ public class Game {
     // State polling methods and methods to predict game state without simulating moves
 
     public boolean isCurrentTurnFinalizable() {
-        return this.isGameOver() || getMandatoryTimelineLs().isEmpty();
+        return this.isGameOver() || this.getMandatoryTimelineLs().isEmpty();
     }
 
     public List<Integer> getMandatoryTimelineLs() {
@@ -246,10 +246,14 @@ public class Game {
     }
 
     public boolean doesMoveAddTimeline(Move move) {
-        if (move.noop()) return false;
-        Timeline toTimeline = this.multiverse.getTimeline(move.to().l());
+        return doesMoveAddTimeline(move, false);
+    }
 
-        return move.to().t() != toTimeline.getLastT();
+    public boolean doesMoveAddTimeline(Move move, boolean timelineHasBeenPlayedOn) {
+        if (move.noop()) return false;
+        int toTimelineLastT = this.multiverse.getTimeline(move.to().l()).getLastT() + (timelineHasBeenPlayedOn ? 1 : 0);
+
+        return move.to().t() != toTimelineLastT;
     }
 
     public boolean doesMoveAddInactiveTimeline(Move move) {
@@ -262,23 +266,30 @@ public class Game {
         return this.multiverse.isTimelineActive(addedTimelineL);
     }
 
-    public boolean doesMoveActivateTimeline(Move move) {
-        if (!this.doesMoveAddTimeline(move)) return false;
+    public Integer doesMoveActivateTimeline(Move move) {
+        return this.doesMoveActivateTimeline(move, false);
+    }
+
+    public Integer doesMoveActivateTimeline(Move move, boolean hasTimelineBeenPlayedOn) {
+        if (!this.doesMoveAddTimeline(move, hasTimelineBeenPlayedOn)) return null;
 
         int addedTimelineL = move.color() == Color.WHITE ?
                 this.multiverse.getTopTimelineL() + 1 :
                 this.multiverse.getBotTimelineL() - 1;
 
-        int inactiveTimelineL =
+        int oppositeTimelineL =
                 (Math.abs(addedTimelineL) + 1)
-                * (addedTimelineL > 0 ? -1 : 1)
-                - (this.multiverse.isEven() ? 1 : 0);
+                        * (addedTimelineL > 0 ? -1 : 1)
+                        - (this.multiverse.isEven() ? 1 : 0);
 
-        if (this.multiverse.getTimeline(inactiveTimelineL) == null) return false;
+        if (this.multiverse.getTimeline(oppositeTimelineL) == null) return null;
 
-        int activeTimelineL = inactiveTimelineL > 0 ? inactiveTimelineL - 1 : inactiveTimelineL + 1;
+        int oppositeTimelineLWithDelta1 = oppositeTimelineL > 0 ? oppositeTimelineL - 1 : oppositeTimelineL + 1;
 
-        return this.multiverse.isTimelineActive(activeTimelineL) && !this.multiverse.isTimelineActive(inactiveTimelineL);
+        if (this.multiverse.isTimelineActive(oppositeTimelineLWithDelta1) && !this.multiverse.isTimelineActive(oppositeTimelineL))
+            return oppositeTimelineL;
+
+        return null;
     }
 
     public boolean doesMoveRewindPresent(Move move) {
@@ -325,41 +336,61 @@ public class Game {
         return turnEffects.stream().map(turnEffect -> turnEffect.stream().map(MoveEffect::getMove).toList()).toList();
     }
 
+    /**
+     * A very dense method, checking if a turn would be finalizable without applying it. Should be complete, but an edge case may still exist
+     * @param turn the turn to check
+     * @return true if the turn would be finalizable, false otherwise
+     */
     public boolean isTurnFinalizable(List<Move> turn) {
 
-        int[] consumedTimelines = new int[this.multiverse.getTimelines().size()];
-        boolean valid = true;
+        boolean[] consumedTimelines = new boolean[this.multiverse.getTimelines().size()];
+        boolean[] mandatoryTimelines = new boolean[this.multiverse.getTimelines().size()];
+        for (Timeline timeline : this.multiverse.getTimelines()) {
+            if (timeline.getLastT() > this.presentTime) continue;
+            if (!this.multiverse.isTimelineActive(timeline)) continue;
+
+            int shiftedL = timeline.getL() - this.multiverse.getBotTimelineL();
+            mandatoryTimelines[shiftedL] = true;
+        }
 
         for (Move move : turn) {
             if (move.noop()) continue;
-            int fromL = move.from().l() - this.multiverse.getBotTimelineL();
-            int toL = move.to().l() - this.multiverse.getBotTimelineL();
+            int shiftedFromL = move.from().l() - this.multiverse.getBotTimelineL();
+            int shiftedToL = move.to().l() - this.multiverse.getBotTimelineL();
 
-            // Always allow finalization of king capture turns
             if (this.multiverse.getLocationContents(move.to()).type() == PieceType.KING)
+                // Always allow finalization of king capture turns
                 return true;
 
-            // Moves that rewind the present *usually* result in finalizable turns
-            if (this.doesMoveRewindPresent(move))
-                return true;
+            if (consumedTimelines[shiftedFromL])
+                // A piece cannot move from a timeline already played on
+                return false;
 
-            if (consumedTimelines[fromL] > 0 || consumedTimelines[toL] > 0) {
-                valid = false;
+            Integer activatedTimeline = this.doesMoveActivateTimeline(move, consumedTimelines[shiftedToL]);
+            if (activatedTimeline != null) {
+                Timeline timeline = this.multiverse.getTimeline(activatedTimeline);
+                int shiftedActivatedTimelineL = activatedTimeline - this.multiverse.getBotTimelineL();
+                if (shiftedActivatedTimelineL >= 0 && shiftedActivatedTimelineL < mandatoryTimelines.length && timeline.getLastT() <= this.presentTime)
+                    mandatoryTimelines[shiftedActivatedTimelineL] = true;
             }
 
-            consumedTimelines[fromL]++;
-            if (fromL != toL) consumedTimelines[toL]++;
+            Timeline toTimeline = this.multiverse.getTimeline(move.to().l());
+
+            consumedTimelines[shiftedFromL] = true;
+            if (move.to().t() == toTimeline.getLastT()) consumedTimelines[shiftedToL] = true;
         }
-        for (Timeline timeline : this.multiverse.getActiveTimelines()) {
-            if (timeline.getLastT() > this.getPresentTime()) continue; // Timelines that are ahead of the present don't need to be played on
+
+        // Check if all mandatory timelines have been consumed
+        for (Timeline timeline : this.multiverse.getTimelines()) {
             int l = timeline.getL() - this.multiverse.getBotTimelineL();
-            if (consumedTimelines[l] != 1) {
-                valid = false;
-                break;
+            if (!mandatoryTimelines[l]) continue;
+            if (!consumedTimelines[l]) {
+                // If a mandatory timeline hasn't been played on, the turn is not finalizable
+                return false;
             }
         }
 
-        return valid;
+        return true;
     }
 
     private void updatePresentTime() {

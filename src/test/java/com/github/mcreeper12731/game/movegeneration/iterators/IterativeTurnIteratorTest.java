@@ -1,6 +1,5 @@
 package com.github.mcreeper12731.game.movegeneration.iterators;
 
-import com.github.mcreeper12731.MainApplication;
 import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.*;
 import com.github.mcreeper12731.game.models.scored.ScoredBoard;
@@ -11,8 +10,6 @@ import com.github.mcreeper12731.game.presets.Preset;
 import com.github.mcreeper12731.utility.Log;
 import org.junit.jupiter.api.Test;
 
-import javax.tools.JavaCompiler;
-import java.math.BigDecimal;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -57,8 +54,7 @@ class IterativeTurnIteratorTest {
             //Log.debug("Test", turn);
 
             game.applyMovesFromTurnStart(turn);
-            // turn iterator does not guarantee turn finalization - this should be checked
-            //assertTrue(game.isCurrentTurnFinalizable());
+            assertTrue(game.isCurrentTurnFinalizable());
             game.undoAllMovesFromCurrentTurn();
         }
     }
@@ -145,7 +141,7 @@ class IterativeTurnIteratorTest {
     }
 
     @Test
-    public void generateTurnsArbitrary() {
+    public void turnStatistics() {
 
         Game game = new Game(
                 new Multiverse.Builder(5)

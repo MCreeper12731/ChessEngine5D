@@ -1,6 +1,5 @@
-package com.github.mcreeper12731.utility;
+package com.github.mcreeper12731.utility.listviews;
 
-import com.github.mcreeper12731.utility.listviews.ReducedListView;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

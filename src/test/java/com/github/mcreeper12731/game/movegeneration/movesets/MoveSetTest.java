@@ -1,4 +1,4 @@
-package com.github.mcreeper12731.game.pieces.movesets;
+package com.github.mcreeper12731.game.movegeneration.movesets;
 
 import com.github.mcreeper12731.engine.config.NegamaxStrategyConfig;
 import com.github.mcreeper12731.engine.evaluators.Evaluator;

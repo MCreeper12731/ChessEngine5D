@@ -1,4 +1,4 @@
-package com.github.mcreeper12731.game.models.bit;
+package com.github.mcreeper12731.game.bitmodels;
 
 import com.github.mcreeper12731.game.models.Board;
 import com.github.mcreeper12731.game.models.Color;

@@ -1,9 +1,7 @@
-package com.github.mcreeper12731.game.logic;
+package com.github.mcreeper12731.game.movegeneration.iterators;
 
 import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.*;
-import com.github.mcreeper12731.game.movegeneration.iterators.BoardMoveIterator;
-import com.github.mcreeper12731.game.movegeneration.iterators.TurnIterator;
 import com.github.mcreeper12731.game.models.pieces.PieceType;
 import com.github.mcreeper12731.game.presets.Preset;
 import com.github.mcreeper12731.utility.Iterators;

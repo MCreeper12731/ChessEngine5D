@@ -50,25 +50,4 @@ class PieceTest {
         actualMoves = actualMoves.stream().filter(m -> m.from().l() != m.to().l() || m.from().t() != m.to().t()).toList();
         assertEquals(artificialMoves, actualMoves);
     }
-
-    private void assertPackUnpack(Piece piece) {
-        long packedPiece = Piece.getPackedPiece(piece.color(), piece.type(), piece.location(), piece.moved());
-        assertEquals(piece, new Piece(packedPiece));
-    }
-
-    @Test
-    public void unpacksCorrectlyWhenPacked() {
-
-        Piece piece = new Piece(Color.WHITE, PieceType.QUEEN, new Point4D(15, -10, 59, 100), true);
-        assertPackUnpack(piece);
-
-        piece = new Piece(Color.BLACK, PieceType.DRAGON, new Point4D(30, 50, 10, 20), false);
-        assertPackUnpack(piece);
-
-        piece = new Piece(null, PieceType.EMPTY, null, false);
-        assertPackUnpack(piece);
-
-        piece = new Piece(Color.WHITE, PieceType.QUEEN, new Point4D(15, -200, 59, 100), false);
-        assertPackUnpack(piece);
-    }
 }

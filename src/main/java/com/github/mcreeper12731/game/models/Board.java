@@ -101,17 +101,19 @@ public class Board {
         public Builder(Board boardToCopy, int l, int t, Move move) {
             this(boardToCopy.size, l, t);
 
+            // Place the new piece at destination
             if (
-                    !move.noop() && move.to().l() == this.l && boardToCopy.t == move.to().t()
+                    !move.noop() && move.to().l() == l && boardToCopy.t == move.to().t()
                             || boardToCopy.l != l
             ) {
                 this.withPiece(move.color(), move.toType(), move.to().x(), move.to().y(), true);
             }
 
+            // Copy the pieces over
             for (Piece piece : boardToCopy.pieces) {
-                if (piece.type() == PieceType.EMPTY) continue;
-                if (move.from().l() == this.l && piece.location().equals(move.from())) continue;
-                if (this.contents[piece.location().y() * this.size + piece.location().x()] != null) continue;
+                if (piece.type() == PieceType.EMPTY) continue; // Don't copy empty pieces
+                if (move.from().l() == this.l && piece.location().equals(move.from())) continue; // Don't copy the moved piece
+                if (this.contents[piece.location().y() * this.size + piece.location().x()] != null) continue; // Don't copy the already placed piece again
 
                 this.withPiece(piece, piece.moved());
             }

@@ -77,7 +77,7 @@ public class Game {
             throw new RuntimeException("Cannot apply move - timeline does not exist!");
         }
 
-        Board toBoard = toTimeline.getBoardByT(move.to().t());
+        Board toBoard = toTimeline.getBoardFromT(move.to().t());
 
         if (toBoard == null) {
             Log.debug("Game",this);

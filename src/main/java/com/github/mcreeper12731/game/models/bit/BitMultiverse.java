@@ -1,5 +1,9 @@
-package com.github.mcreeper12731.game.models;
+package com.github.mcreeper12731.game.models.bit;
 
+import com.github.mcreeper12731.game.models.Board;
+import com.github.mcreeper12731.game.models.Multiverse;
+import com.github.mcreeper12731.game.models.Point4D;
+import com.github.mcreeper12731.game.models.Timeline;
 import com.github.mcreeper12731.game.pieces.Piece;
 import com.github.mcreeper12731.utility.listviews.CompoundListView;
 import com.github.mcreeper12731.utility.listviews.MappedListView;
@@ -7,16 +11,16 @@ import com.github.mcreeper12731.utility.listviews.ReducedListView;
 
 import java.util.*;
 
-public class Multiverse {
+public class BitMultiverse {
 
     private final int boardSize;
     private final boolean isEven;
     // Timelines with L={-1, -2, ...}
-    private final List<Timeline> negativeTimelines = new ArrayList<>();
+    private final List<BitTimeline> negativeTimelines = new ArrayList<>();
     // Timelines with L={0, 1, 2, ...}
-    private final List<Timeline> positiveTimelines = new ArrayList<>();
+    private final List<BitTimeline> positiveTimelines = new ArrayList<>();
 
-    private Multiverse(
+    private BitMultiverse(
             Builder builder
     ) {
         this.boardSize = builder.boardSize;
@@ -25,7 +29,7 @@ public class Multiverse {
         this.positiveTimelines.addAll(builder.positiveTimelines);
     }
 
-    public void addTimeline(Timeline timeline) {
+    public void addTimeline(BitTimeline timeline) {
         if (timeline.getL() >= 0) {
             positiveTimelines.add(timeline);
             return;
@@ -33,7 +37,7 @@ public class Multiverse {
         negativeTimelines.add(timeline);
     }
 
-    public Timeline getTimeline(int l) {
+    public BitTimeline getTimeline(int l) {
         if (l >= 0) {
             if (l >= positiveTimelines.size()) return null;
             return positiveTimelines.get(l);
@@ -50,47 +54,29 @@ public class Multiverse {
         negativeTimelines.removeLast();
     }
 
-    public Board getBoard(int l, int t) {
-        Timeline timeline = this.getTimeline(l);
+    public BitBoard getBoard(int l, int t) {
+        BitTimeline timeline = this.getTimeline(l);
         if (timeline == null) return null;
 
         return timeline.getBoardFromT(t);
     }
 
-    /***
-     *
-     * @param location
-     * @return the piece at the given 4D location. Returns a piece with PieceType.NONE if there is no piece at the given location. Returns null if the location is not in the multiverse.
-     */
-    public Piece getLocationContents(Point4D location) {
-        return getLocationContents(location.l(), location.t(), location.x(), location.y());
-    }
+    public byte getLocationContents(int l, int t, int x, int y) {
+        BitTimeline timeline = this.getTimeline(l);
+        if (timeline == null) return 0;
 
-    /**
-     Gets the piece at the given 4D location
-     * @param l
-     * @param t
-     * @param x
-     * @param y
-     * @return the piece at the given 4D location. Returns a piece with PieceType.NONE if there is no piece at the given location. Returns null if the location is not in the multiverse.
-     */
-    public Piece getLocationContents(int l, int t, int x, int y) {
-        Timeline timeline = this.getTimeline(l);
-        if (timeline == null) return null;
-
-        Board board = timeline.getBoardFromT(t);
-        if (board == null) return null;
+        BitBoard board = timeline.getBoardFromT(t);
+        if (board == null) return 0;
 
         return board.getLocationContents(x, y);
     }
 
-
     public List<Integer> getTimelineLs() {
-        return new MappedListView<>(this.getTimelines(), Timeline::getL);
+        return new MappedListView<>(this.getTimelines(), BitTimeline::getL);
     }
 
     public List<Integer> getActiveTimelineLs() {
-        return new MappedListView<>(this.getActiveTimelines(), Timeline::getL);
+        return new MappedListView<>(this.getActiveTimelines(), BitTimeline::getL);
     }
 
     public boolean isTimelineActive(Timeline timeline) {
@@ -103,11 +89,11 @@ public class Multiverse {
         return true;
     }
 
-    public List<Timeline> getTimelines() {
+    public List<BitTimeline> getTimelines() {
         return new CompoundListView<>(this.negativeTimelines.reversed(), this.positiveTimelines);
     }
 
-    public List<Timeline> getActiveTimelines() {
+    public List<BitTimeline> getActiveTimelines() {
         int botL = this.getBotTimelineL();
         int topL = this.getTopTimelineL();
 
@@ -144,7 +130,7 @@ public class Multiverse {
 
         StringBuilder stringBuilder = new StringBuilder();
 
-        for (Timeline timeline : this.getTimelines()) {
+        for (BitTimeline timeline : this.getTimelines()) {
             stringBuilder.append(timeline.getL() >= 0 ? "" : "-").append("L").append(Math.abs(timeline.getL())).append(":").append("\n");
             for (int i = 0; i < timeline.size(); i++) {
                 stringBuilder.append("T").append((i + timeline.getFirstTimeCoordinate()) / 2 + 1).append(" - ").append(timeline.getBoardFromIndex(i).getPlayerTurn()).append(":").append("\n");
@@ -171,8 +157,8 @@ public class Multiverse {
     public static class Builder {
 
         private final int boardSize;
-        private final List<Timeline> negativeTimelines = new ArrayList<>();
-        private final List<Timeline> positiveTimelines = new ArrayList<>();
+        private final List<BitTimeline> negativeTimelines = new ArrayList<>();
+        private final List<BitTimeline> positiveTimelines = new ArrayList<>();
 
         private boolean isEven = false;
 
@@ -180,13 +166,7 @@ public class Multiverse {
             this.boardSize = boardSize;
         }
 
-        public Builder(Multiverse multiverse) {
-            this.boardSize = multiverse.boardSize;
-            this.negativeTimelines.addAll(multiverse.negativeTimelines);
-            this.positiveTimelines.addAll(multiverse.positiveTimelines);
-        }
-
-        public Builder withTimeline(Timeline timeline) {
+        public Builder withTimeline(BitTimeline timeline) {
 
             if (timeline.getL() >= 0) {
                 this.positiveTimelines.add(timeline);
@@ -201,13 +181,13 @@ public class Multiverse {
             return this;
         }
 
-        public Multiverse build() {
+        public BitMultiverse build() {
 
             this.negativeTimelines.sort((timeline, other) -> other.getL() - timeline.getL());
-            this.positiveTimelines.sort(Comparator.comparingInt(Timeline::getL));
+            this.positiveTimelines.sort(Comparator.comparingInt(BitTimeline::getL));
 
-            List<Integer> negativeTimelineLs = this.negativeTimelines.stream().map(Timeline::getL).toList();
-            List<Integer> positiveTimelineLs = this.positiveTimelines.stream().map(Timeline::getL).toList();
+            List<Integer> negativeTimelineLs = this.negativeTimelines.stream().map(BitTimeline::getL).toList();
+            List<Integer> positiveTimelineLs = this.positiveTimelines.stream().map(BitTimeline::getL).toList();
 
             if (new HashSet<>(this.negativeTimelines).size() != this.negativeTimelines.size() ||
                     new HashSet<>(this.positiveTimelines).size() != this.positiveTimelines.size()) throw new IllegalArgumentException("Timelines must be unique");
@@ -219,7 +199,8 @@ public class Multiverse {
                 if (positiveTimelineLs.get(i) != i) throw new IllegalArgumentException("Positive timelines must be in order and start at 0");
             }
 
-            return new Multiverse(this);
+            return new BitMultiverse(this);
         }
     }
+
 }

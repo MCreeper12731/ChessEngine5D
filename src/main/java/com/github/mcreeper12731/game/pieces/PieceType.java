@@ -39,39 +39,4 @@ public enum PieceType {
     public Iterator<Move> moveIterator(Multiverse multiverse, Piece pieceInstance) {
         return this.moveSet.iterator(multiverse, pieceInstance);
     }
-
-    public static long toNumber(PieceType type) {
-        return switch (type) {
-            case EMPTY -> 0;
-            case KING -> 1;
-            case QUEEN -> 2;
-            case ROOK -> 3;
-            case BISHOP -> 4;
-            case KNIGHT -> 5;
-            case PAWN -> 6;
-            case UNICORN -> 7;
-            case DRAGON -> 8;
-            case PRINCESS -> 9;
-            case BRAWN -> 10;
-            case null -> 15;
-        };
-    }
-
-    public static PieceType fromNumber(int number) {
-        return switch (number) {
-            case 0 -> PieceType.EMPTY;
-            case 1 -> PieceType.KING;
-            case 2 -> PieceType.QUEEN;
-            case 3 -> PieceType.ROOK;
-            case 4 -> PieceType.BISHOP;
-            case 5 -> PieceType.KNIGHT;
-            case 6 -> PieceType.PAWN;
-            case 7 -> PieceType.UNICORN;
-            case 8 -> PieceType.DRAGON;
-            case 9 -> PieceType.PRINCESS;
-            case 10 -> PieceType.BRAWN;
-            case 15 -> null;
-            default -> throw new IllegalArgumentException("Invalid piece number: " + number);
-        };
-    }
 }

@@ -1,21 +1,21 @@
-package com.github.mcreeper12731.game.models;
+package com.github.mcreeper12731.game.models.bit;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Timeline {
+public class BitTimeline {
 
     private final int l;
     private final int startTime;
-    private final List<Board> boards;
+    private final List<BitBoard> boards;
 
-    private Timeline(Builder builder) {
+    private BitTimeline(Builder builder) {
         this.l = builder.l;
         this.startTime = builder.startTime;
         this.boards = builder.boards;
     }
 
-    public void addBoard(Board board) {
+    public void addBoard(BitBoard board) {
         this.boards.add(board);
     }
 
@@ -35,17 +35,17 @@ public class Timeline {
         return this.startTime + this.size() - 1;
     }
 
-    public Board getBoardFromIndex(int index) {
+    public BitBoard getBoardFromIndex(int index) {
         if (index < 0 || index >= this.boards.size()) return null;
 
         return this.boards.get(index);
     }
 
-    public Board getBoardFromT(int time) {
+    public BitBoard getBoardFromT(int time) {
         return getBoardFromIndex(time - startTime);
     }
 
-    public Board getLastBoard() {
+    public BitBoard getLastBoard() {
         return this.boards.getLast();
     }
 
@@ -56,7 +56,7 @@ public class Timeline {
     public static class Builder {
 
         private final int l;
-        private final List<Board> boards = new ArrayList<>();
+        private final List<BitBoard> boards = new ArrayList<>();
 
         private int startTime = 0;
 
@@ -64,7 +64,7 @@ public class Timeline {
             this.l = l;
         }
 
-        public Builder withBoard(Board board) {
+        public Builder withBoard(BitBoard board) {
             boards.add(board);
             return this;
         }
@@ -74,8 +74,9 @@ public class Timeline {
             return this;
         }
 
-        public Timeline build() {
-            return new Timeline(this);
+        public BitTimeline build() {
+            return new BitTimeline(this);
         }
     }
+
 }

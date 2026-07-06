@@ -51,6 +51,10 @@ public class Log {
     }
 
     public static void debug(String prefix, Object... messages) {
+        if (messages.length == 0) {
+            debug(prefix, "");
+            return;
+        }
         StringBuilder messageBuilder = new StringBuilder();
         for (Object message : messages) {
             messageBuilder.append(message).append(" ");

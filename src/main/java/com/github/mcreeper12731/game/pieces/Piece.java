@@ -15,20 +15,6 @@ public record Piece(
         boolean moved
         ) {
 
-    public Piece(long packedPiece) {
-        this(
-                Color.fromNumber((int) ((packedPiece & (0b11L << 2)) >> 2)),
-                PieceType.fromNumber((int) ((packedPiece & (0b1111L << 4)) >> 4)),
-                new Point4D(
-                        (int) ((packedPiece & (0b11111111L << 32)) >> 32),
-                        (int) ((packedPiece & (0b11111111L << 24)) >> 24) - (((int)(packedPiece) & 0b1) == 1 ? 256 : 0),
-                        (int) ((packedPiece & (0b11111111L << 16)) >> 16),
-                        (int) ((packedPiece & (0b11111111L << 8)) >> 8)
-                ),
-                (packedPiece & 0b10) == 0b10
-        );
-    }
-
     public Iterator<Move> getMoveIterator(Multiverse multiverse) {
         return this.type.moveIterator(multiverse, this);
     }
@@ -38,23 +24,6 @@ public record Piece(
         this.getMoveIterator(multiverse).forEachRemaining(moves::add);
 
         return moves;
-    }
-
-    public static long getPackedPiece(Color color, PieceType type, Point4D location, boolean moved) {
-        long packedPiece = 0L;
-        packedPiece += (moved ? 1 : 0) << 1;
-        packedPiece += (Color.toNumber(color) & 0b11) << 2;
-        packedPiece += (PieceType.toNumber(type) & 0b1111) << 4;
-
-        if (location != null) {
-            packedPiece += location.t() < 0 ? 1 : 0;
-            packedPiece += (long) (location.y() & 0b11111111) << 8;
-            packedPiece += (long) (location.x() & 0b11111111) << 16;
-            packedPiece += (long) (location.t() & 0b11111111) << 24;
-            packedPiece += (long) (location.l() & 0b11111111) << 32;
-        }
-
-        return packedPiece;
     }
 
     @Override

@@ -39,7 +39,7 @@ public class TimelineComponent extends Pane {
 
     private void addBoardComponent(int time) {
         BoardComponent board = new BoardComponent(
-                timeline.getBoardByIndex(time),
+                timeline.getBoardFromIndex(time),
                 application
         );
 

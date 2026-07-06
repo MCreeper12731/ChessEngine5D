@@ -44,7 +44,7 @@
                         <!--<options>
                             <option>-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005</option>
                         </options>-->
-                    <mainClass>com.github.mcreeper12731.MainApplication</mainClass>
+                    <mainClass>com.github.mcreeper12731.application.MainApplication</mainClass>
                 </configuration>
             </plugin>
         </plugins>

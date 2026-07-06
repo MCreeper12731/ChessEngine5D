@@ -1,7 +1,7 @@
 package com.github.mcreeper12731.game.models;
 
-import com.github.mcreeper12731.game.pieces.Piece;
-import com.github.mcreeper12731.game.pieces.PieceType;
+import com.github.mcreeper12731.game.models.pieces.Piece;
+import com.github.mcreeper12731.game.models.pieces.PieceType;
 
 import java.util.*;
 
@@ -10,7 +10,7 @@ import java.util.*;
  */
 public class Board {
 
-    private final static Piece EMPTY_PIECE = new Piece(null, PieceType.EMPTY, null, true);
+    private final static Piece EMPTY_PIECE = new Piece(null, PieceType.EMPTY, true);
 
     private final int size;
     private final int l;
@@ -19,10 +19,14 @@ public class Board {
      * Full board contents, null if a piece does not exist
      */
     private final Piece[] contents;
-    /**
-     * Non-empty pieces of board contents
-     */
-    private final List<Piece> pieces;
+
+    private Board(int size, int l, int t, Piece[] contents) {
+        this.size = size;
+        this.l = l;
+        this.t = t;
+
+        this.contents = contents;
+    }
 
     private Board(Builder builder) {
         this.size = builder.size;
@@ -30,7 +34,29 @@ public class Board {
         this.t = builder.t;
 
         this.contents = builder.contents;
-        this.pieces = Collections.unmodifiableList(builder.pieces);
+    }
+
+    public Board applyMove(int newL, int newT, Move move) {
+
+        Piece[] contentsNew = new Piece[this.contents.length];
+
+        System.arraycopy(this.contents, 0, contentsNew, 0, this.contents.length);
+
+        if (!move.noop() && move.from().l() == newL && this.l == move.from().l() && this.t == move.from().t()) {
+            contentsNew[move.from().x() + move.from().y() * this.size] = null;
+        }
+
+        if (!move.noop() && move.to().l() == newL && this.t == move.to().t() || this.l != newL) {
+            Piece piece = new Piece(
+                    move.color(),
+                    move.toType(),
+                    true
+            );
+
+            contentsNew[move.to().x() + move.to().y() * this.size] = piece;
+        }
+
+        return new Board(this.size, newL, newT, contentsNew);
     }
 
     /**
@@ -65,6 +91,11 @@ public class Board {
     }
 
     public List<Piece> getPieces() {
+        List<Piece> pieces = new ArrayList<>();
+        for (Piece piece : this.contents) {
+            if (piece == null) continue;
+            pieces.add(piece);
+        }
         return pieces;
     }
 
@@ -87,33 +118,26 @@ public class Board {
         private final int l;
         private final int t;
         private final Piece[] contents;
-        private final List<Piece> pieces;
 
         public Builder(int size, int l, int t) {
             this.size = size;
             this.l = l;
             this.t = t;
             this.contents = new Piece[size*size];
-
-            this.pieces = new ArrayList<>(size*size / 4);
         }
 
-        public Builder(Board boardToCopy, int l, int t, Move move) {
-            this(boardToCopy.size, l, t);
+        @Deprecated
+        public Builder(Board boardToCopy, int newL, int newT, Move move) {
+            this(boardToCopy.size, newL, newT);
 
-            if (
-                    !move.noop() && move.to().l() == this.l && boardToCopy.t == move.to().t()
-                            || boardToCopy.l != l
-            ) {
-                this.withPiece(move.color(), move.toType(), move.to().x(), move.to().y(), true);
+            System.arraycopy(boardToCopy.contents, 0, this.contents, 0, this.size * this.size);
+
+            if (!move.noop() && move.from().l() == newL && boardToCopy.l == move.from().l() && boardToCopy.t == move.from().t()) {
+                this.contents[move.from().x() + move.from().y() * this.size] = null;
             }
 
-            for (Piece piece : boardToCopy.pieces) {
-                if (piece.type() == PieceType.EMPTY) continue;
-                if (move.from().l() == this.l && piece.location().equals(move.from())) continue;
-                if (this.contents[piece.location().y() * this.size + piece.location().x()] != null) continue;
-
-                this.withPiece(piece, piece.moved());
+            if (!move.noop() && move.to().l() == newL && boardToCopy.t == move.to().t() || boardToCopy.l != newL) {
+                this.withPiece(move.color(), move.toType(), move.to().x(), move.to().y(), true);
             }
         }
 
@@ -125,10 +149,6 @@ public class Board {
             return this.withPiece(Color.BLACK, pieceType, x, y);
         }
 
-        public Builder withPiece(Piece piece, boolean moved) {
-            return this.withPiece(piece.color(), piece.type(), piece.location().x(), piece.location().y(), moved);
-        }
-
         public Builder withPiece(Color pieceColor, PieceType pieceType, int x, int y) {
             return this.withPiece(pieceColor, pieceType, x, y, false);
         }
@@ -137,12 +157,10 @@ public class Board {
             Piece piece = new Piece(
                     pieceColor,
                     pieceType,
-                    new Point4D(this.l, this.t, x, y),
                     moved
             );
 
             this.contents[y * this.size + x] = piece;
-            this.pieces.add(piece);
             return this;
         }
 

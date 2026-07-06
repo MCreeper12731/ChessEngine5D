@@ -1,9 +1,9 @@
 package com.github.mcreeper12731.game.models;
 
-import com.github.mcreeper12731.game.pieces.Piece;
-import com.github.mcreeper12731.utility.CompoundListView;
-import com.github.mcreeper12731.utility.MappedListView;
-import com.github.mcreeper12731.utility.ReducedListView;
+import com.github.mcreeper12731.game.models.pieces.Piece;
+import com.github.mcreeper12731.utility.listviews.CompoundListView;
+import com.github.mcreeper12731.utility.listviews.MappedListView;
+import com.github.mcreeper12731.utility.listviews.ReducedListView;
 
 import java.util.*;
 
@@ -54,7 +54,7 @@ public class Multiverse {
         Timeline timeline = this.getTimeline(l);
         if (timeline == null) return null;
 
-        return timeline.getBoardByT(t);
+        return timeline.getBoardFromT(t);
     }
 
     /***
@@ -78,7 +78,7 @@ public class Multiverse {
         Timeline timeline = this.getTimeline(l);
         if (timeline == null) return null;
 
-        Board board = timeline.getBoardByT(t);
+        Board board = timeline.getBoardFromT(t);
         if (board == null) return null;
 
         return board.getLocationContents(x, y);
@@ -91,6 +91,10 @@ public class Multiverse {
 
     public List<Integer> getActiveTimelineLs() {
         return new MappedListView<>(this.getActiveTimelines(), Timeline::getL);
+    }
+
+    public boolean isTimelineActive(Timeline timeline) {
+        return this.isTimelineActive(timeline.getL());
     }
 
     public boolean isTimelineActive(int id) {
@@ -143,8 +147,8 @@ public class Multiverse {
         for (Timeline timeline : this.getTimelines()) {
             stringBuilder.append(timeline.getL() >= 0 ? "" : "-").append("L").append(Math.abs(timeline.getL())).append(":").append("\n");
             for (int i = 0; i < timeline.size(); i++) {
-                stringBuilder.append("T").append((i + timeline.getFirstTimeCoordinate()) / 2 + 1).append(" - ").append(timeline.getBoardByIndex(i).getPlayerTurn()).append(":").append("\n");
-                stringBuilder.append(timeline.getBoardByIndex(i).toString()).append("\n");
+                stringBuilder.append("T").append((i + timeline.getFirstTimeCoordinate()) / 2 + 1).append(" - ").append(timeline.getBoardFromIndex(i).getPlayerTurn()).append(":").append("\n");
+                stringBuilder.append(timeline.getBoardFromIndex(i).toString()).append("\n");
                 stringBuilder.append("\n");
             }
         }

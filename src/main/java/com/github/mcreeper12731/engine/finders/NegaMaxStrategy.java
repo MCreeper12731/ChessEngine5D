@@ -2,7 +2,6 @@ package com.github.mcreeper12731.engine.finders;
 
 import com.github.mcreeper12731.engine.config.NegamaxStrategyConfig;
 import com.github.mcreeper12731.engine.evaluators.Evaluator;
-import com.github.mcreeper12731.engine.evaluators.EvaluatorImpl;
 import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.models.scored.ScoredTurn;
 import com.github.mcreeper12731.game.Game;
@@ -32,7 +31,7 @@ public class NegaMaxStrategy {
 
     public NegaMaxStrategy() {
         this.config = NegamaxStrategyConfig.fromConfig();
-        this.evaluator = new EvaluatorImpl();
+        this.evaluator = new Evaluator();
     }
 
     public ScoredTurn findBestTurn(Game game) {
@@ -61,6 +60,7 @@ public class NegaMaxStrategy {
 
                 game.applyMoves(turn);
                 if (!game.isCurrentTurnFinalizable()) {
+                    Log.print("AlphaBeta", "Found non-finalizable turn!");
                     game.undoAllMovesFromCurrentTurn();
                     continue;
                 }
@@ -133,7 +133,7 @@ public class NegaMaxStrategy {
         double best = NEGATIVE_INFINITY;
         Iterator<List<Move>> turnsIterator = MoveGenerator.getIterativeTurnIterator(game);
         if (!turnsIterator.hasNext()) {
-            return 0.1;
+            return -0.000001;
         }
 
         while (turnsIterator.hasNext()) {

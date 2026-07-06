@@ -3,6 +3,7 @@ package com.github.mcreeper12731.game.movegeneration.iterators;
 import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Move;
 import com.github.mcreeper12731.game.models.Timeline;
+import com.github.mcreeper12731.utility.Permutations;
 
 import java.util.*;
 
@@ -206,7 +207,7 @@ public class IterativeTurnIterator implements Iterator<List<Move>> {
         activeMoves.addAll(branching);
 
         // Generate all permutations of activeMoves
-        List<List<Move>> permutations = permutationsOf(activeMoves);
+        List<List<Move>> permutations = Permutations.of(activeMoves);
 
         for (List<Move> perm : permutations) {
             if (maxMovesetsConsidered > 0 && permutationQueue.size() > maxMovesetsConsidered) {
@@ -242,28 +243,6 @@ public class IterativeTurnIterator implements Iterator<List<Move>> {
         List<Move> result = peeked;
         peeked = null;
         return result;
-    }
-
-    private static <T> List<List<T>> permutationsOf(List<T> list) {
-        List<List<T>> result = new ArrayList<>();
-        if (list.isEmpty()) {
-            result.add(Collections.emptyList());
-            return result;
-        }
-        heapPermutation(new ArrayList<>(list), list.size(), result);
-        return result;
-    }
-
-    private static <T> void heapPermutation(List<T> a, int size, List<List<T>> out) {
-        if (size == 1) {
-            out.add(new ArrayList<>(a));
-            return;
-        }
-        for (int i = 0; i < size; i++) {
-            heapPermutation(a, size - 1, out);
-            int j = (size % 2 == 1) ? 0 : i;
-            Collections.swap(a, j, size - 1);
-        }
     }
 
     private record BoardMoveIndex(int boardIndex, int moveIndex) {}

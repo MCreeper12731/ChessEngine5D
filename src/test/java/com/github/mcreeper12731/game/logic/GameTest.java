@@ -203,21 +203,24 @@ class GameTest {
 
         game.applyMovesAndFinalizeTurn(List.of(
                 new Move.Builder(game)
-                        .withPiece(game.getMultiverse().getLocationContents(0, 2, 2, 0))
+                        .withPieceMinimal(game.getMultiverse().getLocationContents(0, 2, 2, 0))
+                        .withFrom(0, 2, 2, 0)
                         .withTo(0, 2, 2, 1)
                         .build()
         ));
 
         game.applyMovesAndFinalizeTurn(List.of(
                 new Move.Builder(game)
-                        .withPiece(game.getMultiverse().getLocationContents(0, 3, 3, 2))
+                        .withPieceMinimal(game.getMultiverse().getLocationContents(0, 3, 3, 2))
+                        .withFrom(0, 3, 3, 2)
                         .withTo(0, 3, 3, 3)
                         .build()
         ));
 
         game.applyMovesAndFinalizeTurn(List.of(
                 new Move.Builder(game)
-                        .withPiece(game.getMultiverse().getLocationContents(0, 4, 2, 1))
+                        .withPieceMinimal(game.getMultiverse().getLocationContents(0, 4, 2, 1))
+                        .withFrom(0, 4, 2, 1)
                         .withTo(0, 2, 3, 2)
                         .build()
         ));

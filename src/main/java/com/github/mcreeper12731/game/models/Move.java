@@ -1,8 +1,9 @@
 package com.github.mcreeper12731.game.models;
 
 import com.github.mcreeper12731.game.Game;
-import com.github.mcreeper12731.game.pieces.Piece;
-import com.github.mcreeper12731.game.pieces.PieceType;
+import com.github.mcreeper12731.game.models.bit.BitPiece;
+import com.github.mcreeper12731.game.models.pieces.Piece;
+import com.github.mcreeper12731.game.models.pieces.PieceType;
 
 import java.util.Objects;
 
@@ -103,11 +104,17 @@ public record Move(
             return this.build();
         }
 
-        public Builder withPiece(Piece piece) {
-            this.from = piece.location();
+        public Builder withPieceMinimal(Piece piece) {
             this.fromType = piece.type();
             this.toType = piece.type();
             this.color = piece.color();
+            return this;
+        }
+
+        public Builder withBitPiece(byte piece) {
+            this.fromType = BitPiece.type(piece);
+            this.toType = BitPiece.type(piece);
+            this.color = BitPiece.color(piece);
             return this;
         }
 

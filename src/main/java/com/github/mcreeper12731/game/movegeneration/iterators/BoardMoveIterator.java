@@ -3,7 +3,8 @@ package com.github.mcreeper12731.game.movegeneration.iterators;
 import com.github.mcreeper12731.game.models.Board;
 import com.github.mcreeper12731.game.models.Multiverse;
 import com.github.mcreeper12731.game.models.Move;
-import com.github.mcreeper12731.game.pieces.Piece;
+import com.github.mcreeper12731.game.models.Point4D;
+import com.github.mcreeper12731.game.models.pieces.Piece;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -12,8 +13,8 @@ public class BoardMoveIterator implements Iterator<Move> {
 
     private final Multiverse multiverse;
     private final Board board;
-    private final Iterator<Piece> pieces;
 
+    private int index;
     private Iterator<Move> currentIterator;
     private boolean suppliedNoop;
 
@@ -21,7 +22,7 @@ public class BoardMoveIterator implements Iterator<Move> {
         this.multiverse = multiverse;
         this.board = board;
 
-        this.pieces = board.getPieces().iterator();
+        this.index = -1;
         this.currentIterator = Collections.emptyIterator();
         this.suppliedNoop = false;
         this.step();
@@ -31,13 +32,19 @@ public class BoardMoveIterator implements Iterator<Move> {
 
         if (this.currentIterator.hasNext()) return;
 
-        while (this.pieces.hasNext()) {
+        while (this.index < this.board.size() * this.board.size()) {
 
-            Piece nextPiece = pieces.next();
+            this.index++;
+
+            int x = this.index % this.board.size();
+            int y = this.index / this.board.size();
+
+            Piece nextPiece = this.board.getLocationContents(x, y);
+            if (nextPiece == null) continue;
 
             if (nextPiece.color() != board.getPlayerTurn()) continue;
 
-            this.currentIterator = nextPiece.getMoveIterator(this.multiverse);
+            this.currentIterator = nextPiece.getMoveIterator(this.multiverse, new Point4D(this.board.l(), this.board.t(), x, y));
             if (!this.currentIterator.hasNext()) continue;
             return;
         }

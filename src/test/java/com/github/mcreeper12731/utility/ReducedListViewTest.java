@@ -1,8 +1,8 @@
 package com.github.mcreeper12731.utility;
 
+import com.github.mcreeper12731.utility.listviews.ReducedListView;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;

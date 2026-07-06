@@ -35,14 +35,14 @@ public class Timeline {
         return this.startTime + this.size() - 1;
     }
 
-    public Board getBoardByIndex(int index) {
+    public Board getBoardFromIndex(int index) {
         if (index < 0 || index >= this.boards.size()) return null;
 
         return this.boards.get(index);
     }
 
-    public Board getBoardByT(int time) {
-        return getBoardByIndex(time - startTime);
+    public Board getBoardFromT(int time) {
+        return getBoardFromIndex(time - startTime);
     }
 
     public Board getLastBoard() {

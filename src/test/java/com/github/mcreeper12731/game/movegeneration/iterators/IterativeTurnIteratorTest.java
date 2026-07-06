@@ -1,18 +1,15 @@
 package com.github.mcreeper12731.game.movegeneration.iterators;
 
-import com.github.mcreeper12731.MainApplication;
 import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.*;
 import com.github.mcreeper12731.game.models.scored.ScoredBoard;
 import com.github.mcreeper12731.game.movegeneration.MoveGenerator;
-import com.github.mcreeper12731.game.pieces.Piece;
-import com.github.mcreeper12731.game.pieces.PieceType;
+import com.github.mcreeper12731.game.models.pieces.Piece;
+import com.github.mcreeper12731.game.models.pieces.PieceType;
 import com.github.mcreeper12731.game.presets.Preset;
 import com.github.mcreeper12731.utility.Log;
 import org.junit.jupiter.api.Test;
 
-import javax.tools.JavaCompiler;
-import java.math.BigDecimal;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -57,8 +54,7 @@ class IterativeTurnIteratorTest {
             //Log.debug("Test", turn);
 
             game.applyMovesFromTurnStart(turn);
-            // turn iterator does not guarantee turn finalization - this should be checked
-            //assertTrue(game.isCurrentTurnFinalizable());
+            assertTrue(game.isCurrentTurnFinalizable());
             game.undoAllMovesFromCurrentTurn();
         }
     }
@@ -105,14 +101,16 @@ class IterativeTurnIteratorTest {
 
         game.applyMovesAndFinalizeTurn(List.of(
                 new Move.Builder(game)
-                        .withPiece(game.getMultiverse().getLocationContents(0, 2, 2, 0))
+                        .withPieceMinimal(game.getMultiverse().getLocationContents(0, 2, 2, 0))
+                        .withFrom(0, 2, 2, 0)
                         .withTo(0, 2, 2, 1)
                         .build()
         ));
 
         game.applyMovesAndFinalizeTurn(List.of(
                 new Move.Builder(game)
-                        .withPiece(game.getMultiverse().getLocationContents(0, 3, 3, 2))
+                        .withPieceMinimal(game.getMultiverse().getLocationContents(0, 3, 3, 2))
+                        .withFrom(0, 3, 3, 2)
                         .withTo(0, 3, 3, 3)
                         .build()
         ));
@@ -145,7 +143,7 @@ class IterativeTurnIteratorTest {
     }
 
     @Test
-    public void generateTurnsArbitrary() {
+    public void turnStatistics() {
 
         Game game = new Game(
                 new Multiverse.Builder(5)

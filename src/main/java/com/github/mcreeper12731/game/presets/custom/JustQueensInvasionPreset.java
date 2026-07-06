@@ -5,7 +5,7 @@ import com.github.mcreeper12731.game.models.Board;
 import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.models.Multiverse;
 import com.github.mcreeper12731.game.models.Timeline;
-import com.github.mcreeper12731.game.pieces.PieceType;
+import com.github.mcreeper12731.game.models.pieces.PieceType;
 import com.github.mcreeper12731.game.presets.GamePreset;
 
 public class JustQueensInvasionPreset implements GamePreset {

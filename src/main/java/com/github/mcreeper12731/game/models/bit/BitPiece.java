@@ -1,7 +1,7 @@
 package com.github.mcreeper12731.game.models.bit;
 
 import com.github.mcreeper12731.game.models.Color;
-import com.github.mcreeper12731.game.pieces.PieceType;
+import com.github.mcreeper12731.game.models.pieces.PieceType;
 
 public class BitPiece {
     private final static int NUMBER_OF_TYPES = PieceType.values().length;

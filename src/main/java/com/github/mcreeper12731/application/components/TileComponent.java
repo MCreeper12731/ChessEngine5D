@@ -2,7 +2,7 @@ package com.github.mcreeper12731.application.components;
 
 import com.github.mcreeper12731.application.GraphicsApplication;
 import com.github.mcreeper12731.application.GraphicsConfig;
-import com.github.mcreeper12731.game.pieces.Piece;
+import com.github.mcreeper12731.game.models.pieces.Piece;
 import com.github.mcreeper12731.game.models.Point4D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;

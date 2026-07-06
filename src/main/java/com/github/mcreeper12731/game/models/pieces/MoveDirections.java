@@ -1,4 +1,4 @@
-package com.github.mcreeper12731.game.pieces;
+package com.github.mcreeper12731.game.models.pieces;
 
 import com.github.mcreeper12731.game.models.Point4D;
 

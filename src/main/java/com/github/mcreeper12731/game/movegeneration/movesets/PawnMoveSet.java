@@ -1,12 +1,12 @@
-package com.github.mcreeper12731.game.pieces.movesets;
+package com.github.mcreeper12731.game.movegeneration.movesets;
 
 import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.models.Multiverse;
 import com.github.mcreeper12731.game.models.Point4D;
 import com.github.mcreeper12731.game.models.Move;
-import com.github.mcreeper12731.game.pieces.MoveDirections;
-import com.github.mcreeper12731.game.pieces.Piece;
-import com.github.mcreeper12731.game.pieces.PieceType;
+import com.github.mcreeper12731.game.models.pieces.MoveDirections;
+import com.github.mcreeper12731.game.models.pieces.Piece;
+import com.github.mcreeper12731.game.models.pieces.PieceType;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -37,25 +37,28 @@ public class PawnMoveSet implements MoveSet {
     }
 
     @Override
-    public Iterator<Move> iterator(Multiverse multiverse, Piece piece) {
+    public Iterator<Move> iterator(Multiverse multiverse, Point4D pieceLocation) {
+        Piece piece = multiverse.getLocationContents(pieceLocation);
         if (piece.color() == Color.WHITE)
-            return new PawnMoveIterator(multiverse, piece, this.whiteMoves, this.whiteCaptures);
-        return new PawnMoveIterator(multiverse, piece, this.blackMoves, this.blackCaptures);
+            return new PawnMoveIterator(multiverse, piece, pieceLocation, this.whiteMoves, this.whiteCaptures);
+        return new PawnMoveIterator(multiverse, piece, pieceLocation, this.blackMoves, this.blackCaptures);
     }
 
     private static class PawnMoveIterator implements Iterator<Move> {
 
         private final Multiverse multiverse;
         private final Piece piece;
+        private final Point4D pieceLocation;
         private final List<Point4D> moveDirections;
         private final List<Point4D> captureDirections;
         private final List<Move> validMoves;
 
         private int moveIndex = 0;
 
-        public PawnMoveIterator(Multiverse multiverse, Piece piece, List<Point4D> moveDirections, List<Point4D> captureDirections) {
+        public PawnMoveIterator(Multiverse multiverse, Piece piece, Point4D pieceLocation, List<Point4D> moveDirections, List<Point4D> captureDirections) {
             this.multiverse = multiverse;
             this.piece = piece;
+            this.pieceLocation = pieceLocation;
             this.moveDirections = moveDirections;
             this.captureDirections = captureDirections;
             this.validMoves = new ArrayList<>();
@@ -65,7 +68,7 @@ public class PawnMoveSet implements MoveSet {
         private void constructValidMoves() {
 
             for (Point4D moveDirection : this.moveDirections) {
-                Point4D toLocation = this.piece.location().add(moveDirection);
+                Point4D toLocation = this.pieceLocation.add(moveDirection);
                 Piece toPiece = this.multiverse.getLocationContents(toLocation);
 
                 if (toPiece == null) continue;
@@ -73,7 +76,8 @@ public class PawnMoveSet implements MoveSet {
 
                 this.validMoves.add(
                         new Move.Builder()
-                                .withPiece(this.piece)
+                                .withPieceMinimal(this.piece)
+                                .withFrom(this.pieceLocation)
                                 .withTo(toLocation)
                                 .build()
                 );
@@ -88,14 +92,15 @@ public class PawnMoveSet implements MoveSet {
 
                 this.validMoves.add(
                         new Move.Builder()
-                                .withPiece(this.piece)
+                                .withPieceMinimal(this.piece)
+                                .withFrom(this.pieceLocation)
                                 .withTo(toLocation)
                                 .build()
                 );
             }
 
             for (Point4D captureDirection : this.captureDirections) {
-                Point4D toLocation = this.piece.location().add(captureDirection);
+                Point4D toLocation = this.pieceLocation.add(captureDirection);
                 Piece toPiece = this.multiverse.getLocationContents(toLocation);
 
                 if (toPiece == null) continue;
@@ -103,7 +108,8 @@ public class PawnMoveSet implements MoveSet {
                 if (this.piece.color().other() == toPiece.color())
                     this.validMoves.add(
                             new Move.Builder()
-                                    .withPiece(this.piece)
+                                    .withPieceMinimal(this.piece)
+                                    .withFrom(this.pieceLocation)
                                     .withTo(toLocation)
                                     .build()
                     );
@@ -121,8 +127,10 @@ public class PawnMoveSet implements MoveSet {
 
                 this.validMoves.add(
                         new Move.Builder()
-                                .withPiece(this.piece)
+                                .withPieceMinimal(this.piece)
+                                .withFrom(this.pieceLocation)
                                 .withTo(toLocation)
+                                .withEnPassant(potentialPawnLocation)
                                 .build()
                 );
             }

@@ -1,10 +1,7 @@
 package com.github.mcreeper12731.game.models.bit;
 
-import com.github.mcreeper12731.game.models.Board;
 import com.github.mcreeper12731.game.models.Multiverse;
-import com.github.mcreeper12731.game.models.Point4D;
 import com.github.mcreeper12731.game.models.Timeline;
-import com.github.mcreeper12731.game.pieces.Piece;
 import com.github.mcreeper12731.utility.listviews.CompoundListView;
 import com.github.mcreeper12731.utility.listviews.MappedListView;
 import com.github.mcreeper12731.utility.listviews.ReducedListView;

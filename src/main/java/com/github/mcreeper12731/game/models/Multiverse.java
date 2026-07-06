@@ -1,6 +1,6 @@
 package com.github.mcreeper12731.game.models;
 
-import com.github.mcreeper12731.game.pieces.Piece;
+import com.github.mcreeper12731.game.models.pieces.Piece;
 import com.github.mcreeper12731.utility.listviews.CompoundListView;
 import com.github.mcreeper12731.utility.listviews.MappedListView;
 import com.github.mcreeper12731.utility.listviews.ReducedListView;

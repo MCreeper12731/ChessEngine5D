@@ -5,9 +5,8 @@ import com.github.mcreeper12731.game.models.Board;
 import com.github.mcreeper12731.game.models.Move;
 import com.github.mcreeper12731.game.models.Point4D;
 import com.github.mcreeper12731.game.movegeneration.MoveGenerator;
-import com.github.mcreeper12731.game.pieces.Piece;
-import com.github.mcreeper12731.game.pieces.PieceType;
-import com.github.mcreeper12731.utility.Log;
+import com.github.mcreeper12731.game.models.pieces.Piece;
+import com.github.mcreeper12731.game.models.pieces.PieceType;
 
 import java.util.*;
 
@@ -124,12 +123,12 @@ public record ScoredBoard(Board board, List<Integer> danger, List<Point4D> enemi
                 case EMPTY -> 0;
             };
 
-            Board nextBoard = new Board.Builder(this.board, this.board.l(), this.board().t() + 1, move)
-                    .build();
+            Board nextBoard = this.board.applyMove(this.board.l(), this.board.t() + 1, move);
 
             int kingCount = 0;
-            for (Piece piece : nextBoard.getPieces()) {
-                int i = piece.location().x() + piece.location().y() * this.board.size();
+            for (int i = 0; i < nextBoard.size() * nextBoard.size(); i++) {
+                Piece piece = nextBoard.getLocationContents(i % nextBoard.size(), i / nextBoard.size());
+
                 if (piece.color() != this.board.getPlayerTurn()) continue;
                 score += switch (piece.type()) {
                     case KING -> {

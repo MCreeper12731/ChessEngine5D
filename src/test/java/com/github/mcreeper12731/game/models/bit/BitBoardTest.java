@@ -3,8 +3,7 @@ package com.github.mcreeper12731.game.models.bit;
 import com.github.mcreeper12731.game.models.Board;
 import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.models.Move;
-import com.github.mcreeper12731.game.pieces.PieceType;
-import com.github.mcreeper12731.utility.Log;
+import com.github.mcreeper12731.game.models.pieces.PieceType;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

@@ -1,13 +1,10 @@
 package com.github.mcreeper12731.application.controllers;
 
 import com.github.mcreeper12731.application.GraphicsApplication;
-import com.github.mcreeper12731.game.models.Color;
+import com.github.mcreeper12731.game.models.*;
 import com.github.mcreeper12731.application.components.TileComponent;
-import com.github.mcreeper12731.game.models.Multiverse;
-import com.github.mcreeper12731.game.models.Timeline;
-import com.github.mcreeper12731.game.models.Move;
-import com.github.mcreeper12731.game.pieces.Piece;
-import com.github.mcreeper12731.game.pieces.PieceType;
+import com.github.mcreeper12731.game.models.pieces.Piece;
+import com.github.mcreeper12731.game.models.pieces.PieceType;
 import com.github.mcreeper12731.utility.Log;
 
 import java.util.List;
@@ -52,7 +49,7 @@ public class PlayerController extends Controller {
 
         if (selectedTile != null && selectedTile.getLocation() == clickedTile.getLocation()) {
             selectedTile.setHighlighted(false);
-            setHighlightedTiles(selectedTile.getPiece(), false);
+            setHighlightedTiles(selectedTile.getPiece(), selectedTile.getLocation(), false);
             selectedTile = null;
             return;
         }
@@ -66,18 +63,18 @@ public class PlayerController extends Controller {
 
         if (selectedTile != null) {
             selectedTile.setHighlighted(false);
-            setHighlightedTiles(selectedTile.getPiece(), false);
+            setHighlightedTiles(selectedTile.getPiece(), selectedTile.getLocation(), false);
         }
 
         selectedTile = clickedTile;
-        setHighlightedTiles(selectedTile.getPiece(), true);
+        setHighlightedTiles(selectedTile.getPiece(), selectedTile.getLocation(), true);
 
         selectedTile.setHighlighted(true);
     }
 
-    private void setHighlightedTiles(Piece piece, boolean highlighted) {
+    private void setHighlightedTiles(Piece piece, Point4D pieceLocation, boolean highlighted) {
 
-        List<Move> legalMoves = piece.getAvailableMoves(application.getGame().getMultiverse());
+        List<Move> legalMoves = piece.getAvailableMoves(application.getGame().getMultiverse(), pieceLocation);
 
         for (Move move : legalMoves) {
             TileComponent tile = application.getView()
@@ -97,7 +94,7 @@ public class PlayerController extends Controller {
 
         if (!isValidMove(move)) return;
 
-        setHighlightedTiles(selectedTile.getPiece(), false);
+        setHighlightedTiles(selectedTile.getPiece(), clickedTile.getLocation(), false);
         application.getGame().applyMove(move);
         selectedTile.setHighlighted(false);
         selectedTile = null;
@@ -121,7 +118,7 @@ public class PlayerController extends Controller {
         if (pieceTo == null) return false;
         if (pieceTo.color() == move.color()) return false;
 
-        List<Move> legalMoves = pieceFrom.getAvailableMoves(multiverse);
+        List<Move> legalMoves = pieceFrom.getAvailableMoves(multiverse, move.from());
 
         for (Move legalMove : legalMoves) {
             if (move.equals(legalMove)) return true;

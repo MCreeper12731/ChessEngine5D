@@ -3,7 +3,7 @@ package com.github.mcreeper12731.game.presets.puzzles;
 import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.*;
 import com.github.mcreeper12731.game.models.Move;
-import com.github.mcreeper12731.game.pieces.PieceType;
+import com.github.mcreeper12731.game.models.pieces.PieceType;
 
 import java.util.List;
 

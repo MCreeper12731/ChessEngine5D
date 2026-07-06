@@ -1,8 +1,8 @@
 package com.github.mcreeper12731.game;
 
 import com.github.mcreeper12731.game.models.*;
-import com.github.mcreeper12731.game.pieces.Piece;
-import com.github.mcreeper12731.game.pieces.PieceType;
+import com.github.mcreeper12731.game.models.pieces.Piece;
+import com.github.mcreeper12731.game.models.pieces.PieceType;
 import com.github.mcreeper12731.utility.Log;
 
 import java.util.*;
@@ -109,8 +109,7 @@ public class Game {
 
             int startingTime = move.to().t() + 1;
 
-            Board newBoard = new Board.Builder(toBoard, newTimelineL, startingTime, move)
-                    .build();
+            Board newBoard = toBoard.applyMove(newTimelineL, startingTime, move);
 
             Timeline newTimeline = new Timeline.Builder(newTimelineL)
                     .withStartTime(startingTime)
@@ -144,8 +143,7 @@ public class Game {
     public void applyMoveToTimeline(Timeline timeline, Move move) {
 
         Board lastBoard = timeline.getLastBoard();
-        Board nextBoard = new Board.Builder(lastBoard, timeline.getL(), timeline.getLastT() + 1, move)
-                .build();
+        Board nextBoard = lastBoard.applyMove(timeline.getL(), timeline.getLastT() + 1, move);
 
         timeline.addBoard(nextBoard);
     }

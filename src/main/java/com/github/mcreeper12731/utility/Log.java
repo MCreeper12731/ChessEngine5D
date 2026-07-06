@@ -12,19 +12,15 @@ public class Log {
     private static final String CYAN = "\u001B[36m";
 
     public static void debug(String prefix, String message) {
-        if (ENABLED)
-            System.out.printf("%s%s> %s%s%n", GRAY, prefix, RESET, message);
+        if (ENABLED) {
+            String[] messageLines = message.split("\n");
+            for (String line : messageLines) {
+                System.out.printf("%s%s> %s%s%n", GRAY, prefix, RESET, line);
+            }
+        }
     }
 
     public static void debug(String prefix, Object message) {
-        String messageString = message.toString();
-        if (messageString.contains("\n")) {
-            String[] messageLines = messageString.split("\n");
-            for (String line : messageLines) {
-                debug(prefix, line);
-            }
-            return;
-        }
         debug(prefix, message.toString());
     }
 

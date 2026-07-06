@@ -4,8 +4,8 @@ import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.*;
 import com.github.mcreeper12731.game.models.scored.ScoredBoard;
 import com.github.mcreeper12731.game.movegeneration.MoveGenerator;
-import com.github.mcreeper12731.game.pieces.Piece;
-import com.github.mcreeper12731.game.pieces.PieceType;
+import com.github.mcreeper12731.game.models.pieces.Piece;
+import com.github.mcreeper12731.game.models.pieces.PieceType;
 import com.github.mcreeper12731.game.presets.Preset;
 import com.github.mcreeper12731.utility.Log;
 import org.junit.jupiter.api.Test;
@@ -101,14 +101,16 @@ class IterativeTurnIteratorTest {
 
         game.applyMovesAndFinalizeTurn(List.of(
                 new Move.Builder(game)
-                        .withPiece(game.getMultiverse().getLocationContents(0, 2, 2, 0))
+                        .withPieceMinimal(game.getMultiverse().getLocationContents(0, 2, 2, 0))
+                        .withFrom(0, 2, 2, 0)
                         .withTo(0, 2, 2, 1)
                         .build()
         ));
 
         game.applyMovesAndFinalizeTurn(List.of(
                 new Move.Builder(game)
-                        .withPiece(game.getMultiverse().getLocationContents(0, 3, 3, 2))
+                        .withPieceMinimal(game.getMultiverse().getLocationContents(0, 3, 3, 2))
+                        .withFrom(0, 3, 3, 2)
                         .withTo(0, 3, 3, 3)
                         .build()
         ));

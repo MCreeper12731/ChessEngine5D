@@ -1,13 +1,10 @@
 package com.github.mcreeper12731.game.logic;
 
 import com.github.mcreeper12731.game.Game;
-import com.github.mcreeper12731.game.models.Board;
-import com.github.mcreeper12731.game.models.Multiverse;
-import com.github.mcreeper12731.game.models.Timeline;
-import com.github.mcreeper12731.game.models.Move;
+import com.github.mcreeper12731.game.models.*;
 import com.github.mcreeper12731.game.movegeneration.iterators.BoardMoveIterator;
 import com.github.mcreeper12731.game.movegeneration.iterators.TurnIterator;
-import com.github.mcreeper12731.game.pieces.PieceType;
+import com.github.mcreeper12731.game.models.pieces.PieceType;
 import com.github.mcreeper12731.game.presets.Preset;
 import com.github.mcreeper12731.utility.Iterators;
 import com.github.mcreeper12731.utility.Log;
@@ -55,7 +52,7 @@ public class TurnIteratorTest {
                 ).build()
         );
 
-        assertEquals(4, game.getMultiverse().getLocationContents(0, 0, 0, 0).getAvailableMoves(game.getMultiverse()).size());
+        assertEquals(4, game.getMultiverse().getLocationContents(0, 0, 0, 0).getAvailableMoves(game.getMultiverse(), new Point4D(0, 0, 0, 0)).size());
         Iterator<List<Move>> fullIterator = new TurnIterator(game);
         Iterator<List<Move>> iterator = new TurnIterator(game);
 
@@ -72,7 +69,7 @@ public class TurnIteratorTest {
                         .build()
         ));
 
-        assertEquals(4, game.getMultiverse().getLocationContents(0, 1, 2, 2).getAvailableMoves(game.getMultiverse()).size());
+        assertEquals(4, game.getMultiverse().getLocationContents(0, 1, 2, 2).getAvailableMoves(game.getMultiverse(), new Point4D(0, 1, 2, 2)).size());
         fullIterator = new TurnIterator(game);
         iterator = new TurnIterator(game);
 
@@ -89,7 +86,7 @@ public class TurnIteratorTest {
                         .build()
         ));
 
-        assertEquals(5, game.getMultiverse().getLocationContents(0, 2, 1, 0).getAvailableMoves(game.getMultiverse()).size());
+        assertEquals(5, game.getMultiverse().getLocationContents(0, 2, 1, 0).getAvailableMoves(game.getMultiverse(), new Point4D(0, 2, 1, 0)).size());
 
         Iterator<Move> boardIterator = new BoardMoveIterator(game.getMultiverse().getBoard(0, 2), game.getMultiverse());
         List<Move> allBoardMoves = new ArrayList<>();

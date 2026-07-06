@@ -5,8 +5,8 @@ import com.github.mcreeper12731.game.models.Board;
 import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.models.Multiverse;
 import com.github.mcreeper12731.game.models.Timeline;
-import com.github.mcreeper12731.game.pieces.Piece;
-import com.github.mcreeper12731.game.pieces.PieceType;
+import com.github.mcreeper12731.game.models.pieces.Piece;
+import com.github.mcreeper12731.game.models.pieces.PieceType;
 
 public class Evaluator {
 
@@ -22,7 +22,9 @@ public class Evaluator {
             if (timeline.getL() > 0) score -= 2;
 
             Board board = timeline.getLastBoard();
-            for (Piece piece : board.getPieces()) {
+            for (int i = 0; i < board.size() * board.size(); i++) {
+                Piece piece = board.getLocationContents(i % board.size(), i / board.size());
+                if (piece.type() == PieceType.EMPTY) continue;
                 if (piece.color() == Color.WHITE) score += pieceScore(piece.type());
                 if (piece.color() == Color.BLACK) score -= pieceScore(piece.type());
             }

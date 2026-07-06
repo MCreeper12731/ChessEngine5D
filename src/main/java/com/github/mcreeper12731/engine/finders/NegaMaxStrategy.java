@@ -60,6 +60,7 @@ public class NegaMaxStrategy {
 
                 game.applyMoves(turn);
                 if (!game.isCurrentTurnFinalizable()) {
+                    Log.print("AlphaBeta", "Found non-finalizable turn!");
                     game.undoAllMovesFromCurrentTurn();
                     continue;
                 }
@@ -132,7 +133,7 @@ public class NegaMaxStrategy {
         double best = NEGATIVE_INFINITY;
         Iterator<List<Move>> turnsIterator = MoveGenerator.getIterativeTurnIterator(game);
         if (!turnsIterator.hasNext()) {
-            return 0.1;
+            return -0.000001;
         }
 
         while (turnsIterator.hasNext()) {

@@ -2,7 +2,7 @@ package com.github.mcreeper12731.game.models.bit;
 
 import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.models.Move;
-import com.github.mcreeper12731.game.pieces.PieceType;
+import com.github.mcreeper12731.game.models.pieces.PieceType;
 
 public class BitBoard {
 

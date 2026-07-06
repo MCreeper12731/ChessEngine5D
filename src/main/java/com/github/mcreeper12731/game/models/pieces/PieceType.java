@@ -1,14 +1,15 @@
-package com.github.mcreeper12731.game.pieces;
+package com.github.mcreeper12731.game.models.pieces;
 
 import com.github.mcreeper12731.game.models.Multiverse;
 import com.github.mcreeper12731.game.models.Move;
-import com.github.mcreeper12731.game.pieces.movesets.*;
+import com.github.mcreeper12731.game.models.Point4D;
+import com.github.mcreeper12731.game.movegeneration.movesets.*;
 
 import java.util.Collections;
 import java.util.Iterator;
 
 public enum PieceType {
-    EMPTY("", (e, p) -> Collections.emptyIterator()),
+    EMPTY("", (e, pieceLocation) -> Collections.emptyIterator()),
 
     // Normal pieces
     KING("K", new SingleStepMoveSet(MoveDirections.DIRECTIONS_1234_DIM)),
@@ -36,7 +37,7 @@ public enum PieceType {
         this.moveSet = moveSet;
     }
 
-    public Iterator<Move> moveIterator(Multiverse multiverse, Piece pieceInstance) {
-        return this.moveSet.iterator(multiverse, pieceInstance);
+    public Iterator<Move> moveIterator(Multiverse multiverse, Point4D pieceLocation) {
+        return this.moveSet.iterator(multiverse, pieceLocation);
     }
 }

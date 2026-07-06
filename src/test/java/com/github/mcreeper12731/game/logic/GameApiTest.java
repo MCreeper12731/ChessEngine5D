@@ -3,7 +3,7 @@ package com.github.mcreeper12731.game.logic;
 import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.*;
 import com.github.mcreeper12731.game.models.Move;
-import com.github.mcreeper12731.game.pieces.PieceType;
+import com.github.mcreeper12731.game.models.pieces.PieceType;
 import com.github.mcreeper12731.game.presets.Preset;
 import com.github.mcreeper12731.utility.Log;
 import org.junit.jupiter.api.Test;
@@ -123,7 +123,7 @@ public class GameApiTest {
 
         Game game = Preset.CUSTOM_COMPLEX_POSITION.getGame();
 
-        List<Move> moves = game.getMultiverse().getLocationContents(0, 4, 4, 1).getAvailableMoves(game.getMultiverse());
+        List<Move> moves = game.getMultiverse().getLocationContents(0, 4, 4, 1).getAvailableMoves(game.getMultiverse(), new Point4D(0, 4, 4, 1));
 
         for (Move move : moves) {
             Point4D destination = game.getMovedPieceDestination(move);

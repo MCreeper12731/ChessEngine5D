@@ -1,6 +1,7 @@
-package com.github.mcreeper12731.game.models.bit;
+package com.github.mcreeper12731.game.bitmodels;
 
 import com.github.mcreeper12731.game.models.Multiverse;
+import com.github.mcreeper12731.game.models.Point4D;
 import com.github.mcreeper12731.game.models.Timeline;
 import com.github.mcreeper12731.utility.listviews.CompoundListView;
 import com.github.mcreeper12731.utility.listviews.MappedListView;
@@ -58,6 +59,10 @@ public class BitMultiverse {
         return timeline.getBoardFromT(t);
     }
 
+    public byte getLocationContents(Point4D location) {
+        return this.getLocationContents(location.l(), location.t(), location.x(), location.y());
+    }
+
     public byte getLocationContents(int l, int t, int x, int y) {
         BitTimeline timeline = this.getTimeline(l);
         if (timeline == null) return 0;
@@ -76,7 +81,7 @@ public class BitMultiverse {
         return new MappedListView<>(this.getActiveTimelines(), BitTimeline::getL);
     }
 
-    public boolean isTimelineActive(Timeline timeline) {
+    public boolean isTimelineActive(BitTimeline timeline) {
         return this.isTimelineActive(timeline.getL());
     }
 

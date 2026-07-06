@@ -1,6 +1,7 @@
 package com.github.mcreeper12731.game.models;
 
 import com.github.mcreeper12731.game.models.pieces.Piece;
+import com.github.mcreeper12731.game.models.pieces.PieceRegistry;
 import com.github.mcreeper12731.game.models.pieces.PieceType;
 
 import java.util.*;
@@ -28,14 +29,6 @@ public class Board {
         this.contents = contents;
     }
 
-    private Board(Builder builder) {
-        this.size = builder.size;
-        this.l = builder.l;
-        this.t = builder.t;
-
-        this.contents = builder.contents;
-    }
-
     public Board applyMove(int newL, int newT, Move move) {
 
         Piece[] contentsNew = new Piece[this.contents.length];
@@ -47,11 +40,8 @@ public class Board {
         }
 
         if (!move.noop() && move.to().l() == newL && this.t == move.to().t() || this.l != newL) {
-            Piece piece = new Piece(
-                    move.color(),
-                    move.toType(),
-                    true
-            );
+
+            Piece piece = PieceRegistry.getPiece(move.color(), move.toType(), true);
 
             contentsNew[move.to().x() + move.to().y() * this.size] = piece;
         }
@@ -154,18 +144,14 @@ public class Board {
         }
 
         public Builder withPiece(Color pieceColor, PieceType pieceType, int x, int y, boolean moved) {
-            Piece piece = new Piece(
-                    pieceColor,
-                    pieceType,
-                    moved
-            );
+            Piece piece = PieceRegistry.getPiece(pieceColor, pieceType, moved);
 
             this.contents[y * this.size + x] = piece;
             return this;
         }
 
         public Board build() {
-            return new Board(this);
+            return new Board(this.size, this.l, this.t, this.contents);
         }
     }
 }

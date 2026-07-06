@@ -1,7 +1,7 @@
 package com.github.mcreeper12731.game.models;
 
 import com.github.mcreeper12731.game.Game;
-import com.github.mcreeper12731.game.models.bit.BitPiece;
+import com.github.mcreeper12731.game.bitmodels.BitPiece;
 import com.github.mcreeper12731.game.models.pieces.Piece;
 import com.github.mcreeper12731.game.models.pieces.PieceType;
 

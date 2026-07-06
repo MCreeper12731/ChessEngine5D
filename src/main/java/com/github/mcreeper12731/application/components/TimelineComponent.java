@@ -60,7 +60,7 @@ public class TimelineComponent extends Pane {
     }
 
     public BoardComponent getBoardComponentByT(int time) {
-        return boardComponents.get(time - timeline.getFirstTimeCoordinate());
+        return boardComponents.get(time - timeline.getFirstT());
     }
 
     public void draw() {

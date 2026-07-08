@@ -1,5 +1,9 @@
-package com.github.mcreeper12731.game.bitmodels;
+package com.github.mcreeper12731.bitgame;
 
+import com.github.mcreeper12731.bitgame.models.BitBoard;
+import com.github.mcreeper12731.bitgame.models.BitMultiverse;
+import com.github.mcreeper12731.bitgame.models.pieces.BitPiece;
+import com.github.mcreeper12731.bitgame.models.BitTimeline;
 import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.*;
 import com.github.mcreeper12731.game.models.pieces.Piece;
@@ -12,6 +16,11 @@ import java.util.Objects;
 import java.util.Stack;
 
 public class BitGame {
+
+    public final static int NUMBER_OF_TYPES = PieceType.values().length - 1; // Omit PieceType.EMPTY
+    public final static int EFFECTIVELY_NULL = -1;
+    public final static int WHITE = Color.WHITE.ordinal();
+    public final static int BLACK = Color.BLACK.ordinal();
 
     private final BitMultiverse multiverse;
     private final Stack<MoveEffect> currentTurnMoveEffects = new Stack<>();
@@ -49,12 +58,20 @@ public class BitGame {
 
                 }
                 timelineBuilder.withBoard(boardBuilder.build());
+                timelineBuilder.withStartTime(timeline.getFirstT());
 
             }
             multiverseBuilder.withTimeline(timelineBuilder.build());
 
         }
         this.multiverse = multiverseBuilder.build();
+        this.currentTurnMoveEffects.addAll(game.getCurrentTurnMoveEffects());
+        this.turnEffects.addAll(game.getTurnEffects());
+        this.archivedTurnEffects.addAll(game.getArchivedTurnEffects());
+        this.presentTime = game.getPresentTime();
+        this.playerTurn = game.getPlayerTurn();
+        this.gameOver = game.isGameOver();
+        this.winner = game.getWinner();
     }
 
     // Turn-related logic
@@ -164,11 +181,13 @@ public class BitGame {
         }
 
         byte pieceAtLocation = this.multiverse.getLocationContents(move.to());
-        Color pieceColor = BitPiece.color(pieceAtLocation);
-        PieceType pieceType = BitPiece.type(pieceAtLocation);
-        if (pieceAtLocation != 0 && pieceType == PieceType.KING) {
-            this.gameOver = true;
-            this.winner = pieceColor.other();
+        if (pieceAtLocation > 0) {
+            int pieceType = BitPiece.typeOrdinal(pieceAtLocation);
+            if (pieceType == PieceType.KING.ordinal()) {
+                int pieceColor = BitPiece.colorOrdinal(pieceAtLocation);
+                this.gameOver = true;
+                this.winner = Color.of(pieceColor).other();
+            }
         }
 
         this.updatePresentTime();
@@ -391,9 +410,9 @@ public class BitGame {
             int shiftedFromL = move.from().l() - this.multiverse.getBotTimelineL();
             int shiftedToL = move.to().l() - this.multiverse.getBotTimelineL();
 
-            PieceType toType = BitPiece.type(this.multiverse.getLocationContents(move.to()));
+            int toType = BitPiece.typeOrdinal(this.multiverse.getLocationContents(move.to()));
 
-            if (toType == PieceType.KING)
+            if (toType == PieceType.KING.ordinal())
                 // Always allow finalization of king capture turns
                 return true;
 

@@ -138,7 +138,7 @@ class MoveSetTest {
         Game game = new Game(multiverse);
         game.applyMove(
                 new Move.Builder()
-                        .withPieceMinimal(whitePawn)
+                        .withPiece(whitePawn)
                         .withFrom(0, 0, 1, 1)
                         .withTo(new Point4D(0, 0, 1, 3))
                         .build()

@@ -408,6 +408,18 @@ public class Game {
         return this.multiverse;
     }
 
+
+    public Collection<MoveEffect> getCurrentTurnMoveEffects() {
+        return Collections.unmodifiableCollection(this.currentTurnMoveEffects);
+    }
+    public Collection<Stack<MoveEffect>> getTurnEffects() {
+        return Collections.unmodifiableCollection(this.turnEffects);
+    }
+
+    public Collection<Stack<MoveEffect>> getArchivedTurnEffects() {
+        return Collections.unmodifiableCollection(this.archivedTurnEffects);
+    }
+
     public Color getPlayerTurn() {
         return this.playerTurn;
     }

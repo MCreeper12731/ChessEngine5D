@@ -1,31 +1,32 @@
-package com.github.mcreeper12731.game.movegeneration.movesets;
+package com.github.mcreeper12731.bitgame.movegeneration.movesets;
 
-import com.github.mcreeper12731.game.models.Multiverse;
-import com.github.mcreeper12731.game.models.Point4D;
+import com.github.mcreeper12731.bitgame.BitGame;
+import com.github.mcreeper12731.bitgame.models.BitMultiverse;
+import com.github.mcreeper12731.bitgame.models.pieces.BitPiece;
 import com.github.mcreeper12731.game.models.Move;
-import com.github.mcreeper12731.game.models.pieces.Piece;
+import com.github.mcreeper12731.game.models.Point4D;
 import com.github.mcreeper12731.game.models.pieces.PieceType;
 
 import java.util.Iterator;
 import java.util.List;
 
-public class SlidingMoveSet implements MoveSet {
+public class BitSlidingMoveSet implements BitMoveSet {
 
     private final List<Point4D> directions;
 
-    public SlidingMoveSet(List<Point4D> directions) {
+    public BitSlidingMoveSet(List<Point4D> directions) {
         this.directions = directions;
     }
 
     @Override
-    public Iterator<Move> iterator(Multiverse multiverse, Point4D pieceLocation) {
-        return new SlidingMoveIterator(multiverse, pieceLocation, this.directions);
+    public Iterator<Move> iterator(BitGame game, Point4D pieceLocation) {
+        return new SlidingMoveIterator(game.getMultiverse(), pieceLocation, this.directions);
     }
 
     private static class SlidingMoveIterator implements Iterator<Move> {
 
-        private final Multiverse multiverse;
-        private final Piece piece;
+        private final BitMultiverse multiverse;
+        private final byte piece;
         private final Point4D pieceLocation;
         private final List<Point4D> directions;
 
@@ -33,7 +34,7 @@ public class SlidingMoveSet implements MoveSet {
         private int length = 1;
         private Move nextMove;
 
-        SlidingMoveIterator(Multiverse multiverse, Point4D pieceLocation, List<Point4D> directions) {
+        SlidingMoveIterator(BitMultiverse multiverse, Point4D pieceLocation, List<Point4D> directions) {
             this.multiverse = multiverse;
             this.piece = multiverse.getLocationContents(pieceLocation);
             this.pieceLocation = pieceLocation;
@@ -47,24 +48,21 @@ public class SlidingMoveSet implements MoveSet {
             while (this.directionIndex < this.directions.size()) {
                 Point4D direction = this.directions.get(this.directionIndex);
                 Point4D toLocation = this.pieceLocation.add(direction.multiply(this.length));
-                Piece toPiece = this.multiverse.getLocationContents(toLocation);
+                byte toPiece = this.multiverse.getLocationContents(toLocation);
 
-                if (toPiece == null) {
+                if (toPiece == BitGame.EFFECTIVELY_NULL) {
                     this.nextDirection();
                     continue;
                 }
 
-                if (toPiece.type() != PieceType.EMPTY && this.piece.color() == toPiece.color()) {
+                if (toPiece != 0 && BitPiece.colorOrdinal(this.piece) == BitPiece.colorOrdinal(toPiece)) {
                     this.nextDirection();
                     continue;
                 }
 
-                this.nextMove = new Move.Builder()
-                        .withPiece(this.piece)
-                        .withFrom(this.pieceLocation)
-                        .withTo(toLocation)
-                        .build();
-                if (toPiece.type() != PieceType.EMPTY) {
+                this.nextMove = Move.of(this.piece, this.pieceLocation, toLocation);
+
+                if (toPiece == 0) {
                     this.nextDirection();
                 } else {
                     this.length++;

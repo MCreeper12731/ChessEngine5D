@@ -40,7 +40,7 @@ class BoardTest {
         assertEquals(Color.BLACK, board.getLocationContents(7, 7).color());
 
         Move move = new Move.Builder()
-                .withPieceMinimal(board.getLocationContents(0, 0))
+                .withPiece(board.getLocationContents(0, 0))
                 .withFrom(0, 0, 0, 0)
                 .withTo(0, 0, 1, 0)
                 .build();
@@ -67,7 +67,7 @@ class BoardTest {
                 .build();
 
         Move move = new Move.Builder()
-                .withPieceMinimal(board0T0.getLocationContents(0, 0))
+                .withPiece(board0T0.getLocationContents(0, 0))
                 .withFrom(0, 0, 0, 0)
                 .withTo(0, 0, 1, 0)
                 .build();
@@ -75,7 +75,7 @@ class BoardTest {
                 .build();
 
         move = new Move.Builder()
-                .withPieceMinimal(board0T1.getLocationContents(7, 7))
+                .withPiece(board0T1.getLocationContents(7, 7))
                 .withFrom(0, 1, 7, 7)
                 .withTo(0, 1, 6, 7)
                 .build();
@@ -83,7 +83,7 @@ class BoardTest {
                 .build();
 
         move = new Move.Builder()
-                .withPieceMinimal(board0T2.getLocationContents(1, 0))
+                .withPiece(board0T2.getLocationContents(1, 0))
                 .withFrom(0, 2, 1, 0)
                 .withTo(0, 0, 1, 1)
                 .build();
@@ -136,7 +136,7 @@ class BoardTest {
                 .build();
 
         Move move = new Move.Builder()
-                .withPieceMinimal(board.getLocationContents(0, 0))
+                .withPiece(board.getLocationContents(0, 0))
                 .withFrom(0, 0, 0, 0)
                 .withTo(0, 0, 3, 0)
                 .build();

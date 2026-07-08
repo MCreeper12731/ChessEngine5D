@@ -1,7 +1,8 @@
 package com.github.mcreeper12731.game.models;
 
+import com.github.mcreeper12731.bitgame.BitGame;
 import com.github.mcreeper12731.game.Game;
-import com.github.mcreeper12731.game.bitmodels.BitPiece;
+import com.github.mcreeper12731.bitgame.models.pieces.BitPiece;
 import com.github.mcreeper12731.game.models.pieces.Piece;
 import com.github.mcreeper12731.game.models.pieces.PieceType;
 
@@ -15,6 +16,49 @@ public record Move(
         Point4D enPassant,
         boolean noop
 ) implements Comparable<Move> {
+
+    public static Move of(BitGame game, int l, int t, int fromX, int fromY, int toX, int toY) {
+        return of(game, new Point4D(l, t, fromX, fromY), new Point4D(l, t, toX, toY));
+    }
+
+    public static Move of(BitGame game, int fromL, int fromT, int fromX, int fromY, int toL, int toT, int toX, int toY) {
+        return of(game, new Point4D(fromL, fromT, fromX, fromY), new Point4D(toL, toT, toX, toY));
+    }
+
+    public static Move of(BitGame game, Point4D from, Point4D to) {
+        byte piece = game.getMultiverse().getLocationContents(from);
+        return of (piece, from, to);
+    }
+
+    public static Move of(byte piece, Point4D from, Point4D to) {
+        return new Move(
+                from, to,
+                PieceType.of(BitPiece.typeOrdinal(piece)),
+                PieceType.of(BitPiece.typeOrdinal(piece)),
+                Color.of(BitPiece.colorOrdinal(piece)),
+                null, null, false
+        );
+    }
+
+    public static Move of(byte piece, Point4D from, Point4D to, Point4D enPassant) {
+        return new Move(
+                from, to,
+                PieceType.of(BitPiece.typeOrdinal(piece)),
+                PieceType.of(BitPiece.typeOrdinal(piece)),
+                Color.of(BitPiece.colorOrdinal(piece)),
+                null, enPassant, false
+        );
+    }
+
+    public static Move noop(int l, int t) {
+        return new Move(
+                new Point4D(l, t, -1, -1),
+                new Point4D(l, t, -1, -1),
+                null, null, null,
+                null ,null,
+                true
+        );
+    }
 
     @Override
     public int compareTo(Move other) {
@@ -35,7 +79,8 @@ public record Move(
 
     @Override
     public String toString() {
-        if (noop) return "MoveNew{noop}";
+        if (this.noop && (this.to == null || this.from == null)) return "Move{noop}";
+        if (this.noop) return "Move{noop, " + this.from.l() + ", " + this.from.t() + "}";
 
         return
                 this.fromType + "_" + this.color + ":" + from + "->" + to +
@@ -104,17 +149,10 @@ public record Move(
             return this.build();
         }
 
-        public Builder withPieceMinimal(Piece piece) {
+        public Builder withPiece(Piece piece) {
             this.fromType = piece.type();
             this.toType = piece.type();
             this.color = piece.color();
-            return this;
-        }
-
-        public Builder withBitPiece(byte piece) {
-            this.fromType = BitPiece.type(piece);
-            this.toType = BitPiece.type(piece);
-            this.color = BitPiece.color(piece);
             return this;
         }
 

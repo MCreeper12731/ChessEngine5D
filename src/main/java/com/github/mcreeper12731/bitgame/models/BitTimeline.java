@@ -1,4 +1,4 @@
-package com.github.mcreeper12731.game.models.bit;
+package com.github.mcreeper12731.bitgame.models;
 
 import java.util.ArrayList;
 import java.util.List;

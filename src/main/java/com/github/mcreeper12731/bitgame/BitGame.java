@@ -1,15 +1,28 @@
-package com.github.mcreeper12731.game;
+package com.github.mcreeper12731.bitgame;
 
+import com.github.mcreeper12731.bitgame.models.BitBoard;
+import com.github.mcreeper12731.bitgame.models.BitMultiverse;
+import com.github.mcreeper12731.bitgame.models.pieces.BitPiece;
+import com.github.mcreeper12731.bitgame.models.BitTimeline;
+import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.*;
 import com.github.mcreeper12731.game.models.pieces.Piece;
 import com.github.mcreeper12731.game.models.pieces.PieceType;
 import com.github.mcreeper12731.utility.Log;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Stack;
 
-public class Game {
+public class BitGame {
 
-    private final Multiverse multiverse;
+    public final static int NUMBER_OF_TYPES = PieceType.values().length - 1; // Omit PieceType.EMPTY
+    public final static int EFFECTIVELY_NULL = -1;
+    public final static int WHITE = Color.WHITE.ordinal();
+    public final static int BLACK = Color.BLACK.ordinal();
+
+    private final BitMultiverse multiverse;
     private final Stack<MoveEffect> currentTurnMoveEffects = new Stack<>();
     private final Stack<Stack<MoveEffect>> turnEffects = new Stack<>();
 
@@ -20,8 +33,45 @@ public class Game {
     private boolean gameOver = false;
     private Color winner = null;
 
-    public Game(Multiverse multiverse) {
+    public BitGame(BitMultiverse multiverse) {
         this.multiverse = multiverse;
+    }
+
+    public BitGame(Game game) {
+
+        Multiverse multiverse = game.getMultiverse();
+
+        BitMultiverse.Builder multiverseBuilder = new BitMultiverse.Builder(multiverse.getBoardSize());
+        for (Timeline timeline : multiverse.getTimelines()) {
+
+            BitTimeline.Builder timelineBuilder = new BitTimeline.Builder(timeline.getL());
+            for (int t = timeline.getFirstT(); t <= timeline.getLastT(); t++) {
+
+                Board board = timeline.getBoardFromT(t);
+                BitBoard.Builder boardBuilder = new BitBoard.Builder(multiverse.getBoardSize(), board.l(), board.t());
+                for (int i = 0; i < board.size() * board.size(); i++) {
+                    int x = i % board.size();
+                    int y = i / board.size();
+                    Piece piece = board.getLocationContents(x, y);
+                    if (piece.type() == PieceType.EMPTY) continue;
+                    boardBuilder.withPiece(piece.color(), piece.type(), x, y);
+
+                }
+                timelineBuilder.withBoard(boardBuilder.build());
+                timelineBuilder.withStartTime(timeline.getFirstT());
+
+            }
+            multiverseBuilder.withTimeline(timelineBuilder.build());
+
+        }
+        this.multiverse = multiverseBuilder.build();
+        this.currentTurnMoveEffects.addAll(game.getCurrentTurnMoveEffects());
+        this.turnEffects.addAll(game.getTurnEffects());
+        this.archivedTurnEffects.addAll(game.getArchivedTurnEffects());
+        this.presentTime = game.getPresentTime();
+        this.playerTurn = game.getPlayerTurn();
+        this.gameOver = game.isGameOver();
+        this.winner = game.getWinner();
     }
 
     // Turn-related logic
@@ -68,8 +118,8 @@ public class Game {
 
         if (move.noop() && (move.from() == null || move.to() == null)) return;
 
-        Timeline fromTimeline = this.multiverse.getTimeline(move.from().l());
-        Timeline toTimeline = this.multiverse.getTimeline(move.to().l());
+        BitTimeline fromTimeline = this.multiverse.getTimeline(move.from().l());
+        BitTimeline toTimeline = this.multiverse.getTimeline(move.to().l());
 
         if (toTimeline == null) {
             Log.debug("Game", this);
@@ -77,7 +127,7 @@ public class Game {
             throw new RuntimeException("Cannot apply move - timeline does not exist!");
         }
 
-        Board toBoard = toTimeline.getBoardFromT(move.to().t());
+        BitBoard toBoard = toTimeline.getBoardFromT(move.to().t());
 
         if (toBoard == null) {
             Log.debug("Game",this);
@@ -109,9 +159,9 @@ public class Game {
 
             int startingTime = move.to().t() + 1;
 
-            Board newBoard = toBoard.applyMove(newTimelineL, startingTime, move);
+            BitBoard newBoard = toBoard.applyMove(newTimelineL, startingTime, move);
 
-            Timeline newTimeline = new Timeline.Builder(newTimelineL)
+            BitTimeline newTimeline = new BitTimeline.Builder(newTimelineL)
                     .withStartTime(startingTime)
                     .withBoard(newBoard)
                     .build();
@@ -130,20 +180,24 @@ public class Game {
             moveEffect.setSecondaryAddedBoardL(move.to().l());
         }
 
-        Piece pieceAtLocation = this.multiverse.getLocationContents(move.to());
-        if (pieceAtLocation != null && pieceAtLocation.type() == PieceType.KING) {
-            this.gameOver = true;
-            this.winner = pieceAtLocation.color().other();
+        byte pieceAtLocation = this.multiverse.getLocationContents(move.to());
+        if (pieceAtLocation > 0) {
+            int pieceType = BitPiece.typeOrdinal(pieceAtLocation);
+            if (pieceType == PieceType.KING.ordinal()) {
+                int pieceColor = BitPiece.colorOrdinal(pieceAtLocation);
+                this.gameOver = true;
+                this.winner = Color.of(pieceColor).other();
+            }
         }
 
         this.updatePresentTime();
         this.currentTurnMoveEffects.add(moveEffect);
     }
 
-    public void applyMoveToTimeline(Timeline timeline, Move move) {
+    public void applyMoveToTimeline(BitTimeline timeline, Move move) {
 
-        Board lastBoard = timeline.getLastBoard();
-        Board nextBoard = lastBoard.applyMove(timeline.getL(), timeline.getLastT() + 1, move);
+        BitBoard lastBoard = timeline.getLastBoard();
+        BitBoard nextBoard = lastBoard.applyMove(timeline.getL(), timeline.getLastT() + 1, move);
 
         timeline.addBoard(nextBoard);
     }
@@ -207,7 +261,7 @@ public class Game {
         List<Integer> ls = new ArrayList<>();
 
         for (int timelineIndex : this.multiverse.getActiveTimelineLs()) {
-            Timeline timeline = this.multiverse.getTimeline(timelineIndex);
+            BitTimeline timeline = this.multiverse.getTimeline(timelineIndex);
             if (timeline.getLastT() > this.presentTime) continue;
             if (timeline.getLastBoard().getPlayerTurn() != this.playerTurn) continue;
 
@@ -221,7 +275,7 @@ public class Game {
         List<Integer> ls = new ArrayList<>();
 
         for (int timelineIndex : this.multiverse.getActiveTimelineLs()) {
-            Timeline timeline = this.multiverse.getTimeline(timelineIndex);
+            BitTimeline timeline = this.multiverse.getTimeline(timelineIndex);
             if (timeline.getLastBoard().getPlayerTurn() != this.playerTurn) continue;
 
             ls.add(timelineIndex);
@@ -230,11 +284,11 @@ public class Game {
         return ls;
     }
 
-    public List<Board> getPlayableBoards(Color color) {
-        List<Board> boards = new ArrayList<>();
+    public List<BitBoard> getPlayableBoards(Color color) {
+        List<BitBoard> boards = new ArrayList<>();
 
-        for (Timeline timeline : this.multiverse.getTimelines()) {
-            Board board = timeline.getLastBoard();
+        for (BitTimeline timeline : this.multiverse.getTimelines()) {
+            BitBoard board = timeline.getLastBoard();
             if (board.getPlayerTurn() != color) continue;
 
             boards.add(board);
@@ -309,8 +363,8 @@ public class Game {
             // In-board moves
             return move.to().add(0, 1, 0, 0);
 
-        Timeline fromTimeline = this.multiverse.getTimeline(move.from().l());
-        Timeline toTimeline = this.multiverse.getTimeline(move.to().l());
+        BitTimeline fromTimeline = this.multiverse.getTimeline(move.from().l());
+        BitTimeline toTimeline = this.multiverse.getTimeline(move.to().l());
         if (move.to().t() != toTimeline.getLastT()) {
             int isCheckAfterMove = move.from().t() == fromTimeline.getLastT() ? 1 : 0;
             int newTimelineL = this.playerTurn == Color.WHITE ?
@@ -343,7 +397,7 @@ public class Game {
 
         boolean[] consumedTimelines = new boolean[this.multiverse.getTimelines().size()];
         boolean[] mandatoryTimelines = new boolean[this.multiverse.getTimelines().size()];
-        for (Timeline timeline : this.multiverse.getTimelines()) {
+        for (BitTimeline timeline : this.multiverse.getTimelines()) {
             if (timeline.getLastT() > this.presentTime) continue;
             if (!this.multiverse.isTimelineActive(timeline)) continue;
 
@@ -356,7 +410,9 @@ public class Game {
             int shiftedFromL = move.from().l() - this.multiverse.getBotTimelineL();
             int shiftedToL = move.to().l() - this.multiverse.getBotTimelineL();
 
-            if (this.multiverse.getLocationContents(move.to()).type() == PieceType.KING)
+            int toType = BitPiece.typeOrdinal(this.multiverse.getLocationContents(move.to()));
+
+            if (toType == PieceType.KING.ordinal())
                 // Always allow finalization of king capture turns
                 return true;
 
@@ -366,20 +422,20 @@ public class Game {
 
             Integer activatedTimeline = this.doesMoveActivateTimeline(move, consumedTimelines[shiftedToL]);
             if (activatedTimeline != null) {
-                Timeline timeline = this.multiverse.getTimeline(activatedTimeline);
+                BitTimeline timeline = this.multiverse.getTimeline(activatedTimeline);
                 int shiftedActivatedTimelineL = activatedTimeline - this.multiverse.getBotTimelineL();
                 if (shiftedActivatedTimelineL >= 0 && shiftedActivatedTimelineL < mandatoryTimelines.length && timeline.getLastT() <= this.presentTime)
                     mandatoryTimelines[shiftedActivatedTimelineL] = true;
             }
 
-            Timeline toTimeline = this.multiverse.getTimeline(move.to().l());
+            BitTimeline toTimeline = this.multiverse.getTimeline(move.to().l());
 
             consumedTimelines[shiftedFromL] = true;
             if (move.to().t() == toTimeline.getLastT()) consumedTimelines[shiftedToL] = true;
         }
 
         // Check if all mandatory timelines have been consumed
-        for (Timeline timeline : this.multiverse.getTimelines()) {
+        for (BitTimeline timeline : this.multiverse.getTimelines()) {
             int l = timeline.getL() - this.multiverse.getBotTimelineL();
             if (!mandatoryTimelines[l]) continue;
             if (!consumedTimelines[l]) {
@@ -395,29 +451,17 @@ public class Game {
 
         int minTime = Integer.MAX_VALUE;
 
-        for (Timeline timeline : this.multiverse.getTimelines()) {
+        for (BitTimeline timeline : this.multiverse.getTimelines()) {
             if (!multiverse.isTimelineActive(timeline.getL())) continue;
             int lastTimelineTime = timeline.getLastT();
             if (lastTimelineTime < minTime) minTime = lastTimelineTime;
         }
-        
+
         this.presentTime = minTime;
     }
 
-    public Multiverse getMultiverse() {
+    public BitMultiverse getMultiverse() {
         return this.multiverse;
-    }
-
-
-    public Collection<MoveEffect> getCurrentTurnMoveEffects() {
-        return Collections.unmodifiableCollection(this.currentTurnMoveEffects);
-    }
-    public Collection<Stack<MoveEffect>> getTurnEffects() {
-        return Collections.unmodifiableCollection(this.turnEffects);
-    }
-
-    public Collection<Stack<MoveEffect>> getArchivedTurnEffects() {
-        return Collections.unmodifiableCollection(this.archivedTurnEffects);
     }
 
     public Color getPlayerTurn() {

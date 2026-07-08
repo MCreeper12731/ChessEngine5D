@@ -1,9 +1,7 @@
-package com.github.mcreeper12731.evaluators;
+package com.github.mcreeper12731.game.models.scored;
 
 import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.*;
-import com.github.mcreeper12731.game.models.scored.ScoredBoard;
-import com.github.mcreeper12731.game.models.scored.ScoredMove;
 import com.github.mcreeper12731.game.models.pieces.PieceType;
 import com.github.mcreeper12731.game.presets.Preset;
 import com.github.mcreeper12731.utility.Log;

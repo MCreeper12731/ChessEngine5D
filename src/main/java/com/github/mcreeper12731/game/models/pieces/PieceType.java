@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.Iterator;
 
 public enum PieceType {
-    EMPTY("", (e, pieceLocation) -> Collections.emptyIterator()),
 
     // Normal pieces
     KING("K", new SingleStepMoveSet(MoveDirections.DIRECTIONS_1234_DIM)),
@@ -23,8 +22,10 @@ public enum PieceType {
     UNICORN("U", new SlidingMoveSet(MoveDirections.DIRECTIONS_3_DIM)),
     DRAGON("D", new SlidingMoveSet(MoveDirections.DIRECTIONS_4_DIM)),
     PRINCESS("S", new SlidingMoveSet(MoveDirections.DIRECTIONS_12_DIM)),
-    BRAWN("W", new BrawnMoveSet())
-    // Missing common king and royal queen but who cares
+    BRAWN("W", new BrawnMoveSet()),
+    // Missing common king
+    // and royal queen but current implementation does not check for checkmates
+    EMPTY("", (e, pieceLocation) -> Collections.emptyIterator()),
     ;
 
     public final String name;
@@ -39,5 +40,24 @@ public enum PieceType {
 
     public Iterator<Move> moveIterator(Multiverse multiverse, Point4D pieceLocation) {
         return this.moveSet.iterator(multiverse, pieceLocation);
+    }
+
+    public static PieceType of(int ordinal) {
+        return switch (ordinal) {
+            case 0 -> KING;
+            case 1 -> QUEEN;
+            case 2 -> ROOK;
+            case 3 -> BISHOP;
+            case 4 -> KNIGHT;
+            case 5 -> PAWN;
+
+            case 6 -> UNICORN;
+            case 7 -> DRAGON;
+            case 8 -> PRINCESS;
+            case 9 -> BRAWN;
+            case 10 -> EMPTY;
+
+            default -> throw new IllegalArgumentException("Invalid ordinal!");
+        };
     }
 }

@@ -1,4 +1,4 @@
-package com.github.mcreeper12731.game.pieces.movesets;
+package com.github.mcreeper12731.game.movegeneration.movesets;
 
 import com.github.mcreeper12731.engine.config.NegamaxStrategyConfig;
 import com.github.mcreeper12731.engine.evaluators.Evaluator;
@@ -138,7 +138,7 @@ class MoveSetTest {
         Game game = new Game(multiverse);
         game.applyMove(
                 new Move.Builder()
-                        .withPieceMinimal(whitePawn)
+                        .withPiece(whitePawn)
                         .withFrom(0, 0, 1, 1)
                         .withTo(new Point4D(0, 0, 1, 3))
                         .build()

@@ -27,7 +27,7 @@ public class Timeline {
         return this.boards.size();
     }
 
-    public int getFirstTimeCoordinate() {
+    public int getFirstT() {
         return this.startTime;
     }
 

@@ -1,38 +1,39 @@
-package com.github.mcreeper12731.game.movegeneration.movesets;
+package com.github.mcreeper12731.bitgame.movegeneration.movesets;
 
-import com.github.mcreeper12731.game.models.Multiverse;
-import com.github.mcreeper12731.game.models.Point4D;
+import com.github.mcreeper12731.bitgame.BitGame;
+import com.github.mcreeper12731.bitgame.models.BitMultiverse;
+import com.github.mcreeper12731.bitgame.models.pieces.BitPiece;
 import com.github.mcreeper12731.game.models.Move;
-import com.github.mcreeper12731.game.models.pieces.Piece;
+import com.github.mcreeper12731.game.models.Point4D;
 import com.github.mcreeper12731.game.models.pieces.PieceType;
 
 import java.util.Iterator;
 import java.util.List;
 
-public class SingleStepMoveSet implements MoveSet {
+public class BitSingleStepMoveSet implements BitMoveSet {
 
     private final List<Point4D> directions;
 
-    public SingleStepMoveSet(List<Point4D> directions) {
+    public BitSingleStepMoveSet(List<Point4D> directions) {
         this.directions = directions;
     }
 
     @Override
-    public Iterator<Move> iterator(Multiverse multiverse, Point4D pieceLocation) {
-        return new SingleStepMoveIterator(multiverse, pieceLocation, this.directions);
+    public Iterator<Move> iterator(BitGame game, Point4D pieceLocation) {
+        return new SingleStepMoveIterator(game.getMultiverse(), pieceLocation, this.directions);
     }
 
     private static class SingleStepMoveIterator implements Iterator<Move> {
 
-        private final Multiverse multiverse;
-        private final Piece piece;
+        private final BitMultiverse multiverse;
+        private final byte piece;
         private final Point4D pieceLocation;
         private final List<Point4D> directions;
 
         private int directionIndex = 0;
         private Move nextMove;
 
-        SingleStepMoveIterator(Multiverse multiverse, Point4D pieceLocation, List<Point4D> directions) {
+        SingleStepMoveIterator(BitMultiverse multiverse, Point4D pieceLocation, List<Point4D> directions) {
             this.multiverse = multiverse;
             this.piece = multiverse.getLocationContents(pieceLocation);
             this.pieceLocation = pieceLocation;
@@ -46,23 +47,19 @@ public class SingleStepMoveSet implements MoveSet {
             while (this.directionIndex < this.directions.size()) {
                 Point4D direction = this.directions.get(this.directionIndex);
                 Point4D toLocation = this.pieceLocation.add(direction);
-                Piece toPiece = this.multiverse.getLocationContents(toLocation);
+                byte toPiece = this.multiverse.getLocationContents(toLocation);
 
-                if (toPiece == null) {
+                if (toPiece == -1) {
                     this.directionIndex++;
                     continue;
                 }
 
-                if (toPiece.type() != PieceType.EMPTY && this.piece.color() == toPiece.color()) {
+                if (toPiece != 0 && BitPiece.colorOrdinal(this.piece) == BitPiece.colorOrdinal(toPiece)) {
                     this.directionIndex++;
                     continue;
                 }
 
-                this.nextMove = new Move.Builder()
-                        .withPiece(this.piece)
-                        .withFrom(this.pieceLocation)
-                        .withTo(toLocation)
-                        .build();
+                this.nextMove = Move.of(this.piece, this.pieceLocation, toLocation);
 
                 this.directionIndex++;
                 return;

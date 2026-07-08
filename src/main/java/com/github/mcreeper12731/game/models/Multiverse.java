@@ -147,7 +147,7 @@ public class Multiverse {
         for (Timeline timeline : this.getTimelines()) {
             stringBuilder.append(timeline.getL() >= 0 ? "" : "-").append("L").append(Math.abs(timeline.getL())).append(":").append("\n");
             for (int i = 0; i < timeline.size(); i++) {
-                stringBuilder.append("T").append((i + timeline.getFirstTimeCoordinate()) / 2 + 1).append(" - ").append(timeline.getBoardFromIndex(i).getPlayerTurn()).append(":").append("\n");
+                stringBuilder.append("T").append((i + timeline.getFirstT()) / 2 + 1).append(" - ").append(timeline.getBoardFromIndex(i).getPlayerTurn()).append(":").append("\n");
                 stringBuilder.append(timeline.getBoardFromIndex(i).toString()).append("\n");
                 stringBuilder.append("\n");
             }

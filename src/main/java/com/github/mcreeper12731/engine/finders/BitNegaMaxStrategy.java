@@ -1,18 +1,19 @@
 package com.github.mcreeper12731.engine.finders;
 
+import com.github.mcreeper12731.bitgame.movegeneration.BitMoveGenerator;
 import com.github.mcreeper12731.engine.config.NegamaxStrategyConfig;
 import com.github.mcreeper12731.engine.evaluators.Evaluator;
-import com.github.mcreeper12731.game.models.Color;
-import com.github.mcreeper12731.game.models.scored.ScoredTurn;
 import com.github.mcreeper12731.game.Game;
-import com.github.mcreeper12731.game.movegeneration.MoveGenerator;
+import com.github.mcreeper12731.bitgame.BitGame;
+import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.models.Move;
+import com.github.mcreeper12731.game.models.scored.ScoredTurn;
 import com.github.mcreeper12731.utility.Log;
 
 import java.util.Iterator;
 import java.util.List;
 
-public class NegaMaxStrategy {
+public class BitNegaMaxStrategy {
     private static final int POSITIVE_INFINITY = Integer.MAX_VALUE;
     private static final int NEGATIVE_INFINITY = Integer.MIN_VALUE + 1;
 
@@ -24,17 +25,17 @@ public class NegaMaxStrategy {
     public long nodesSearched;
     public boolean stoppedByNodeLimit;
 
-    public NegaMaxStrategy(NegamaxStrategyConfig config, Evaluator evaluator) {
+    public BitNegaMaxStrategy(NegamaxStrategyConfig config, Evaluator evaluator) {
         this.config = config;
         this.evaluator = evaluator;
     }
 
-    public NegaMaxStrategy() {
+    public BitNegaMaxStrategy() {
         this.config = NegamaxStrategyConfig.fromConfig();
         this.evaluator = new Evaluator();
     }
 
-    public ScoredTurn findBestTurn(Game game) {
+    public ScoredTurn findBestTurn(BitGame game) {
         startTimelineCount = game.getMultiverse().getTimelines().size();
         maxTimelinesReached = 0;
         nodesSearched = 0;
@@ -53,7 +54,7 @@ public class NegaMaxStrategy {
             bestTurn = null;
             bestScore = NEGATIVE_INFINITY;
 
-            Iterator<List<Move>> turns = MoveGenerator.getIterativeTurnIterator(game);
+            Iterator<List<Move>> turns = BitMoveGenerator.getIterativeTurnIterator(game);
 
             while (turns.hasNext()) {
                 List<Move> turn = turns.next();
@@ -115,7 +116,7 @@ public class NegaMaxStrategy {
         return new ScoredTurn(bestTurn, bestScore, nodesSearched);
     }
 
-    private double negamax(Game game, int depth, double alpha, double beta, int color) {
+    private double negamax(BitGame game, int depth, double alpha, double beta, int color) {
         nodesSearched++;
 
         if (game.getMultiverse().getTimelines().size() > maxTimelinesReached)
@@ -126,12 +127,12 @@ public class NegaMaxStrategy {
             return color * evaluator.evaluateGameState(game);
         }
 
-        if (depth == 0 || this.isTerminal(game)) {
+        if (depth == 0 || game.isGameOver()) {
             return color * evaluator.evaluateGameState(game);
         }
 
         double best = NEGATIVE_INFINITY;
-        Iterator<List<Move>> turnsIterator = MoveGenerator.getIterativeTurnIterator(game);
+        Iterator<List<Move>> turnsIterator = BitMoveGenerator.getIterativeTurnIterator(game);
         if (!turnsIterator.hasNext()) {
             return -0.000001;
         }
@@ -167,4 +168,5 @@ public class NegaMaxStrategy {
     private boolean isTerminal(Game game) {
         return game.isGameOver();
     }
+
 }

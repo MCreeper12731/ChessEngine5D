@@ -1,17 +1,18 @@
-package com.github.mcreeper12731.game.movegeneration.movesets;
+package com.github.mcreeper12731.bitgame.movegeneration.movesets;
 
-import com.github.mcreeper12731.game.models.Color;
-import com.github.mcreeper12731.game.models.Multiverse;
-import com.github.mcreeper12731.game.models.Point4D;
+import com.github.mcreeper12731.bitgame.BitGame;
+import com.github.mcreeper12731.bitgame.models.BitMultiverse;
+import com.github.mcreeper12731.bitgame.models.pieces.BitPiece;
 import com.github.mcreeper12731.game.models.Move;
-import com.github.mcreeper12731.game.models.pieces.Piece;
+import com.github.mcreeper12731.game.models.Point4D;
 import com.github.mcreeper12731.game.models.pieces.PieceType;
+import com.github.mcreeper12731.game.movegeneration.movesets.MoveDirections;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class PawnMoveSet implements MoveSet {
+public class BitPawnMoveSet implements BitMoveSet {
 
     private final List<Point4D> whiteMoves;
     private final List<Point4D> whiteCaptures;
@@ -19,7 +20,7 @@ public class PawnMoveSet implements MoveSet {
     private final List<Point4D> blackMoves;
     private final List<Point4D> blackCaptures;
 
-    public PawnMoveSet() {
+    public BitPawnMoveSet() {
         this.whiteMoves = MoveDirections.DIRECTIONS_WHITE_PAWN_MOVES;
         this.whiteCaptures = MoveDirections.DIRECTIONS_WHITE_PAWN_CAPTURES;
 
@@ -27,7 +28,7 @@ public class PawnMoveSet implements MoveSet {
         this.blackCaptures = MoveDirections.DIRECTIONS_BLACK_PAWN_CAPTURES;
     }
 
-    public PawnMoveSet(List<Point4D> whiteCaptures, List<Point4D> blackCaptures) {
+    public BitPawnMoveSet(List<Point4D> whiteCaptures, List<Point4D> blackCaptures) {
         this.whiteMoves = MoveDirections.DIRECTIONS_WHITE_PAWN_MOVES;
         this.whiteCaptures = whiteCaptures;
 
@@ -36,17 +37,18 @@ public class PawnMoveSet implements MoveSet {
     }
 
     @Override
-    public Iterator<Move> iterator(Multiverse multiverse, Point4D pieceLocation) {
-        Piece piece = multiverse.getLocationContents(pieceLocation);
-        if (piece.color() == Color.WHITE)
+    public Iterator<Move> iterator(BitGame game, Point4D pieceLocation) {
+        BitMultiverse multiverse = game.getMultiverse();
+        byte piece = multiverse.getLocationContents(pieceLocation);
+        if (BitPiece.colorOrdinal(piece) == BitGame.WHITE)
             return new PawnMoveIterator(multiverse, piece, pieceLocation, this.whiteMoves, this.whiteCaptures);
         return new PawnMoveIterator(multiverse, piece, pieceLocation, this.blackMoves, this.blackCaptures);
     }
 
     private static class PawnMoveIterator implements Iterator<Move> {
 
-        private final Multiverse multiverse;
-        private final Piece piece;
+        private final BitMultiverse multiverse;
+        private final byte piece;
         private final Point4D pieceLocation;
         private final List<Point4D> moveDirections;
         private final List<Point4D> captureDirections;
@@ -54,7 +56,7 @@ public class PawnMoveSet implements MoveSet {
 
         private int moveIndex = 0;
 
-        public PawnMoveIterator(Multiverse multiverse, Piece piece, Point4D pieceLocation, List<Point4D> moveDirections, List<Point4D> captureDirections) {
+        public PawnMoveIterator(BitMultiverse multiverse, byte piece, Point4D pieceLocation, List<Point4D> moveDirections, List<Point4D> captureDirections) {
             this.multiverse = multiverse;
             this.piece = piece;
             this.pieceLocation = pieceLocation;
@@ -68,70 +70,44 @@ public class PawnMoveSet implements MoveSet {
 
             for (Point4D moveDirection : this.moveDirections) {
                 Point4D toLocation = this.pieceLocation.add(moveDirection);
-                Piece toPiece = this.multiverse.getLocationContents(toLocation);
+                byte toPiece = this.multiverse.getLocationContents(toLocation);
 
-                if (toPiece == null) continue;
-                if (toPiece.type() != PieceType.EMPTY) continue;
+                if (toPiece == -1) continue;
+                if (toPiece != 0) continue;
 
-                this.validMoves.add(
-                        new Move.Builder()
-                                .withPiece(this.piece)
-                                .withFrom(this.pieceLocation)
-                                .withTo(toLocation)
-                                .build()
-                );
+                this.validMoves.add(Move.of(this.piece, this.pieceLocation, toLocation));
 
                 // If the pawn hasn't moved, check 2 spaces ahead
-                if (piece.moved()) continue;
+                if (BitPiece.hasMoved(this.piece)) continue;
                 toLocation = toLocation.add(moveDirection);
                 toPiece = this.multiverse.getLocationContents(toLocation);
 
-                if (toPiece == null) continue;
-                if (toPiece.type() != PieceType.EMPTY) continue;
+                if (toPiece != 0) continue;
 
-                this.validMoves.add(
-                        new Move.Builder()
-                                .withPiece(this.piece)
-                                .withFrom(this.pieceLocation)
-                                .withTo(toLocation)
-                                .build()
-                );
+                this.validMoves.add(Move.of(this.piece, this.pieceLocation, toLocation));
             }
 
             for (Point4D captureDirection : this.captureDirections) {
                 Point4D toLocation = this.pieceLocation.add(captureDirection);
-                Piece toPiece = this.multiverse.getLocationContents(toLocation);
+                byte toPiece = this.multiverse.getLocationContents(toLocation);
 
-                if (toPiece == null) continue;
-                
-                if (this.piece.color().other() == toPiece.color())
-                    this.validMoves.add(
-                            new Move.Builder()
-                                    .withPiece(this.piece)
-                                    .withFrom(this.pieceLocation)
-                                    .withTo(toLocation)
-                                    .build()
-                    );
+                if (toPiece <= 0) continue;
+
+                if (1 - BitPiece.colorOrdinal(this.piece) == BitPiece.colorOrdinal(toPiece))
+                    this.validMoves.add(Move.of(this.piece, this.pieceLocation, toLocation));
 
                 // Pesky en-passant
                 if (captureDirection.l() != 0 || captureDirection.t() != 0) continue;
                 Point4D potentialPawnLocation = toLocation.add(0, 0, 0, -captureDirection.y());
-                Piece potentialPawn = this.multiverse.getLocationContents(potentialPawnLocation);
+                byte potentialPawn = this.multiverse.getLocationContents(potentialPawnLocation);
 
-                if (potentialPawn == null || potentialPawn.type() != PieceType.PAWN) continue;
+                if (potentialPawn == -1 || BitPiece.typeOrdinal(potentialPawn) != PieceType.PAWN.ordinal()) continue;
                 Point4D potentialPastPawnLocation = potentialPawnLocation.add(0, -1, 0, captureDirection.y() * 2);
                 potentialPawn = this.multiverse.getLocationContents(potentialPastPawnLocation);
 
-                if (potentialPawn == null || potentialPawn.type() != PieceType.PAWN) continue;
+                if (potentialPawn == -1 || BitPiece.typeOrdinal(potentialPawn) != PieceType.PAWN.ordinal()) continue;
 
-                this.validMoves.add(
-                        new Move.Builder()
-                                .withPiece(this.piece)
-                                .withFrom(this.pieceLocation)
-                                .withTo(toLocation)
-                                .withEnPassant(potentialPawnLocation)
-                                .build()
-                );
+                this.validMoves.add(Move.of(this.piece, this.pieceLocation, toLocation, potentialPawnLocation));
             }
 
         }
@@ -149,4 +125,5 @@ public class PawnMoveSet implements MoveSet {
             return result;
         }
     }
+
 }

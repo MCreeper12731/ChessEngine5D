@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class BitGamiApiTest {
 
     @Test
-    public void isCalculatedPresentTimeCorrectWhenStatic() {
+    public void isCalculatedPresentTimeCorrectWhenNew() {
 
         BitGame bitGame = new BitGame(new BitMultiverse.Builder(4)
                 .withTimeline(new BitTimeline.Builder(0)
@@ -71,5 +71,51 @@ public class BitGamiApiTest {
         assertEquals(4, bitGame.getCalculatedPresentTime());
         bitGame.undoMoveFromCurrentTurn();
         assertEquals(4, bitGame.getCalculatedPresentTime());
+    }
+
+    @Test
+    public void isPlayableTimelineLsCorrectWhenNew() {
+        BitGame game = new BitGame(Preset.CUSTOM_COMPLEX_POSITION.getGame());
+
+        assertEquals(3, game.getPlayableTimelineLs(game.getPlayerTurn()).size());
+        assertEquals(0, game.getPlayableTimelineLs(game.getPlayerTurn().other()).size());
+    }
+
+    @Test
+    public void isPlayableTimelineLsCorrectWhenApplyingMove() {
+        BitGame game = new BitGame(Preset.CUSTOM_COMPLEX_POSITION.getGame());
+
+        game.applyMove(Move.noop(-1, 4));
+        assertEquals(2, game.getPlayableTimelineLs(game.getPlayerTurn()).size());
+        assertEquals(1, game.getPlayableTimelineLs(game.getPlayerTurn().other()).size());
+
+        game.applyMove(Move.noop(0, 4));
+        assertEquals(1, game.getPlayableTimelineLs(game.getPlayerTurn()).size());
+        assertEquals(2, game.getPlayableTimelineLs(game.getPlayerTurn().other()).size());
+    }
+
+    @Test
+    public void isPlayableTimelineLsCorrectWhenAddingTimeline() {
+        BitGame game = new BitGame(Preset.CUSTOM_COMPLEX_POSITION.getGame());
+
+        game.applyMove(Move.of(game, 0, 4, 4, 1, 0, 2, 4, 1));
+        assertEquals(2, game.getPlayableTimelineLs(game.getPlayerTurn()).size());
+        assertEquals(2, game.getPlayableTimelineLs(game.getPlayerTurn().other()).size());
+    }
+
+    @Test
+    public void isPlayableTimelineLsCorrectWhenUndoMove() {
+        BitGame game = new BitGame(Preset.CUSTOM_COMPLEX_POSITION.getGame());
+
+        game.applyMove(Move.noop(-1, 4));
+        game.applyMove(Move.noop(0, 4));
+        assertEquals(1, game.getPlayableTimelineLs(game.getPlayerTurn()).size());
+        assertEquals(2, game.getPlayableTimelineLs(game.getPlayerTurn().other()).size());
+        game.undoMoveFromCurrentTurn();
+        assertEquals(2, game.getPlayableTimelineLs(game.getPlayerTurn()).size());
+        assertEquals(1, game.getPlayableTimelineLs(game.getPlayerTurn().other()).size());
+        game.undoMoveFromCurrentTurn();
+        assertEquals(3, game.getPlayableTimelineLs(game.getPlayerTurn()).size());
+        assertEquals(0, game.getPlayableTimelineLs(game.getPlayerTurn().other()).size());
     }
 }

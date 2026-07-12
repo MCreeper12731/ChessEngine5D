@@ -23,6 +23,8 @@ public class BitGame {
     private final Stack<MoveEffect> currentTurnMoveEffects = new Stack<>();
     private final Stack<Stack<MoveEffect>> turnEffects = new Stack<>();
     private final TreeMap<Integer, Integer> lastTimesOfTimelines = new TreeMap<>();
+    private final Set<Integer> whitePlayableTimelineLs = new HashSet<>();
+    private final Set<Integer> blackPlayableTimelineLs = new HashSet<>();
 
     private final Stack<Stack<MoveEffect>> archivedTurnEffects = new Stack<>();
 
@@ -61,7 +63,8 @@ public class BitGame {
 
             }
             multiverseBuilder.withTimeline(bitTimeline);
-
+            if (bitTimeline.getLastBoard().getPlayerTurn() == Color.WHITE) whitePlayableTimelineLs.add(bitTimeline.getL());
+            else blackPlayableTimelineLs.add(bitTimeline.getL());
         }
         this.multiverse = multiverseBuilder.build();
         this.currentTurnMoveEffects.addAll(game.getCurrentTurnMoveEffects());
@@ -150,8 +153,8 @@ public class BitGame {
                 move.from().l()
         );
 
-        // Subtract one from fromTimeline's current lastT as it will need to be updated
         this.removeLastT(fromTimeline);
+        this.swapPlayableTimelineL(move.from().l(), fromTimeline.getLastBoard().getPlayerTurn());
 
         if (move.from().l() == move.to().l() && move.from().t() == move.to().t()) {
             // Handling in-board moves
@@ -159,7 +162,7 @@ public class BitGame {
             this.applyMoveToTimeline(fromTimeline, move);
 
         } else if (move.to().t() != toTimeline.getLastT()) {
-            // Handling timeline splitting moves
+            // Handling timeline-splitting moves
 
             this.applyMoveToTimeline(fromTimeline, move);
 
@@ -173,8 +176,11 @@ public class BitGame {
 
             BitTimeline newTimeline = new BitTimeline(newTimelineL, startingTime);
             newTimeline.addBoard(newBoard);
-
             this.multiverse.addTimeline(newTimeline);
+
+            if (newBoard.getPlayerTurn() == Color.WHITE) whitePlayableTimelineLs.add(newTimelineL);
+            else blackPlayableTimelineLs.add(newTimelineL);
+
             if (this.multiverse.isTimelineActive(newTimeline)) {
                 this.addLastT(newTimeline);
 
@@ -203,6 +209,7 @@ public class BitGame {
             this.applyMoveToTimeline(fromTimeline, move);
 
             this.removeLastT(toTimeline);
+            this.swapPlayableTimelineL(toTimeline.getL(), toTimeline.getLastBoard().getPlayerTurn());
             this.applyMoveToTimeline(toTimeline, move);
             this.addLastT(toTimeline);
 
@@ -266,6 +273,7 @@ public class BitGame {
         // Remove added boards
         BitTimeline primaryTimeline = this.multiverse.getTimeline(moveEffect.getPrimaryAddedBoardL());
         this.removeLastT(primaryTimeline);
+        this.swapPlayableTimelineL(primaryTimeline.getL(), primaryTimeline.getLastBoard().getPlayerTurn());
         primaryTimeline.removeLastBoard();
         this.addLastT(primaryTimeline);
 
@@ -273,6 +281,7 @@ public class BitGame {
             BitTimeline secondaryTimeline = this.multiverse.getTimeline(moveEffect.getSecondaryAddedBoardL());
             if (this.multiverse.isTimelineActive(secondaryTimeline))
                 this.removeLastT(secondaryTimeline);
+            this.swapPlayableTimelineL(secondaryTimeline.getL(), secondaryTimeline.getLastBoard().getPlayerTurn());
             secondaryTimeline.removeLastBoard();
             if (this.multiverse.isTimelineActive(secondaryTimeline) && secondaryTimeline.size() > 0)
                 this.addLastT(secondaryTimeline);
@@ -280,6 +289,8 @@ public class BitGame {
 
         // Remove timeline if it was added
         if (moveEffect.isAddedTimeline()) {
+            this.whitePlayableTimelineLs.remove(moveEffect.getAddedTimeline());
+            this.blackPlayableTimelineLs.remove(moveEffect.getAddedTimeline());
             this.multiverse.removeLastTimeline(moveEffect.getAddedTimeline() >= 0);
         }
 
@@ -298,29 +309,9 @@ public class BitGame {
                 this.playerTurn == Color.BLACK && (this.presentTime & 1) == 0;
     }
 
-    public List<Integer> getPlayableTimelineLs() {
-        List<Integer> ls = new ArrayList<>();
-
-        for (BitTimeline timeline : this.multiverse.getTimelines()) {
-            if (timeline.getLastBoard().getPlayerTurn() != this.playerTurn) continue;
-
-            ls.add(timeline.getL());
-        }
-
-        return ls;
-    }
-
-    public List<BitBoard> getPlayableBoards(Color color) {
-        List<BitBoard> boards = new ArrayList<>();
-
-        for (BitTimeline timeline : this.multiverse.getTimelines()) {
-            BitBoard board = timeline.getLastBoard();
-            if (board.getPlayerTurn() != color) continue;
-
-            boards.add(board);
-        }
-
-        return boards;
+    public Set<Integer> getPlayableTimelineLs(Color color) {
+        if (color == Color.WHITE) return this.whitePlayableTimelineLs;
+        return this.blackPlayableTimelineLs;
     }
 
     public boolean doesMoveAddTimeline(Move move) {
@@ -482,6 +473,16 @@ public class BitGame {
     private void addLastT(BitTimeline timeline) {
         int count = this.lastTimesOfTimelines.getOrDefault(timeline.getLastT(), 0);
         this.lastTimesOfTimelines.put(timeline.getLastT(), count + 1);
+    }
+
+    private void swapPlayableTimelineL(int l, Color playerTurn) {
+        if (playerTurn == Color.WHITE) {
+            this.whitePlayableTimelineLs.remove(l);
+            this.blackPlayableTimelineLs.add(l);
+        } else {
+            this.blackPlayableTimelineLs.remove(l);
+            this.whitePlayableTimelineLs.add(l);
+        }
     }
 
     public BitMultiverse getMultiverse() {

@@ -36,8 +36,8 @@ public record ScoredBitBoard(BitBoard board, List<Integer> danger, List<Point4D>
                 .build();
         game.applyMove(noopMove);
 
-        List<BitBoard> opponentBoards = game.getPlayableBoards(game.getPlayerTurn().other());
-        for (BitBoard board : opponentBoards) {
+        for (int l : game.getPlayableTimelineLs(game.getPlayerTurn().other())) {
+            BitBoard board = game.getMultiverse().getTimeline(l).getLastBoard();
             List<Move> opponentMoves = BitMoveGenerator.probableMoves(board, game);
             for (Move move : opponentMoves) {
                 if (move.noop()) continue;

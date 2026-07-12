@@ -27,7 +27,7 @@ public class BitTurnIterator implements Iterator<List<Move>> {
 
         this.moveIteratorSuppliers = new ArrayList<>();
 
-        for (int l : this.game.getPlayableTimelineLs()) {
+        for (int l : this.game.getPlayableTimelineLs(this.game.getPlayerTurn())) {
             BitBoard board = this.game.getMultiverse().getTimeline(l).getLastBoard();
 
             this.moveIteratorSuppliers.add(BitMoveGenerator.scoredMovesSupplier(board, this.game));

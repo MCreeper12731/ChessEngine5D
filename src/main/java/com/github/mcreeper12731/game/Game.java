@@ -118,7 +118,7 @@ public class Game {
 
             this.multiverse.addTimeline(newTimeline);
 
-            moveEffect.setAddedTimeline(newTimelineL);
+            moveEffect.setAddedTimelineL(newTimelineL);
             moveEffect.setSecondaryAddedBoardL(newTimelineL);
 
         } else {

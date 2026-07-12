@@ -50,30 +50,28 @@ class BitBoardTest {
     @Test
     public void correctBoardWhenApplyingJumpMove() {
 
-        BitBoard board0 = new BitBoard.Builder(4, 0, 0)
+        BitBoard board0T0 = new BitBoard.Builder(4, 0, 0)
                 .withWhitePiece(PieceType.KING, 0, 0)
                 .withBlackPiece(PieceType.KING, 3, 3)
                 .build();
 
-        BitBoard board1 = new BitBoard.Builder(4, 0, 0)
+        BitBoard board1T0 = new BitBoard.Builder(4, 1, 0)
                 .withWhitePiece(PieceType.KING, 0, 0)
                 .withBlackPiece(PieceType.KING, 3, 3)
                 .build();
 
-        Move move = Move.of(board0.getLocationContents(0, 0), new Point4D(0, 0, 0, 0), new Point4D(0, 0, 0, 1));
+        Move move = Move.of(board0T0.getLocationContents(0, 0), new Point4D(0, 0, 0, 0), new Point4D(1, 0, 0, 1));
 
-        BitBoard newBoard0 = board0.applyMove(0, 1, move);
-        BitBoard newBoard1 = board1.applyMove(1, 1, move);
+        BitBoard board0T1 = board0T0.applyMove(0, 1, move);
+        BitBoard board1T1 = board1T0.applyMove(1, 1, move);
 
-//        Log.debug("Test", newBoard0);
-//        Log.debug("Test");
-//        Log.debug("Test", newBoard1);
+        Log.debug("Test", board0T1, "\n", board1T1);
 
-        assertEquals(0, newBoard0.getLocationContents(0, 0));
-        assertEquals(0, newBoard0.getLocationContents(0, 1));
+        assertEquals(0, board0T1.getLocationContents(0, 0));
+        assertEquals(0, board0T1.getLocationContents(0, 1));
 
-        assertEquals(BitPiece.encode(Color.WHITE, PieceType.KING, false), newBoard1.getLocationContents(0, 0));
-        assertEquals(BitPiece.encode(Color.WHITE, PieceType.KING, true), newBoard1.getLocationContents(0, 1));
+        assertEquals(BitPiece.encode(Color.WHITE, PieceType.KING, false), board1T1.getLocationContents(0, 0));
+        assertEquals(BitPiece.encode(Color.WHITE, PieceType.KING, true), board1T1.getLocationContents(0, 1));
     }
 
     @Test

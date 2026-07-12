@@ -19,7 +19,7 @@ public class PlayerController extends Controller {
 
     public void handleTileComponentClick(TileComponent clickedTile) {
 
-        //Log.debug("Application", "Clicked " + clickedTile.getLocation().toString());
+        Log.debug("Application", "Clicked", clickedTile.getLocation().toString());
 
         if (clickedTile.getPiece() == null) {
             handleEmptyTileClick(clickedTile);

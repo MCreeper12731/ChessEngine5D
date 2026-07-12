@@ -53,7 +53,9 @@ public class Log {
         }
         StringBuilder messageBuilder = new StringBuilder();
         for (Object message : messages) {
-            messageBuilder.append(message).append(" ");
+            String messageString = message.toString();
+            messageBuilder.append(message);
+            if (messageString.charAt(messageString.length() - 1) != '\n') messageBuilder.append(" ");
         }
         messageBuilder.deleteCharAt(messageBuilder.length() - 1);
         debug(prefix, messageBuilder.toString());

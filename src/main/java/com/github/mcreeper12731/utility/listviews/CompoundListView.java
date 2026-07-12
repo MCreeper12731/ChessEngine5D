@@ -24,4 +24,9 @@ public class CompoundListView<E> extends AbstractList<E> {
     public int size() {
         return list1.size() + list2.size();
     }
+
+    @Override
+    public String toString() {
+        return this.list1.getFirst().toString() + " " + this.list2.getLast().toString();
+    }
 }

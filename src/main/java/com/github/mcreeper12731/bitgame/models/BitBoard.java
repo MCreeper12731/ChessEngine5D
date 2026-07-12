@@ -87,7 +87,7 @@ public class BitBoard {
      * @return 0 if the piece is empty, otherwise the encoded bit piece. Throws ArrayIndexOutOfBoundsException if x or y are out of bounds.
      */
     public byte getLocationContents(int x, int y) {
-        return this.mailbox[squareIndex(x, y)];
+        return this.mailbox[x + y * this.size];
     }
 
     private int squareIndex(int x, int y) {

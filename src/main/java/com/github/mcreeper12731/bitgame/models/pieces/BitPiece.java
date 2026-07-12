@@ -49,22 +49,6 @@ public class BitPiece {
         return (bitPiece & 1) == 1;
     }
 
-    @Deprecated
-    public static PieceType type(byte bitPiece) {
-        if (bitPiece < 0) return null;
-        if (bitPiece == 0) return PieceType.EMPTY;
-        int typeOrdinal = typeOrdinal(bitPiece);
-        if (typeOrdinal < 0 || typeOrdinal >= BitGame.NUMBER_OF_TYPES) throw new IllegalArgumentException("Invalid bitPiece encoding!");
-        return PieceType.of(typeOrdinal);
-    }
-
-    public static Color color(byte bitPiece) {
-        if (bitPiece <= 0) return null;
-        int colorOrdinal = colorOrdinal(bitPiece);
-        if (colorOrdinal < 0 || colorOrdinal >= 2) throw new IllegalArgumentException("Invalid bitPiece encoding!"); // this can literally never happen
-        return colorOrdinal == 0 ? Color.WHITE : Color.BLACK;
-    }
-
     public static Iterator<Move> getMoveIterator(BitGame game, Point4D location) {
         byte piece = game.getMultiverse().getLocationContents(location);
         if (piece == 0) return Collections.emptyIterator();

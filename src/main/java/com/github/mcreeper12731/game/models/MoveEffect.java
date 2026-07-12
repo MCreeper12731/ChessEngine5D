@@ -9,7 +9,7 @@ public class MoveEffect {
     private final int primaryAddedBoardL;
 
     private Integer secondaryAddedBoardL = null;
-    private Integer addedTimeline = null;
+    private Integer addedTimelineL = null;
 
     public MoveEffect(
             Move move,
@@ -25,8 +25,8 @@ public class MoveEffect {
         this.primaryAddedBoardL = primaryAddedBoardL;
     }
 
-    public void setAddedTimeline(int addedTimeline) {
-        this.addedTimeline = addedTimeline;
+    public void setAddedTimelineL(int addedTimelineL) {
+        this.addedTimelineL = addedTimelineL;
     }
 
     public void setSecondaryAddedBoardL(int secondaryAddedBoardL) {
@@ -38,11 +38,11 @@ public class MoveEffect {
     }
 
     public boolean isAddedTimeline() {
-        return this.addedTimeline != null;
+        return this.addedTimelineL != null;
     }
 
     public Integer getAddedTimeline() {
-        return this.addedTimeline;
+        return this.addedTimelineL;
     }
 
     public Color getPrevPlayerTurn() {

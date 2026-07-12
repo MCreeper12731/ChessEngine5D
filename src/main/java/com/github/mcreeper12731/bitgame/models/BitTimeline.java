@@ -9,10 +9,16 @@ public class BitTimeline {
     private final int startTime;
     private final List<BitBoard> boards;
 
-    private BitTimeline(Builder builder) {
-        this.l = builder.l;
-        this.startTime = builder.startTime;
-        this.boards = builder.boards;
+    public BitTimeline(int l, int startTime) {
+        this.l = l;
+        this.startTime = startTime;
+        this.boards = new ArrayList<>();
+    }
+
+    private BitTimeline(int l, int startTime, List<BitBoard> boards) {
+        this.l = l;
+        this.startTime = startTime;
+        this.boards = boards;
     }
 
     public void addBoard(BitBoard board) {
@@ -27,7 +33,7 @@ public class BitTimeline {
         return this.boards.size();
     }
 
-    public int getFirstTimeCoordinate() {
+    public int getFirstT() {
         return this.startTime;
     }
 
@@ -53,6 +59,11 @@ public class BitTimeline {
         this.boards.removeLast();
     }
 
+    @Override
+    public String toString() {
+        return this.l + "";
+    }
+
     public static class Builder {
 
         private final int l;
@@ -75,7 +86,9 @@ public class BitTimeline {
         }
 
         public BitTimeline build() {
-            return new BitTimeline(this);
+            return new BitTimeline(
+                    this.l, this.startTime, this.boards
+            );
         }
     }
 

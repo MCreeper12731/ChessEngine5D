@@ -26,6 +26,7 @@ public class BitGame {
 
     private final Stack<Stack<MoveEffect>> archivedTurnEffects = new Stack<>();
 
+    private int presentTime;
     private Color playerTurn = Color.WHITE;
     private boolean gameOver = false;
     private Color winner = null;
@@ -76,7 +77,7 @@ public class BitGame {
     private void initialize() {
         for (BitTimeline timeline : this.multiverse.getTimelines()) {
             if (!this.multiverse.isTimelineActive(timeline)) continue;
-            this.lastTimesOfTimelines.put(timeline.getLastT(), this.lastTimesOfTimelines.getOrDefault(timeline.getLastT(), 0) + 1);
+            this.addLastT(timeline);
         }
     }
 
@@ -219,6 +220,7 @@ public class BitGame {
         }
 
         this.addLastT(fromTimeline);
+        this.presentTime = this.lastTimesOfTimelines.firstKey();
         this.currentTurnMoveEffects.add(moveEffect);
     }
 
@@ -282,6 +284,7 @@ public class BitGame {
         }
 
         // Restore mutable fields
+        this.presentTime = this.lastTimesOfTimelines.firstKey();
         this.playerTurn = moveEffect.getPrevPlayerTurn();
         this.gameOver = moveEffect.getPrevGameOver();
         this.winner = moveEffect.getPrevWinner();
@@ -290,24 +293,18 @@ public class BitGame {
     // State polling methods and methods to predict game state without simulating moves
 
     public boolean isCurrentTurnFinalizable() {
-        if (this.isGameOver()) return true;
-        for (BitTimeline timeline : this.multiverse.getTimelines()) {
-            if (timeline.getLastT() > this.getPresentTime()) continue;
-            if (timeline.getLastBoard().getPlayerTurn() != this.playerTurn) continue;
-            
-            return false;
-        }
-        return true;
+        return this.isGameOver() ||
+                this.playerTurn == Color.WHITE && (this.presentTime & 1) == 1 ||
+                this.playerTurn == Color.BLACK && (this.presentTime & 1) == 0;
     }
 
     public List<Integer> getPlayableTimelineLs() {
         List<Integer> ls = new ArrayList<>();
 
-        for (int timelineIndex : this.multiverse.getActiveTimelineLs()) {
-            BitTimeline timeline = this.multiverse.getTimeline(timelineIndex);
+        for (BitTimeline timeline : this.multiverse.getTimelines()) {
             if (timeline.getLastBoard().getPlayerTurn() != this.playerTurn) continue;
 
-            ls.add(timelineIndex);
+            ls.add(timeline.getL());
         }
 
         return ls;
@@ -496,7 +493,7 @@ public class BitGame {
     }
 
     public int getPresentTime() {
-        return this.lastTimesOfTimelines.firstKey();
+        return this.presentTime;
     }
 
     public int getCalculatedPresentTime() {

@@ -16,11 +16,11 @@ public class GameComparison {
 
         Game game = Preset.STANDARD.getGame();
         List<Long> profilings = new ArrayList<>();
-        /*for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 6; i++) {
             long start = System.nanoTime();
             new NegaMaxStrategy().findBestTurn(game);
             profilings.add((System.nanoTime() - start) / 1_000_000);
-        }*/
+        }
         Log.print("ComparisonExample", "Game", profilings);
 
         BitGame bitGame = new BitGame(game);

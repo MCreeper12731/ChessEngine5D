@@ -75,7 +75,7 @@ public class Evaluator {
 
             BitBoard board = timeline.getLastBoard();
             for (int i = 0; i < board.size() * board.size(); i++) {
-                byte piece = board.getLocationContents(i % board.size(), i / board.size());
+                byte piece = board.getLocationContentsFromIndex(i);
                 if (piece == 0) continue;
                 int pieceColor = BitPiece.colorOrdinal(piece);
                 PieceType pieceType = PieceType.of(BitPiece.typeOrdinal(piece));
@@ -182,7 +182,7 @@ public class Evaluator {
 
         int kingCount = 0;
         for (int i = 0; i < nextBoard.size() * nextBoard.size(); i++) {
-            byte piece = nextBoard.getLocationContents(i % nextBoard.size(), i / nextBoard.size());
+            byte piece = nextBoard.getLocationContentsFromIndex(i);
 
             if (BitPiece.colorOrdinal(piece) != board.board().getPlayerTurn().ordinal()) continue;
             switch (BitPiece.typeOrdinal(piece)) {

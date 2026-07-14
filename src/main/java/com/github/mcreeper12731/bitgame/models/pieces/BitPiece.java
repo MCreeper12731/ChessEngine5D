@@ -35,12 +35,10 @@ public class BitPiece {
     }
 
     public static int colorOrdinal(byte bitPiece) {
-        if (bitPiece < 0) throw new IllegalArgumentException("bitPiece cannot be negative!");
         return ((bitPiece >> 1) & 1);
     }
 
     public static int typeOrdinal(byte bitPiece) {
-        if (bitPiece < 0) throw new IllegalArgumentException("bitPiece cannot be negative!");
         return ((bitPiece >> 2) & 0x1F) - 1;
     }
 

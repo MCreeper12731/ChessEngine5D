@@ -65,7 +65,7 @@ public class Board {
     }
 
     public Color getPlayerTurn() {
-        return this.t % 2 == 0 ? Color.WHITE : Color.BLACK;
+        return (this.t & 1) == 0 ? Color.WHITE : Color.BLACK;
     }
 
     public int size() {

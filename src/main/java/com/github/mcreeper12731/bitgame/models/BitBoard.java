@@ -90,6 +90,10 @@ public class BitBoard {
         return this.mailbox[x + y * this.size];
     }
 
+    public byte getLocationContentsFromIndex(int i) {
+        return this.mailbox[i];
+    }
+
     private int squareIndex(int x, int y) {
         return y * this.size + x;
     }

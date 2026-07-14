@@ -20,24 +20,7 @@ public class Main {
         Game game = Preset.STANDARD.getGame();
         BitGame bitGame = new BitGame(game);
 
-        List<Double> timingsRegular = new ArrayList<>();
-        List<Double> timingsBit = new ArrayList<>();
-
-        var negaMax = new NegaMaxStrategy();
-        var negaMaxBit = new BitNegaMaxStrategy();
-
-        for (int i = 0; i < 3; i++) {
-
-            double startTime = System.nanoTime();
-            negaMax.findBestTurn(game);
-            timingsRegular.add(System.nanoTime() - startTime);
-
-            double startTimeBit = System.nanoTime();
-            negaMaxBit.findBestTurn(bitGame);
-            timingsBit.add(System.nanoTime() - startTimeBit);
-        }
-
-        Log.print("Main", timingsRegular);
-        Log.print("Main", timingsBit);
+        BitNegaMaxStrategy negaMaxStrategy = new BitNegaMaxStrategy();
+        negaMaxStrategy.findBestTurn(bitGame);
     }
 }

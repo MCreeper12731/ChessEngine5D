@@ -16,6 +16,7 @@ import com.github.mcreeper12731.game.models.scored.ScoredMove;
 import com.github.mcreeper12731.game.movegeneration.iterators.BoardMoveIterator;
 import com.github.mcreeper12731.game.movegeneration.iterators.IterativeTurnIterator;
 import com.github.mcreeper12731.game.movegeneration.iterators.TurnIterator;
+import com.github.mcreeper12731.utility.listviews.MappedListView;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -58,7 +59,7 @@ public class BitMoveGenerator {
 
     public static List<Move> scoredMoves(BitBoard board, BitGame game) {
         ScoredBitBoard scoredBoard = new ScoredBitBoard(board, game);
-        return scoredBoard.scoreMoves(game).stream().map(ScoredMove::move).collect(Collectors.toList());
+        return new MappedListView<>(scoredBoard.scoreMoves(game), ScoredMove::move);
     }
 
     public static List<Move> probableMoves(BitBoard board, BitGame game) {

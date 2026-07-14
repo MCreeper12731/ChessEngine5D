@@ -164,9 +164,4 @@ public class BitNegaMaxStrategy {
         }
         return best;
     }
-
-    private boolean isTerminal(Game game) {
-        return game.isGameOver();
-    }
-
 }

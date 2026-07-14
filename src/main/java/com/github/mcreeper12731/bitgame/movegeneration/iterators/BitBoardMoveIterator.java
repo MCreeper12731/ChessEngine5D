@@ -14,7 +14,8 @@ public class BitBoardMoveIterator implements Iterator<Move>  {
     private final BitGame game;
     private final BitBoard board;
 
-    private int index;
+    private int x;
+    private int y;
     private Iterator<Move> currentIterator;
     private boolean suppliedNoop;
 
@@ -22,7 +23,8 @@ public class BitBoardMoveIterator implements Iterator<Move>  {
         this.game = game;
         this.board = board;
 
-        this.index = -1;
+        this.x = -1;
+        this.y = 0;
         this.currentIterator = Collections.emptyIterator();
         this.suppliedNoop = false;
         this.step();
@@ -32,19 +34,21 @@ public class BitBoardMoveIterator implements Iterator<Move>  {
 
         if (this.currentIterator.hasNext()) return;
 
-        while (this.index + 1 < this.board.size() * this.board.size()) {
+        while (true) {
 
-            this.index++;
+            this.x++;
+            if (this.x >= this.board.size()) {
+                this.x = 0;
+                this.y++;
+                if (this.y >= this.board.size()) break;
+            }
 
-            int x = this.index % this.board.size();
-            int y = this.index / this.board.size();
-
-            byte nextPiece = this.board.getLocationContents(x, y);
+            byte nextPiece = this.board.getLocationContents(this.x, this.y);
             if (nextPiece == -1) continue;
 
             if (BitPiece.colorOrdinal(nextPiece) != board.getPlayerTurn().ordinal()) continue;
 
-            this.currentIterator = BitPiece.getMoveIterator(this.game, new Point4D(this.board.l(), this.board.t(), x, y));
+            this.currentIterator = BitPiece.getMoveIterator(this.game, new Point4D(this.board.l(), this.board.t(), this.x, this.y));
             if (!this.currentIterator.hasNext()) continue;
             return;
         }

@@ -17,7 +17,7 @@ class BitBoardMoveIteratorTest {
     @Test
     public void moveGenerationCorrect() {
 
-        BitGame game = new BitGame(Preset.CUSTOM_SIMPLE_POSITION.getGame());
+        BitGame game = new BitGame(Preset.CUSTOM_SIMPLE_SINGLEBOARD.getGame());
 
         List<Move> moves = Iterators.consumeRemaining(BitPiece.getMoveIterator(game, new Point4D(0, 0, 0, 0)));
 //        Log.debug("Test", moves);

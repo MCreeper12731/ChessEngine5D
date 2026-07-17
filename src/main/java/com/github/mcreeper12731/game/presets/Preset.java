@@ -3,12 +3,8 @@ package com.github.mcreeper12731.game.presets;
 import com.github.mcreeper12731.game.presets.checkmatepractice.PawnPreset;
 import com.github.mcreeper12731.game.presets.checkmatepractice.QueenPreset;
 import com.github.mcreeper12731.game.presets.checkmatepractice.RookPreset;
-import com.github.mcreeper12731.game.presets.custom.SimplePositionPreset;
+import com.github.mcreeper12731.game.presets.custom.*;
 import com.github.mcreeper12731.game.Game;
-import com.github.mcreeper12731.game.presets.custom.ComplexPositionPreset;
-import com.github.mcreeper12731.game.presets.custom.TestCastlingPreset;
-import com.github.mcreeper12731.game.presets.custom.JustQueensInvasionPreset;
-import com.github.mcreeper12731.game.presets.custom.Test1Preset;
 import com.github.mcreeper12731.game.presets.focused.JustDragonsPreset;
 import com.github.mcreeper12731.game.presets.focused.JustQueensPreset;
 import com.github.mcreeper12731.game.presets.focused.JustRooksPreset;
@@ -39,7 +35,8 @@ public enum Preset {
     CUSTOM_TEST_1(new Test1Preset()),
     CUSTOM_TEST_CASTLING(new TestCastlingPreset()),
     CUSTOM_COMPLEX_POSITION(new ComplexPositionPreset()),
-    CUSTOM_SIMPLE_POSITION(new SimplePositionPreset());
+    CUSTOM_SIMPLE_SINGLEBOARD(new SimplePositionPreset()),
+    CUSTOM_SIMPLE_MULTIBOARD(new SimpleMultiBoardPreset());
 
     public static Preset fromString(String stringValue) {
         return Preset.valueOf(stringValue.toUpperCase());

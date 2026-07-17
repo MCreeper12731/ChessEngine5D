@@ -14,7 +14,7 @@ public class Config {
         this.data = new HashMap<>();
     }
 
-    public Config with(String key, int value) {
+    public Config with(String key, Object value) {
         this.data.put(key, value);
         return this;
     }

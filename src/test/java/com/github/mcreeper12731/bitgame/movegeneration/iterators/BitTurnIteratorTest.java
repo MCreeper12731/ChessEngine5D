@@ -1,27 +1,81 @@
 package com.github.mcreeper12731.bitgame.movegeneration.iterators;
 
-import com.github.mcreeper12731.application.MainApplication;
 import com.github.mcreeper12731.bitgame.BitGame;
 import com.github.mcreeper12731.bitgame.models.BitBoard;
 import com.github.mcreeper12731.bitgame.movegeneration.BitMoveGenerator;
 import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Board;
 import com.github.mcreeper12731.game.models.Move;
+import com.github.mcreeper12731.game.models.Multiverse;
+import com.github.mcreeper12731.game.models.Timeline;
+import com.github.mcreeper12731.game.models.pieces.PieceType;
 import com.github.mcreeper12731.game.movegeneration.MoveGenerator;
 import com.github.mcreeper12731.game.presets.Preset;
 import com.github.mcreeper12731.utility.Iterators;
 import com.github.mcreeper12731.utility.Log;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class BitTurnIteratorTest {
+
+    @Test
+    public void turnStatistics() {
+
+        BitGame game = new BitGame(Preset.CUSTOM_COMPLEX_POSITION.getGame());
+
+        Iterator<List<Move>> turns = BitMoveGenerator.getTurnsIterator(game);
+
+        List<List<Move>> allTurns = new ArrayList<>();
+        turns.forEachRemaining(allTurns::add);
+
+        List<Set<Move>> uniquePermutations = new ArrayList<>();
+        int duplicatePermutations = 0;
+        int invalidTurns = 0;
+        int maxT = 0;
+
+        for (List<Move> turn : allTurns) {
+
+            game.applyMoves(turn);
+            if (game.getPresentTime() > maxT)
+                maxT = game.getPresentTime();
+            if (!game.isCurrentTurnFinalizable()) {
+                invalidTurns++;
+            }
+            game.undoTurn();
+
+            boolean allSameTimeline = true;
+            for (Move move : turn) {
+                if (!move.noop() && move.from().l() != move.to().l()) {
+                    allSameTimeline = false;
+                    break;
+                }
+            }
+            if (allSameTimeline) {
+
+                Set<Move> hashedTurn = new HashSet<>(turn);
+                for (Set<Move> uniquePermutation : uniquePermutations) {
+                    if (uniquePermutation.equals(hashedTurn)) {
+//                        Log.debug("Test", "found duplicate", turn, "of turn", uniquePermutation);
+                        duplicatePermutations++;
+                        break;
+                    }
+                }
+
+                uniquePermutations.add(hashedTurn);
+                //Log.debug("Test", turn.toString());
+            }
+        }
+
+
+        Log.debug("Test", allTurns.size());
+        Log.debug("Test", "duplicate", duplicatePermutations);
+        Log.debug("Test", "invalid", invalidTurns);
+        Log.debug("Test", "maxT", maxT);
+        Log.debug("Test", "actual turns", allTurns.size() - duplicatePermutations - invalidTurns);
+    }
 
     @Test
     public void turnGenerationSameAsRegular() {
@@ -72,5 +126,15 @@ class BitTurnIteratorTest {
             }
         }
         assertEquals(turns, bitTurns);
+    }
+
+    @Test
+    public void turnGenerationSameAsIterative() {
+        BitGame game = new BitGame(Preset.CUSTOM_COMPLEX_POSITION.getGame());
+
+        List<List<Move>> regularTurns = Iterators.consumeRemaining(BitMoveGenerator.getTurnsIterator(game));
+        List<List<Move>> iterativeTurns = Iterators.consumeRemaining(BitMoveGenerator.getIterativeTurnIterator(game));
+
+        assertEquals(regularTurns.size(), iterativeTurns.size());
     }
 }

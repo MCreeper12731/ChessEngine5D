@@ -2,14 +2,17 @@ package com.github.mcreeper12731.engine.evaluators;
 
 import com.github.mcreeper12731.bitgame.movegeneration.BitMoveGenerator;
 import com.github.mcreeper12731.bitgame.BitGame;
+import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.models.Move;
 import com.github.mcreeper12731.game.models.scored.ScoredTurn;
+import com.github.mcreeper12731.game.movegeneration.MoveGenerator;
 import com.github.mcreeper12731.utility.Config;
 import com.github.mcreeper12731.utility.Log;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 
 public class BitNegaMaxEvaluator {
     private static final int POSITIVE_INFINITY = Integer.MAX_VALUE;
@@ -19,6 +22,7 @@ public class BitNegaMaxEvaluator {
     private final int maxDepth;
     private final int maxNodes;
     private final int maxAdditionalTimelines;
+    private final Function<BitGame, Iterator<List<Move>>> moveGenerator;
     private final BitEvaluator evaluator;
 
     public int startTimelineCount;
@@ -35,10 +39,14 @@ public class BitNegaMaxEvaluator {
     }
 
     public BitNegaMaxEvaluator(Config config, BitEvaluator evaluator) {
-        this.debugLevel = config.getOrDefault("debug_level", 0);
-        this.maxDepth = config.getOrDefault("max_depth", 9);
-        this.maxNodes = config.getOrDefault("max_nodes", 1_000_000);
-        this.maxAdditionalTimelines = config.getOrDefault("max_additional_timelines", 1);
+        Config fileConfig = Config.fromFile("negamax");
+        this.debugLevel = config.getOrDefault("debug_level", fileConfig.getInt("debug_level"));
+        this.maxDepth = config.getOrDefault("max_depth", fileConfig.getInt("max_depth"));
+        this.maxNodes = config.getOrDefault("max_nodes", fileConfig.getInt("max_nodes"));
+        this.maxAdditionalTimelines = config.getOrDefault("max_additional_timelines", fileConfig.getInt("max_additional_timelines"));
+        this.moveGenerator = config.getOrDefault("move_ordering", "ordered").equals("ordered") ?
+                BitMoveGenerator::getIterativeTurnIterator :
+                BitMoveGenerator::getTurnsIterator;
 
         this.evaluator = evaluator;
     }
@@ -62,7 +70,7 @@ public class BitNegaMaxEvaluator {
             bestTurn = null;
             bestScore = NEGATIVE_INFINITY;
 
-            Iterator<List<Move>> turns = BitMoveGenerator.getIterativeTurnIterator(game);
+            Iterator<List<Move>> turns = this.moveGenerator.apply(game);
 
             while (turns.hasNext()) {
                 List<Move> turn = turns.next();
@@ -140,7 +148,7 @@ public class BitNegaMaxEvaluator {
         }
 
         double best = NEGATIVE_INFINITY;
-        Iterator<List<Move>> turnsIterator = BitMoveGenerator.getIterativeTurnIterator(game);
+        Iterator<List<Move>> turnsIterator = this.moveGenerator.apply(game);
         if (!turnsIterator.hasNext()) {
             return -0.000001;
         }

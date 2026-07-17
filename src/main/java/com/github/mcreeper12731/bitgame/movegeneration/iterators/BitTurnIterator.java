@@ -5,6 +5,7 @@ import com.github.mcreeper12731.bitgame.models.BitBoard;
 import com.github.mcreeper12731.bitgame.movegeneration.BitMoveGenerator;
 import com.github.mcreeper12731.game.models.Move;
 import com.github.mcreeper12731.utility.Log;
+import com.github.mcreeper12731.utility.Permutations;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -31,7 +32,7 @@ public class BitTurnIterator implements Iterator<List<Move>> {
         for (int l : playableTimelineLs) {
             BitBoard board = this.game.getMultiverse().getTimeline(l).getLastBoard();
 
-            this.moveIteratorSuppliers.add(BitMoveGenerator.scoredMovesSupplier(board, this.game));
+            this.moveIteratorSuppliers.add(BitMoveGenerator.probableMovesSupplier(board, this.game));
         }
 
         this.moveIterators = new ArrayList<>();
@@ -57,23 +58,27 @@ public class BitTurnIterator implements Iterator<List<Move>> {
                 return;
             }
 
-            List<Move> candidateTurn = constructTurn();
+            this.constructTurn();
+            if (!this.generatedTurns.isEmpty()) return;
+        }
+    }
+
+    private void constructTurn() {
+        List<Move> currentTurnNoNoop = new ArrayList<>();
+        for (Move move : this.currentMoves) {
+            if (move.noop()) continue;
+            currentTurnNoNoop.add(move);
+        }
+        if (currentTurnNoNoop.isEmpty()) return;
+        List<List<Move>> permutations = Permutations.of(currentTurnNoNoop);
+//        Log.debug("BitTurnIterator", permutations);
+        for (List<Move> candidateTurn : permutations) {
             if (candidateTurn.isEmpty()) continue;
 
             if (this.game.isTurnFinalizable(candidateTurn)) {
                 this.generatedTurns.add(candidateTurn);
-                return;
             }
         }
-    }
-
-    private List<Move> constructTurn() {
-        List<Move> candidateTurn = new ArrayList<>();
-        for (Move move : this.currentMoves) {
-            if (move.noop()) continue;
-            candidateTurn.add(move);
-        }
-        return candidateTurn;
     }
 
     private boolean advanceCombination() {

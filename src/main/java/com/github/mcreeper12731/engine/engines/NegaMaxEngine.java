@@ -8,14 +8,14 @@ import java.util.List;
 
 public class NegaMaxEngine implements Engine {
 
-    private final NegaMaxEvaluator strategy;
+    private final NegaMaxEvaluator negaMaxEvaluator;
 
     public NegaMaxEngine() {
-        this.strategy = new NegaMaxEvaluator();
+        this.negaMaxEvaluator = new NegaMaxEvaluator();
     }
 
     @Override
     public List<Move> nextTurn(Game game) {
-        return this.strategy.findBestTurn(game).moves();
+        return this.negaMaxEvaluator.findBestTurn(game).moves();
     }
 }

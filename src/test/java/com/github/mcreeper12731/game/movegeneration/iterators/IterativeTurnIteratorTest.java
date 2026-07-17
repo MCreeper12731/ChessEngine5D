@@ -19,7 +19,7 @@ class IterativeTurnIteratorTest {
     @Test
     public void testSimpleTurnGeneration() {
 
-        Game game = Preset.CUSTOM_SIMPLE_POSITION.getGame();
+        Game game = Preset.CUSTOM_SIMPLE_SINGLEBOARD.getGame();
         List<List<Move>> timelineMoves = new ArrayList<>();
         for (Timeline timeline : game.getMultiverse().getTimelines()) {
             List<Move> moves = MoveGenerator.scoredMoves(timeline.getLastBoard(), game);

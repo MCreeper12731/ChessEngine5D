@@ -16,6 +16,7 @@ import com.github.mcreeper12731.game.models.scored.ScoredMove;
 import com.github.mcreeper12731.game.movegeneration.iterators.BoardMoveIterator;
 import com.github.mcreeper12731.game.movegeneration.iterators.IterativeTurnIterator;
 import com.github.mcreeper12731.game.movegeneration.iterators.TurnIterator;
+import com.github.mcreeper12731.utility.Iterators;
 import com.github.mcreeper12731.utility.listviews.MappedListView;
 
 import java.util.ArrayList;
@@ -39,7 +40,14 @@ public class BitMoveGenerator {
     }
 
     public static Iterator<List<Move>> getTurnsIterator(BitGame game) {
-        return new BitTurnIterator(game);
+        List<List<Move>> boardsMoves = new ArrayList<>();
+        for (BitTimeline timeline : game.getMultiverse().getTimelines()) {
+            BitBoard board = timeline.getLastBoard();
+            if (board.getPlayerTurn() != game.getPlayerTurn()) continue;
+            List<Move> moves = probableMoves(timeline.getLastBoard(), game);
+            boardsMoves.add(moves);
+        }
+        return new BitIterativeTurnIterator(game, boardsMoves);
     }
 
     public static Supplier<Iterator<Move>> scoredMovesSupplier(BitBoard board, BitGame game) {
@@ -47,9 +55,9 @@ public class BitMoveGenerator {
         return moves::iterator;
     }
 
-    public static Supplier<Iterator<Move>> probableMovesSupplier(Board board, Game game) {
+    public static Supplier<Iterator<Move>> probableMovesSupplier(BitBoard board, BitGame game) {
 
-        return () -> new BoardMoveIterator(board, game.getMultiverse());
+        return () -> new BitBoardMoveIterator(board, game);
     }
 
     public static List<Move> scoredMoves(BitBoard board, BitGame game) {
@@ -59,8 +67,6 @@ public class BitMoveGenerator {
 
     public static List<Move> probableMoves(BitBoard board, BitGame game) {
         BitBoardMoveIterator boardMoveIterator = new BitBoardMoveIterator(board, game);
-        List<Move> result = new ArrayList<>();
-        boardMoveIterator.forEachRemaining(result::add);
-        return result;
+        return Iterators.consumeRemaining(boardMoveIterator);
     }
 }

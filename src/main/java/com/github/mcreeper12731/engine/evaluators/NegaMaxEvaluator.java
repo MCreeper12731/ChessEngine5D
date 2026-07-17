@@ -10,6 +10,7 @@ import com.github.mcreeper12731.utility.Log;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 
 public class NegaMaxEvaluator {
     private static final int POSITIVE_INFINITY = Integer.MAX_VALUE;

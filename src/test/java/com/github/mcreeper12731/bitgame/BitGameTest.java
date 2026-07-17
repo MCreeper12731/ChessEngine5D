@@ -15,8 +15,8 @@ class BitGameTest {
         Game game = Preset.CUSTOM_COMPLEX_POSITION.getGame();
         BitGame bitGame = new BitGame(game);
 
-//        Log.debug("Test", game);
-//        Log.debug("Test", bitGame);
+        Log.debug("Test", game);
+        Log.debug("Test", bitGame);
 
         assertEquals(game.toString(), bitGame.toString());
         assertEquals(game.getMultiverse().toString(), bitGame.getMultiverse().toString());

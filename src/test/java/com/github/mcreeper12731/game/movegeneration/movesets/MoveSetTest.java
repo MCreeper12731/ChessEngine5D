@@ -1,8 +1,6 @@
 package com.github.mcreeper12731.game.movegeneration.movesets;
 
-import com.github.mcreeper12731.engine.config.NegamaxStrategyConfig;
-import com.github.mcreeper12731.engine.evaluators.Evaluator;
-import com.github.mcreeper12731.engine.finders.NegaMaxStrategy;
+import com.github.mcreeper12731.engine.evaluators.NegaMaxEvaluator;
 import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.*;
 import com.github.mcreeper12731.game.models.Move;
@@ -11,6 +9,7 @@ import com.github.mcreeper12731.game.movegeneration.MoveGenerator;
 import com.github.mcreeper12731.game.models.pieces.Piece;
 import com.github.mcreeper12731.game.models.pieces.PieceType;
 import com.github.mcreeper12731.game.presets.Preset;
+import com.github.mcreeper12731.utility.Config;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -284,9 +283,12 @@ class MoveSetTest {
         List<Move> moves = turns.stream().map(List::getFirst).toList();
         assertTrue(moves.contains(seekingMove));
 
-        NegaMaxStrategy strategy = new NegaMaxStrategy(
-                NegamaxStrategyConfig.fromConfig(),
-                new Evaluator()
+        NegaMaxEvaluator strategy = new NegaMaxEvaluator(
+                new Config()
+                        .with("debug_level", 0)
+                        .with("max_nodes", 500_000)
+                        .with("max_depth", 7)
+                        .with("max_additional_timelines", 1)
         );
 
         ScoredTurn turn = strategy.findBestTurn(game);

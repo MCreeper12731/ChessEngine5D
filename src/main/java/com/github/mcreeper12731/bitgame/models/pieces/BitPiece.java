@@ -43,7 +43,6 @@ public class BitPiece {
     }
 
     public static boolean hasMoved(byte bitPiece) {
-        if (bitPiece < 0) throw new IllegalArgumentException("bitPiece cannot be negative!");
         return (bitPiece & 1) == 1;
     }
 

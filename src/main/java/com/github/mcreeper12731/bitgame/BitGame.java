@@ -70,6 +70,7 @@ public class BitGame {
         this.currentTurnMoveEffects.addAll(game.getCurrentTurnMoveEffects());
         this.turnEffects.addAll(game.getTurnEffects());
         this.archivedTurnEffects.addAll(game.getArchivedTurnEffects());
+        this.presentTime = game.getPresentTime();
         this.playerTurn = game.getPlayerTurn();
         this.gameOver = game.isGameOver();
         this.winner = game.getWinner();
@@ -153,7 +154,7 @@ public class BitGame {
                 move.from().l()
         );
 
-        this.subtractLastT(fromTimeline);
+        if (this.multiverse.isTimelineActive(fromTimeline)) this.subtractLastT(fromTimeline);
         this.swapPlayableTimelineL(move.from().l(), fromTimeline.getLastBoard().getPlayerTurn());
 
         if (move.from().l() == move.to().l() && move.from().t() == move.to().t()) {
@@ -208,10 +209,10 @@ public class BitGame {
 
             this.applyMoveToTimeline(fromTimeline, move);
 
-            this.subtractLastT(toTimeline);
+            if (this.multiverse.isTimelineActive(toTimeline)) this.subtractLastT(toTimeline);
             this.swapPlayableTimelineL(toTimeline.getL(), toTimeline.getLastBoard().getPlayerTurn());
             this.applyMoveToTimeline(toTimeline, move);
-            this.addLastT(toTimeline);
+            if (this.multiverse.isTimelineActive(toTimeline)) this.addLastT(toTimeline);
 
             moveEffect.setSecondaryAddedBoardL(move.to().l());
         }
@@ -226,7 +227,7 @@ public class BitGame {
             }
         }
 
-        this.addLastT(fromTimeline);
+        if (this.multiverse.isTimelineActive(fromTimeline)) this.addLastT(fromTimeline);
         this.presentTime = this.lastTimesOfTimelines.firstKey();
         this.currentTurnMoveEffects.add(moveEffect);
     }
@@ -272,10 +273,10 @@ public class BitGame {
 
         // Remove added boards
         BitTimeline primaryTimeline = this.multiverse.getTimeline(moveEffect.getPrimaryAddedBoardL());
-        this.subtractLastT(primaryTimeline);
+        if (this.multiverse.isTimelineActive(primaryTimeline)) this.subtractLastT(primaryTimeline);
         this.swapPlayableTimelineL(primaryTimeline.getL(), primaryTimeline.getLastBoard().getPlayerTurn());
         primaryTimeline.removeLastBoard();
-        this.addLastT(primaryTimeline);
+        if (this.multiverse.isTimelineActive(primaryTimeline)) this.addLastT(primaryTimeline);
 
         if (moveEffect.getSecondaryAddedBoardL() != null) {
             BitTimeline secondaryTimeline = this.multiverse.getTimeline(moveEffect.getSecondaryAddedBoardL());
@@ -310,8 +311,8 @@ public class BitGame {
     }
 
     public Set<Integer> getPlayableTimelineLs(Color color) {
-        if (color == Color.WHITE) return this.whitePlayableTimelineLs;
-        return this.blackPlayableTimelineLs;
+        if (color == Color.WHITE) return Collections.unmodifiableSet(this.whitePlayableTimelineLs);
+        return Collections.unmodifiableSet(this.blackPlayableTimelineLs);
     }
 
     public boolean doesMoveAddTimeline(Move move) {
@@ -411,14 +412,17 @@ public class BitGame {
      * @return true if the turn would be finalizable, false otherwise
      */
     public boolean isTurnFinalizable(List<Move> turn) {
-        boolean[] consumedTimelines = new boolean[this.multiverse.getTimelines().size()];
-        boolean[] mandatoryTimelines = new boolean[this.multiverse.getTimelines().size()];
-        for (BitTimeline timeline : this.multiverse.getTimelines()) {
+
+        int numberOfBuckets = ((this.multiverse.getTopTimelineL() - this.multiverse.getBotTimelineL()) >> 6 ) + 1;
+        long[] consumedTimelines = new long[numberOfBuckets];
+        long[] mandatoryTimelines = new long[numberOfBuckets];
+
+        for (BitTimeline timeline : this.getMultiverse().getTimelines()) {
             if (timeline.getLastT() > this.getPresentTime()) continue;
             if (!this.multiverse.isTimelineActive(timeline)) continue;
 
             int shiftedL = timeline.getL() - this.multiverse.getBotTimelineL();
-            mandatoryTimelines[shiftedL] = true;
+            setBit(mandatoryTimelines, shiftedL);
         }
 
         for (Move move : turn) {
@@ -432,35 +436,38 @@ public class BitGame {
                 // Always allow finalization of king capture turns
                 return true;
 
-            if (consumedTimelines[shiftedFromL])
+            if (isBitSet(consumedTimelines, shiftedFromL))
                 // A piece cannot move from a timeline already played on
                 return false;
 
-            Integer activatedTimeline = this.doesMoveActivateTimeline(move, consumedTimelines[shiftedToL]);
+            Integer activatedTimeline = this.doesMoveActivateTimeline(move, isBitSet(consumedTimelines, shiftedToL));
             if (activatedTimeline != null) {
                 BitTimeline timeline = this.multiverse.getTimeline(activatedTimeline);
                 int shiftedActivatedTimelineL = activatedTimeline - this.multiverse.getBotTimelineL();
                 if (shiftedActivatedTimelineL >= 0 && shiftedActivatedTimelineL < mandatoryTimelines.length && timeline.getLastT() <= this.getPresentTime())
-                    mandatoryTimelines[shiftedActivatedTimelineL] = true;
+                    setBit(mandatoryTimelines, shiftedActivatedTimelineL);
             }
 
             BitTimeline toTimeline = this.multiverse.getTimeline(move.to().l());
 
-            consumedTimelines[shiftedFromL] = true;
-            if (move.to().t() == toTimeline.getLastT()) consumedTimelines[shiftedToL] = true;
+            setBit(consumedTimelines, shiftedFromL);
+            if (move.to().t() == toTimeline.getLastT()) setBit(consumedTimelines, shiftedToL);
         }
 
         // Check if all mandatory timelines have been consumed
-        for (BitTimeline timeline : this.multiverse.getTimelines()) {
-            int l = timeline.getL() - this.multiverse.getBotTimelineL();
-            if (!mandatoryTimelines[l]) continue;
-            if (!consumedTimelines[l]) {
-                // If a mandatory timeline hasn't been played on, the turn is not finalizable
-                return false;
-            }
+        for (int w = 0; w < numberOfBuckets; w++) {
+            if ((mandatoryTimelines[w] & ~consumedTimelines[w]) != 0L) return false;
         }
 
         return true;
+    }
+
+    private static void setBit(long[] words, int index) {
+        words[index >> 6] |= (1L << (index & 63));
+    }
+
+    private static boolean isBitSet(long[] words, int index) {
+        return (words[index >> 6] & (1L << (index & 63))) != 0L;
     }
 
     private void subtractLastT(BitTimeline timeline) {

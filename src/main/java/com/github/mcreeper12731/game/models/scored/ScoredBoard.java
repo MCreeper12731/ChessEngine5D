@@ -1,6 +1,6 @@
 package com.github.mcreeper12731.game.models.scored;
 
-import com.github.mcreeper12731.engine.evaluators.Evaluator;
+import com.github.mcreeper12731.engine.evaluators.StaticEvaluator;
 import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Board;
 import com.github.mcreeper12731.game.models.Move;
@@ -62,9 +62,14 @@ public record ScoredBoard(Board board, List<Integer> danger, List<Point4D> enemi
     public List<ScoredMove> scoreMoves(Game game) {
         List<ScoredMove> scoredMoves = new ArrayList<>();
 
-        Evaluator evaluator = new Evaluator();
+        StaticEvaluator evaluator = new StaticEvaluator();
 
         List<Move> boardMoves = MoveGenerator.probableMoves(this.board, game);
+        boardMoves.addFirst(
+                new Move.Builder()
+                        .withNoop()
+                        .build()
+        );
         for (Move move : boardMoves) {
 
             int score = evaluator.evaluateMove(move, game, this);

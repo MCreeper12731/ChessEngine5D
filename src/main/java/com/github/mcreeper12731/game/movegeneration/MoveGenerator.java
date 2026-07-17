@@ -36,11 +36,6 @@ public class MoveGenerator {
 
     public static Supplier<Iterator<Move>> scoredMovesSupplier(Board board, Game game) {
         List<Move> moves = scoredMoves(board, game);
-        moves.addFirst(
-                new Move.Builder()
-                        .withNoop()
-                        .build()
-        );
         return moves::iterator;
     }
 

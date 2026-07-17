@@ -44,11 +44,6 @@ public class BitMoveGenerator {
 
     public static Supplier<Iterator<Move>> scoredMovesSupplier(BitBoard board, BitGame game) {
         List<Move> moves = scoredMoves(board, game);
-        moves.addFirst(
-                new Move.Builder()
-                        .withNoop()
-                        .build()
-        );
         return moves::iterator;
     }
 

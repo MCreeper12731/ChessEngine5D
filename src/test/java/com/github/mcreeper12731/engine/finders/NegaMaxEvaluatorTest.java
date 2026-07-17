@@ -1,12 +1,13 @@
 package com.github.mcreeper12731.engine.finders;
 
-import com.github.mcreeper12731.engine.config.NegamaxStrategyConfig;
-import com.github.mcreeper12731.engine.evaluators.Evaluator;
+import com.github.mcreeper12731.engine.evaluators.NegaMaxEvaluator;
+import com.github.mcreeper12731.engine.evaluators.StaticEvaluator;
 import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Move;
 import com.github.mcreeper12731.game.models.scored.ScoredTurn;
 import com.github.mcreeper12731.game.movegeneration.MoveGenerator;
 import com.github.mcreeper12731.game.presets.Preset;
+import com.github.mcreeper12731.utility.Config;
 import com.github.mcreeper12731.utility.Log;
 import org.junit.jupiter.api.Test;
 
@@ -16,16 +17,19 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class NegaMaxStrategyTest {
+class NegaMaxEvaluatorTest {
 
     @Test
     public void puzzleRook2() {
 
         Game game = Preset.PUZZLE_ROOK_2.getGame();
 
-        NegaMaxStrategy strategy = new NegaMaxStrategy(
-                NegamaxStrategyConfig.fromConfig(),
-                new Evaluator()
+        NegaMaxEvaluator strategy = new NegaMaxEvaluator(
+                new Config()
+                        .with("debug_level", 0)
+                        .with("max_nodes", 500_000)
+                        .with("max_depth", 7)
+                        .with("max_additional_timelines", 1)
         );
 
         ScoredTurn result = strategy.findBestTurn(game);
@@ -69,16 +73,12 @@ class NegaMaxStrategyTest {
                         .build()
         ));*/
 
-        NegamaxStrategyConfig config = new NegamaxStrategyConfig(
-                7,
-                100_000,
-                0,
-                100
-        );
-
-        NegaMaxStrategy strategy = new NegaMaxStrategy(
-                config,
-                new Evaluator()
+        NegaMaxEvaluator strategy = new NegaMaxEvaluator(
+                new Config()
+                        .with("debug_level", 0)
+                        .with("max_nodes", 500_000)
+                        .with("max_depth", 7)
+                        .with("max_additional_timelines", 1)
         );
 
         ScoredTurn result = strategy.findBestTurn(game);
@@ -94,9 +94,12 @@ class NegaMaxStrategyTest {
 
         Game game = Preset.PUZZLE_OPENING_TRAP_2.getGame();
 
-        NegaMaxStrategy strategy = new NegaMaxStrategy(
-                NegamaxStrategyConfig.fromConfig(),
-                new Evaluator()
+        NegaMaxEvaluator strategy = new NegaMaxEvaluator(
+                new Config()
+                        .with("debug_level", 0)
+                        .with("max_nodes", 500_000)
+                        .with("max_depth", 7)
+                        .with("max_additional_timelines", 1)
         );
 
         ScoredTurn result = strategy.findBestTurn(game);
@@ -136,11 +139,13 @@ class NegaMaxStrategyTest {
         );
         game.finalizeTurn();
 
-        NegaMaxStrategy strategy = new NegaMaxStrategy(
-                NegamaxStrategyConfig.fromConfig(),
-                new Evaluator()
+        NegaMaxEvaluator strategy = new NegaMaxEvaluator(
+                new Config()
+                        .with("debug_level", 0)
+                        .with("max_nodes", 500_000)
+                        .with("max_depth", 7)
+                        .with("max_additional_timelines", 1)
         );
-
         ScoredTurn turn = strategy.findBestTurn(game);
         Log.debug("Test", turn);
         game.applyMovesAndFinalizeTurn(turn.moves());
@@ -181,9 +186,12 @@ class NegaMaxStrategyTest {
 
         assertTrue(turns.hasNext());
 
-        NegaMaxStrategy strategy = new NegaMaxStrategy(
-                NegamaxStrategyConfig.fromConfig(),
-                new Evaluator()
+        NegaMaxEvaluator strategy = new NegaMaxEvaluator(
+                new Config()
+                        .with("debug_level", 0)
+                        .with("max_nodes", 500_000)
+                        .with("max_depth", 7)
+                        .with("max_additional_timelines", 1)
         );
 
         ScoredTurn foundTurn = strategy.findBestTurn(game);
@@ -254,9 +262,12 @@ class NegaMaxStrategyTest {
 
         // MainApplication.launchWithGame(game);
 
-        NegaMaxStrategy strategy = new NegaMaxStrategy(
-                NegamaxStrategyConfig.fromConfig(),
-                new Evaluator()
+        NegaMaxEvaluator strategy = new NegaMaxEvaluator(
+                new Config()
+                        .with("debug_level", 0)
+                        .with("max_nodes", 500_000)
+                        .with("max_depth", 7)
+                        .with("max_additional_timelines", 1)
         );
 
         ScoredTurn turn = strategy.findBestTurn(game);
@@ -340,10 +351,12 @@ class NegaMaxStrategyTest {
         while (iterator.hasNext()) turns.add(iterator.next());
         Log.debug("Test", turns.size());
 
-
-        NegaMaxStrategy strategy = new NegaMaxStrategy(
-                NegamaxStrategyConfig.fromConfig(),
-                new Evaluator()
+        NegaMaxEvaluator strategy = new NegaMaxEvaluator(
+                new Config()
+                        .with("debug_level", 0)
+                        .with("max_nodes", 500_000)
+                        .with("max_depth", 7)
+                        .with("max_additional_timelines", 1)
         );
 
         ScoredTurn turn = strategy.findBestTurn(game);

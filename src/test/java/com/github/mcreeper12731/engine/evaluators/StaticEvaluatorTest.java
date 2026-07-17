@@ -9,7 +9,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class EvaluatorTest {
+class StaticEvaluatorTest {
 
     @Test
     public void isMateEvaluatedCorrectly() {
@@ -40,7 +40,7 @@ class EvaluatorTest {
                         .build()
         ));
 
-        Evaluator evaluator = new Evaluator();
+        StaticEvaluator evaluator = new StaticEvaluator();
         double score = evaluator.evaluateGameState(game);
         assertTrue(score > 900000);
     }

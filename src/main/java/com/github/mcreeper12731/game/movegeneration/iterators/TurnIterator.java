@@ -4,6 +4,7 @@ import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Board;
 import com.github.mcreeper12731.game.models.Move;
 import com.github.mcreeper12731.game.movegeneration.MoveGenerator;
+import com.github.mcreeper12731.utility.Log;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -24,7 +25,9 @@ public final class TurnIterator implements Iterator<List<Move>> {
 
         this.moveIteratorSuppliers = new ArrayList<>();
 
-        for (int l : this.game.getPlayableTimelineLs()) {
+        List<Integer> playableTimelineLs = this.game.getPlayableTimelineLs();
+//        Log.debug("TurnIterator", playableTimelineLs);
+        for (int l : playableTimelineLs) {
             Board board = this.game.getMultiverse().getTimeline(l).getLastBoard();
 
             this.moveIteratorSuppliers.add(MoveGenerator.scoredMovesSupplier(board, this.game));
@@ -53,13 +56,23 @@ public final class TurnIterator implements Iterator<List<Move>> {
                 return;
             }
 
-            List<Move> candidateTurn = new ArrayList<>(this.currentMoves);
+            List<Move> candidateTurn = constructTurn();
+            if (candidateTurn.isEmpty()) continue;
 
             if (game.isTurnFinalizable(candidateTurn)) {
                 this.generatedTurns.add(candidateTurn);
                 return;
             }
         }
+    }
+
+    private List<Move> constructTurn() {
+        List<Move> candidateTurn = new ArrayList<>();
+        for (Move move : this.currentMoves) {
+            if (move.noop()) continue;
+            candidateTurn.add(move);
+        }
+        return candidateTurn;
     }
 
     private boolean advanceCombination() {

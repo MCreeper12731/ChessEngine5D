@@ -4,15 +4,12 @@ import com.github.mcreeper12731.bitgame.BitGame;
 import com.github.mcreeper12731.bitgame.models.BitBoard;
 import com.github.mcreeper12731.bitgame.models.pieces.BitPiece;
 import com.github.mcreeper12731.bitgame.movegeneration.BitMoveGenerator;
-import com.github.mcreeper12731.engine.evaluators.Evaluator;
-import com.github.mcreeper12731.game.Game;
-import com.github.mcreeper12731.game.models.Board;
+import com.github.mcreeper12731.engine.evaluators.BitStaticEvaluator;
+import com.github.mcreeper12731.engine.evaluators.StaticEvaluator;
 import com.github.mcreeper12731.game.models.Move;
 import com.github.mcreeper12731.game.models.Point4D;
-import com.github.mcreeper12731.game.models.pieces.Piece;
 import com.github.mcreeper12731.game.models.pieces.PieceType;
 import com.github.mcreeper12731.game.models.scored.ScoredMove;
-import com.github.mcreeper12731.game.movegeneration.MoveGenerator;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,9 +28,7 @@ public record ScoredBitBoard(BitBoard board, List<Integer> danger, List<Point4D>
 
     public void init(BitGame game) {
 
-        Move noopMove = new Move.Builder()
-                .withNoop(board.l(), board.t())
-                .build();
+        Move noopMove = Move.noop(board.l(), board.t());
         game.applyMove(noopMove);
 
         for (int l : game.getPlayableTimelineLs(game.getPlayerTurn().other())) {
@@ -71,9 +66,14 @@ public record ScoredBitBoard(BitBoard board, List<Integer> danger, List<Point4D>
     public List<ScoredMove> scoreMoves(BitGame game) {
         List<ScoredMove> scoredMoves = new ArrayList<>();
 
-        Evaluator evaluator = new Evaluator();
+        BitStaticEvaluator evaluator = new BitStaticEvaluator();
 
         List<Move> boardMoves = BitMoveGenerator.probableMoves(this.board, game);
+        boardMoves.addFirst(
+                new Move.Builder()
+                        .withNoop()
+                        .build()
+        );
         for (Move move : boardMoves) {
 
             int score = evaluator.evaluateMove(move, game, this);

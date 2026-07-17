@@ -1,5 +1,7 @@
 package com.github.mcreeper12731.game;
 
+import com.github.mcreeper12731.bitgame.models.BitTimeline;
+import com.github.mcreeper12731.bitgame.models.pieces.BitPiece;
 import com.github.mcreeper12731.game.models.*;
 import com.github.mcreeper12731.game.models.pieces.Piece;
 import com.github.mcreeper12731.game.models.pieces.PieceType;
@@ -220,7 +222,7 @@ public class Game {
     public List<Integer> getPlayableTimelineLs() {
         List<Integer> ls = new ArrayList<>();
 
-        for (int timelineIndex : this.multiverse.getActiveTimelineLs()) {
+        for (int timelineIndex : this.multiverse.getTimelineLs()) {
             Timeline timeline = this.multiverse.getTimeline(timelineIndex);
             if (timeline.getLastBoard().getPlayerTurn() != this.playerTurn) continue;
 
@@ -341,14 +343,16 @@ public class Game {
      */
     public boolean isTurnFinalizable(List<Move> turn) {
 
-        boolean[] consumedTimelines = new boolean[this.multiverse.getTimelines().size()];
-        boolean[] mandatoryTimelines = new boolean[this.multiverse.getTimelines().size()];
-        for (Timeline timeline : this.multiverse.getTimelines()) {
-            if (timeline.getLastT() > this.presentTime) continue;
+        int numberOfBuckets = ((this.multiverse.getTopTimelineL() - this.multiverse.getBotTimelineL()) >> 6 ) + 1;
+        long[] consumedTimelines = new long[numberOfBuckets];
+        long[] mandatoryTimelines = new long[numberOfBuckets];
+
+        for (Timeline timeline : this.getMultiverse().getTimelines()) {
+            if (timeline.getLastT() > this.getPresentTime()) continue;
             if (!this.multiverse.isTimelineActive(timeline)) continue;
 
             int shiftedL = timeline.getL() - this.multiverse.getBotTimelineL();
-            mandatoryTimelines[shiftedL] = true;
+            setBit(mandatoryTimelines, shiftedL);
         }
 
         for (Move move : turn) {
@@ -356,39 +360,44 @@ public class Game {
             int shiftedFromL = move.from().l() - this.multiverse.getBotTimelineL();
             int shiftedToL = move.to().l() - this.multiverse.getBotTimelineL();
 
-            if (this.multiverse.getLocationContents(move.to()).type() == PieceType.KING)
+            Piece toPiece = this.multiverse.getLocationContents(move.to());
+
+            if (toPiece.type() == PieceType.KING)
                 // Always allow finalization of king capture turns
                 return true;
 
-            if (consumedTimelines[shiftedFromL])
+            if (isBitSet(consumedTimelines, shiftedFromL))
                 // A piece cannot move from a timeline already played on
                 return false;
 
-            Integer activatedTimeline = this.doesMoveActivateTimeline(move, consumedTimelines[shiftedToL]);
+            Integer activatedTimeline = this.doesMoveActivateTimeline(move, isBitSet(consumedTimelines, shiftedToL));
             if (activatedTimeline != null) {
                 Timeline timeline = this.multiverse.getTimeline(activatedTimeline);
                 int shiftedActivatedTimelineL = activatedTimeline - this.multiverse.getBotTimelineL();
-                if (shiftedActivatedTimelineL >= 0 && shiftedActivatedTimelineL < mandatoryTimelines.length && timeline.getLastT() <= this.presentTime)
-                    mandatoryTimelines[shiftedActivatedTimelineL] = true;
+                if (shiftedActivatedTimelineL >= 0 && shiftedActivatedTimelineL < mandatoryTimelines.length && timeline.getLastT() <= this.getPresentTime())
+                    setBit(mandatoryTimelines, shiftedActivatedTimelineL);
             }
 
             Timeline toTimeline = this.multiverse.getTimeline(move.to().l());
 
-            consumedTimelines[shiftedFromL] = true;
-            if (move.to().t() == toTimeline.getLastT()) consumedTimelines[shiftedToL] = true;
+            setBit(consumedTimelines, shiftedFromL);
+            if (move.to().t() == toTimeline.getLastT()) setBit(consumedTimelines, shiftedToL);
         }
 
         // Check if all mandatory timelines have been consumed
-        for (Timeline timeline : this.multiverse.getTimelines()) {
-            int l = timeline.getL() - this.multiverse.getBotTimelineL();
-            if (!mandatoryTimelines[l]) continue;
-            if (!consumedTimelines[l]) {
-                // If a mandatory timeline hasn't been played on, the turn is not finalizable
-                return false;
-            }
+        for (int w = 0; w < numberOfBuckets; w++) {
+            if ((mandatoryTimelines[w] & ~consumedTimelines[w]) != 0L) return false;
         }
 
         return true;
+    }
+
+    private static void setBit(long[] words, int index) {
+        words[index >> 6] |= (1L << (index & 63));
+    }
+
+    private static boolean isBitSet(long[] words, int index) {
+        return (words[index >> 6] & (1L << (index & 63))) != 0L;
     }
 
     private void updatePresentTime() {

@@ -17,9 +17,11 @@ public class BitPieceTest {
         assertFalse(BitPiece.hasMoved(emptyPiece));
 
         byte nullPiece = -1;
+        /* No longer true, removed the exception checking
         assertThrows(IllegalArgumentException.class, () -> BitPiece.typeOrdinal(nullPiece));
         assertThrows(IllegalArgumentException.class, () -> BitPiece.colorOrdinal(nullPiece));
         assertThrows(IllegalArgumentException.class, () -> BitPiece.hasMoved(nullPiece));
+        */
 
         byte whiteKing = BitPiece.encode(Color.WHITE, PieceType.KING);
         assertEquals(PieceType.KING.ordinal(), BitPiece.typeOrdinal(whiteKing));

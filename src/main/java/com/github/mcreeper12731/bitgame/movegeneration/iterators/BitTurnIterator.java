@@ -3,10 +3,8 @@ package com.github.mcreeper12731.bitgame.movegeneration.iterators;
 import com.github.mcreeper12731.bitgame.BitGame;
 import com.github.mcreeper12731.bitgame.models.BitBoard;
 import com.github.mcreeper12731.bitgame.movegeneration.BitMoveGenerator;
-import com.github.mcreeper12731.game.Game;
-import com.github.mcreeper12731.game.models.Board;
 import com.github.mcreeper12731.game.models.Move;
-import com.github.mcreeper12731.game.movegeneration.MoveGenerator;
+import com.github.mcreeper12731.utility.Log;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -27,7 +25,10 @@ public class BitTurnIterator implements Iterator<List<Move>> {
 
         this.moveIteratorSuppliers = new ArrayList<>();
 
-        for (int l : this.game.getPlayableTimelineLs(this.game.getPlayerTurn())) {
+        List<Integer> playableTimelineLs = new ArrayList<>(this.game.getPlayableTimelineLs(this.game.getPlayerTurn()));
+        playableTimelineLs.sort(Comparator.naturalOrder());
+//        Log.debug("BitTurnIterator", playableTimelineLs);
+        for (int l : playableTimelineLs) {
             BitBoard board = this.game.getMultiverse().getTimeline(l).getLastBoard();
 
             this.moveIteratorSuppliers.add(BitMoveGenerator.scoredMovesSupplier(board, this.game));
@@ -56,13 +57,23 @@ public class BitTurnIterator implements Iterator<List<Move>> {
                 return;
             }
 
-            List<Move> candidateTurn = new ArrayList<>(this.currentMoves);
+            List<Move> candidateTurn = constructTurn();
+            if (candidateTurn.isEmpty()) continue;
 
-            if (game.isTurnFinalizable(candidateTurn)) {
+            if (this.game.isTurnFinalizable(candidateTurn)) {
                 this.generatedTurns.add(candidateTurn);
                 return;
             }
         }
+    }
+
+    private List<Move> constructTurn() {
+        List<Move> candidateTurn = new ArrayList<>();
+        for (Move move : this.currentMoves) {
+            if (move.noop()) continue;
+            candidateTurn.add(move);
+        }
+        return candidateTurn;
     }
 
     private boolean advanceCombination() {

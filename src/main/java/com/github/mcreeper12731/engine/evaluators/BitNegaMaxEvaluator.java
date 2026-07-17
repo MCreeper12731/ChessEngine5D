@@ -1,38 +1,46 @@
-package com.github.mcreeper12731.engine.finders;
+package com.github.mcreeper12731.engine.evaluators;
 
 import com.github.mcreeper12731.bitgame.movegeneration.BitMoveGenerator;
-import com.github.mcreeper12731.engine.config.NegamaxStrategyConfig;
-import com.github.mcreeper12731.engine.evaluators.Evaluator;
-import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.bitgame.BitGame;
 import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.models.Move;
 import com.github.mcreeper12731.game.models.scored.ScoredTurn;
+import com.github.mcreeper12731.utility.Config;
 import com.github.mcreeper12731.utility.Log;
 
 import java.util.Iterator;
 import java.util.List;
 
-public class BitNegaMaxStrategy {
+public class BitNegaMaxEvaluator {
     private static final int POSITIVE_INFINITY = Integer.MAX_VALUE;
     private static final int NEGATIVE_INFINITY = Integer.MIN_VALUE + 1;
 
-    private final NegamaxStrategyConfig config;
-    private final Evaluator evaluator;
+    private final int debugLevel;
+    private final int maxDepth;
+    private final int maxNodes;
+    private final int maxAdditionalTimelines;
+    private final BitEvaluator evaluator;
 
     public int startTimelineCount;
     public int maxTimelinesReached;
     public long nodesSearched;
     public boolean stoppedByNodeLimit;
 
-    public BitNegaMaxStrategy(NegamaxStrategyConfig config, Evaluator evaluator) {
-        this.config = config;
-        this.evaluator = evaluator;
+    public BitNegaMaxEvaluator() {
+        this(Config.fromFile("negamax"), new BitStaticEvaluator());
     }
 
-    public BitNegaMaxStrategy() {
-        this.config = NegamaxStrategyConfig.fromConfig();
-        this.evaluator = new Evaluator();
+    public BitNegaMaxEvaluator(Config config) {
+        this(config, new BitStaticEvaluator());
+    }
+
+    public BitNegaMaxEvaluator(Config config, BitEvaluator evaluator) {
+        this.debugLevel = config.getOrDefault("debug_level", 0);
+        this.maxDepth = config.getOrDefault("max_depth", 9);
+        this.maxNodes = config.getOrDefault("max_nodes", 1_000_000);
+        this.maxAdditionalTimelines = config.getOrDefault("max_additional_timelines", 1);
+
+        this.evaluator = evaluator;
     }
 
     public ScoredTurn findBestTurn(BitGame game) {
@@ -46,7 +54,7 @@ public class BitNegaMaxStrategy {
         double bestScore = NEGATIVE_INFINITY;
         int currentDepth = 1;
 
-        while (currentDepth <= config.maxDepth()) {
+        while (currentDepth <= this.maxDepth) {
             startTimelineCount = game.getMultiverse().getTimelines().size();
             nodesSearched = 0;
             prevNodesSearched = 0;
@@ -67,7 +75,7 @@ public class BitNegaMaxStrategy {
                 }
                 game.finalizeTurn();
 
-                if (config.debugLevel() >= 5) {
+                if (this.debugLevel >= 5) {
                     Log.debug("AlphaBeta", "Exploring: " + turn);
                 }
 
@@ -81,7 +89,7 @@ public class BitNegaMaxStrategy {
 
                 game.undoTurn();
 
-                if (config.debugLevel() >= 3) {
+                if (this.debugLevel >= 3) {
                     Log.debug("AlphaBeta", "Root candidate score=" + score + ": " + turn + ", spent nodes=" + (nodesSearched - prevNodesSearched));
                 }
                 prevNodesSearched = nodesSearched;
@@ -103,11 +111,11 @@ public class BitNegaMaxStrategy {
             currentDepth += 2;
         }
 
-        if (config.debugLevel() >= 2) {
+        if (this.debugLevel >= 2) {
             Log.debug("AlphaBeta", "AlphaBeta nodes searched: " + nodesSearched);
             Log.debug("AlphaBeta", "Stopped by node limit: " + stoppedByNodeLimit);
         }
-        if (config.debugLevel() >= 1) {
+        if (this.debugLevel >= 1) {
             Log.print("AlphaBeta", "Found turn at depth:", currentDepth);
             Log.print("AlphaBeta", "Best score:", bestScore);
             Log.print("AlphaBeta", "Best turn:", bestTurn);
@@ -122,7 +130,7 @@ public class BitNegaMaxStrategy {
         if (game.getMultiverse().getTimelines().size() > maxTimelinesReached)
             maxTimelinesReached = game.getMultiverse().getTimelines().size();
 
-        if (nodesSearched >= config.maxNodes()) {
+        if (nodesSearched >= this.maxNodes) {
             stoppedByNodeLimit = true;
             return color * evaluator.evaluateGameState(game);
         }
@@ -145,7 +153,7 @@ public class BitNegaMaxStrategy {
                 game.undoAllMovesFromCurrentTurn();
                 continue;
             }
-            if (game.getMultiverse().getTimelines().size() > startTimelineCount + config.maxAdditionalTimelines()) {
+            if (game.getMultiverse().getTimelines().size() > startTimelineCount + this.maxAdditionalTimelines) {
                 game.undoAllMovesFromCurrentTurn();
                 continue;
             }
@@ -153,8 +161,8 @@ public class BitNegaMaxStrategy {
 
             double score = -negamax(game, depth - 1, -beta, -alpha, -color);
 
-            if (config.debugLevel() >= 10 && score > best) {
-                Log.debug(" ".repeat(config.maxDepth() - depth) + "AlphaBeta", "Exploring turn:", "best score:", score);
+            if (this.debugLevel >= 10 && score > best) {
+                Log.debug(" ".repeat(this.maxDepth - depth) + "AlphaBeta", "Exploring turn:", "best score:", score);
             }
 
             game.undoTurn();

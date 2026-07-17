@@ -1,0 +1,6 @@
+negamax:
+  debug_level: 0
+  max_nodes: 1_000_000
+  max_depth: 7
+  max_additional_timelines: 1
+

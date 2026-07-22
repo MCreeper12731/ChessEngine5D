@@ -65,4 +65,39 @@ public class Constant {
             return fromType(PieceType.of(ordinal));
         }
     }
+
+    public static class PieceMobilityWeight {
+
+        public static final int KING = -100;
+        public static final int QUEEN = 1;
+        public static final int ROOK = 2;
+        public static final int BISHOP = 3;
+        public static final int KNIGHT = 4;
+        public static final int PAWN = 0;
+        public static final int UNICORN = 5;
+        public static final int DRAGON = 6;
+        public static final int PRINCESS = 2;
+        public static final int BRAWN = 0;
+
+        public static int fromType(PieceType pieceType) {
+            return switch (pieceType) {
+                case KING -> KING;
+                case QUEEN -> QUEEN;
+                case ROOK -> ROOK;
+                case BISHOP -> BISHOP;
+                case KNIGHT -> KNIGHT;
+                case PAWN -> PAWN;
+                case UNICORN -> UNICORN;
+                case DRAGON -> DRAGON;
+                case PRINCESS -> PRINCESS;
+                case BRAWN -> BRAWN;
+
+                default -> 0;
+            };
+        }
+
+        public static int fromOrdinal(int ordinal) {
+            return fromType(PieceType.of(ordinal));
+        }
+    }
 }

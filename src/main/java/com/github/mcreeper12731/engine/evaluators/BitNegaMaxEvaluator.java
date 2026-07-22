@@ -81,6 +81,7 @@ public class BitNegaMaxEvaluator {
                 game.applyMoves(turn);
                 if (!game.isCurrentTurnFinalizable()) {
                     Log.print("BitAlphaBeta", "Found non-finalizable turn!");
+                    game.isCurrentTurnFinalizable();
                     game.undoAllMovesFromCurrentTurn();
                     continue;
                 }
@@ -142,12 +143,12 @@ public class BitNegaMaxEvaluator {
 
         if (nodesSearched >= this.maxNodes) {
             stoppedByNodeLimit = true;
-            return color * BitEvaluator.evaluateGameState(game);
+            return BitEvaluator.evaluateGameState(game);
         }
 
         if (depth == 0 || game.isGameOver()) {
             return switch (evaluator) {
-                case STATIC -> color * BitEvaluator.evaluateGameState(game);
+                case STATIC -> BitEvaluator.evaluateGameState(game);
                 case QUIESCENCE -> quiescence(game, this.maxQuiescenceDepth, alpha, beta, color);
                 default -> throw new IllegalStateException("Unknown evaluator: " + evaluator);
             };
@@ -191,7 +192,7 @@ public class BitNegaMaxEvaluator {
 
     private int quiescence(BitGame game, int depth, int alpha, int beta, int color) {
 
-        int evaluation = color * BitEvaluator.evaluateGameState(game);
+        int evaluation = BitEvaluator.evaluateGameState(game);
 
         if (this.nodesSearched >= this.maxNodes) {
             this.stoppedByNodeLimit = true;

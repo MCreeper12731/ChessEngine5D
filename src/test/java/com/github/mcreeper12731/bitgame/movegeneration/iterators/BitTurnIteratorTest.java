@@ -2,6 +2,7 @@ package com.github.mcreeper12731.bitgame.movegeneration.iterators;
 
 import com.github.mcreeper12731.bitgame.BitGame;
 import com.github.mcreeper12731.bitgame.models.BitBoard;
+import com.github.mcreeper12731.bitgame.models.BitMultiverse;
 import com.github.mcreeper12731.bitgame.models.BitTimeline;
 import com.github.mcreeper12731.bitgame.movegeneration.BitMoveGenerator;
 import com.github.mcreeper12731.game.Game;
@@ -160,5 +161,30 @@ class BitTurnIteratorTest {
         for (int i = 0; i < unorderedTurns.size(); i++) {
             assertEquals(unorderedTurns.get(i).size(), orderedTurns.get(i).size());
         }
+    }
+
+    @Test
+    public void generatesAllValidTurnsWhenSimple() {
+
+        BitGame game = new BitGame(
+                new BitMultiverse.Builder(3)
+                        .withTimeline(
+                                new BitTimeline.Builder(0)
+                                        .withBoard(
+                                                new BitBoard.Builder(3, 0, 0)
+                                                        .withWhitePiece(PieceType.QUEEN, 0, 0)
+                                                        .withWhitePiece(PieceType.KING, 1, 0)
+                                                        .withBlackPiece(PieceType.KING, 2, 2)
+                                                        .build()
+                                        ).build()
+                        ).build()
+        );
+
+        List<List<Move>> moves = Iterators.consumeRemaining(BitMoveGenerator.getIterativeTurnIterator(game, true));
+
+        Log.debug("Test", moves);
+
+        assertEquals(6, moves.size());
+
     }
 }

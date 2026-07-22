@@ -55,5 +55,4 @@ public enum Preset {
     public BitGame getBitGame() {
         return new BitGame(this.gamePreset.createGame());
     }
-
 }

@@ -49,19 +49,19 @@ public class BitPiece {
     public static Iterator<Move> getMoveIterator(BitGame game, Point4D location) {
         byte piece = game.getMultiverse().getLocationContents(location);
         if (piece == 0) return Collections.emptyIterator();
-        int type = typeOrdinal(piece);
-        return switch (type) {
-            case 0 -> new BitSingleStepMoveSet(MoveDirections.DIRECTIONS_1234_DIM).iterator(game, location);    // King
-            case 1 -> new BitSlidingMoveSet(MoveDirections.DIRECTIONS_1234_DIM).iterator(game, location);       // Queen
-            case 2 -> new BitSlidingMoveSet(MoveDirections.DIRECTIONS_1_DIM).iterator(game, location);          // Rook
-            case 3 -> new BitSlidingMoveSet(MoveDirections.DIRECTIONS_2_DIM).iterator(game, location);          // Bishop
-            case 4 -> new BitSingleStepMoveSet(MoveDirections.DIRECTIONS_KNIGHT).iterator(game, location);      // Knight
-            case 5 -> new BitPawnMoveSet().iterator(game, location);                                            // Pawn
+        int typeOrdinal = typeOrdinal(piece);
+        return switch (PieceType.of(typeOrdinal)) {
+            case KING -> new BitSingleStepMoveSet(MoveDirections.DIRECTIONS_1234_DIM).iterator(game, location); // King
+            case QUEEN -> new BitSlidingMoveSet(MoveDirections.DIRECTIONS_1234_DIM).iterator(game, location);   // Queen
+            case ROOK -> new BitSlidingMoveSet(MoveDirections.DIRECTIONS_1_DIM).iterator(game, location);       // Rook
+            case BISHOP -> new BitSlidingMoveSet(MoveDirections.DIRECTIONS_2_DIM).iterator(game, location);     // Bishop
+            case KNIGHT -> new BitSingleStepMoveSet(MoveDirections.DIRECTIONS_KNIGHT).iterator(game, location); // Knight
+            case PAWN -> new BitPawnMoveSet().iterator(game, location);                                         // Pawn
 
-            case 6 -> new BitSlidingMoveSet(MoveDirections.DIRECTIONS_3_DIM).iterator(game, location);          // Unicorn
-            case 7 -> new BitSlidingMoveSet(MoveDirections.DIRECTIONS_4_DIM).iterator(game, location);          // Dragon
-            case 8 -> new BitSlidingMoveSet(MoveDirections.DIRECTIONS_12_DIM).iterator(game, location);         // Princess
-            case 9 -> new BitBrawnMoveSet().iterator(game, location);                                           // Brawn
+            case UNICORN -> new BitSlidingMoveSet(MoveDirections.DIRECTIONS_3_DIM).iterator(game, location);    // Unicorn
+            case DRAGON -> new BitSlidingMoveSet(MoveDirections.DIRECTIONS_4_DIM).iterator(game, location);     // Dragon
+            case PRINCESS -> new BitSlidingMoveSet(MoveDirections.DIRECTIONS_12_DIM).iterator(game, location);  // Princess
+            case BRAWN -> new BitBrawnMoveSet().iterator(game, location);                                       // Brawn
             default -> Collections.emptyIterator();
         };
     }

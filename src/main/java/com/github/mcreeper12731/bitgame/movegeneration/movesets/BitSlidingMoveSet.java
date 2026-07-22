@@ -62,7 +62,7 @@ public class BitSlidingMoveSet implements BitMoveSet {
 
                 this.nextMove = Move.of(this.piece, this.pieceLocation, toLocation);
 
-                if (toPiece == 0) {
+                if (toPiece != 0) {
                     this.nextDirection();
                 } else {
                     this.length++;

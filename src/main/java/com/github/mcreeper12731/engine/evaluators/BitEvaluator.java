@@ -6,9 +6,14 @@ import com.github.mcreeper12731.bitgame.models.BitMultiverse;
 import com.github.mcreeper12731.bitgame.models.BitTimeline;
 import com.github.mcreeper12731.bitgame.models.pieces.BitPiece;
 import com.github.mcreeper12731.bitgame.models.scored.ScoredBitBoard;
+import com.github.mcreeper12731.bitgame.movegeneration.movesets.BitSlidingMoveSet;
+import com.github.mcreeper12731.game.models.Board;
 import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.models.Move;
+import com.github.mcreeper12731.game.models.Point4D;
 import com.github.mcreeper12731.game.models.pieces.PieceType;
+import com.github.mcreeper12731.game.movegeneration.movesets.MoveDirections;
+import com.github.mcreeper12731.utility.Iterators;
 
 import static com.github.mcreeper12731.engine.evaluators.Constant.*;
 import static com.github.mcreeper12731.engine.evaluators.Constant.BISHOP_DANGER_COST;
@@ -35,28 +40,76 @@ import static com.github.mcreeper12731.engine.evaluators.Constant.UNICORN_DANGER
 public class BitEvaluator {
 
     public static int evaluateGameState(BitGame game) {
+
+        if (game.isGameOver())
+            return 1_000_000 * (game.getPlayerTurn() == game.getWinner() ? 1 : -1);
+
         int score = 0;
-        BitMultiverse multiverse = game.getMultiverse();
 
-        if (game.getWinner() == Color.WHITE) return 1_000_000;
-        if (game.getWinner() == Color.BLACK) return -1_000_000;
+        /*int playerMobility = pieceMobility(game, game.getPlayerTurn());
+        int opponentMobility = pieceMobility(game, game.getPlayerTurn().other());
+        score += (playerMobility - opponentMobility);
 
-        for (BitTimeline timeline : multiverse.getTimelines()) {
-            if (timeline.getL() < 0) score += 2;
-            if (timeline.getL() > 0) score -= 2;
-
-            BitBoard board = timeline.getLastBoard();
-            for (int i = 0; i < board.size() * board.size(); i++) {
-                byte piece = board.getLocationContentsFromIndex(i);
-                if (piece == 0) continue;
-                int pieceColor = BitPiece.colorOrdinal(piece);
-                if (pieceColor == BitGame.WHITE) score += Constant.PieceValue.fromOrdinal(BitPiece.typeOrdinal(piece));
-                if (pieceColor == BitGame.BLACK) score -= Constant.PieceValue.fromOrdinal(BitPiece.typeOrdinal(piece));
-            }
-        }
+        int playerPieceScore = pieceScore(game, game.getPlayerTurn());
+        int opponentPieceScore = pieceScore(game, game.getPlayerTurn());
+        score += (playerPieceScore - opponentPieceScore);
+*/
         return score;
     }
 
+    private static int pieceScore(BitGame game, Color player) {
+
+        int score = 0;
+        for (BitTimeline timeline : game.getMultiverse().getTimelines()) {
+            BitBoard board = timeline.getLastBoard();
+            for (int x = 0; x < board.size(); x++) {
+                for (int y = 0; y < board.size(); y++) {
+                    byte piece = board.getLocationContents(x, y);
+                    if (piece == 0) continue;
+                    if (BitPiece.colorOrdinal(piece) != player.ordinal()) continue;
+                    int typeOrdinal = BitPiece.typeOrdinal(piece);
+                    score += Constant.PieceValue.fromOrdinal(typeOrdinal);
+                }
+            }
+        }
+
+        return score;
+    }
+
+    private static int pieceMobility(BitGame game, Color player) {
+
+        int score = 0;
+        for (BitTimeline timeline : game.getMultiverse().getTimelines()) {
+            BitBoard board = timeline.getLastBoard();
+            for (int x = 0; x < board.size(); x++) {
+                for (int y = 0; y < board.size(); y++) {
+                    byte piece = board.getLocationContents(x, y);
+                    if (piece == 0) continue;
+                    if (BitPiece.colorOrdinal(piece) != player.ordinal()) continue;
+                    Point4D location = new Point4D(board.l(), board.t(), x, y);
+                    int typeOrdinal = BitPiece.typeOrdinal(piece);
+                    int moveCount;
+                    if (typeOrdinal == PieceType.KING.ordinal()) {
+                        moveCount = Iterators.consumeRemaining(
+                                new BitSlidingMoveSet(MoveDirections.DIRECTIONS_1234_DIM).iterator(game, location)
+                        ).size();
+                    } else {
+                        moveCount = Iterators.consumeRemaining(
+                                BitPiece.getMoveIterator(game, location)
+                        ).size();
+                    }
+
+                    score += moveCount + Constant.PieceMobilityWeight.fromOrdinal(
+                            BitPiece.typeOrdinal(piece)
+                    );
+                }
+            }
+        }
+
+        return score;
+    }
+
+    // Move heuristic - TODO
     public static int evaluateMove(Move move, BitGame game, ScoredBitBoard board) {
         int score = 0;
         if (move.noop()) return 0;

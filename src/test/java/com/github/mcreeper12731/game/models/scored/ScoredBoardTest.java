@@ -81,7 +81,7 @@ class ScoredBoardTest {
     @Test
     public void scoredMovesWhenMateInOne() {
 
-        Game game = Preset.PUZZLE_QUEEN_1.getGame();
+        Game game = Preset.PUZZLE_QUEEN_TACTICS_1.getGame();
 
         Board board = game.getMultiverse().getBoard(0, 2);
         ScoredBoard scoredBoard = new ScoredBoard(board, game);

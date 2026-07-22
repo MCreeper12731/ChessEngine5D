@@ -11,19 +11,19 @@ public class MoveOrderingComparison {
 
     public static void main(String[] args) {
 
-        BitGame game = new BitGame(Preset.PUZZLE_KNIGHT_6.getGame());
+        BitGame game = new BitGame(Preset.STANDARD.getGame());
 
         BitNegaMaxEvaluator negaMaxNoMoveOrdering = new BitNegaMaxEvaluator(
                 new Config()
                         .with("max_nodes", 9_999_999)
-                        .with("max_depth", 7)
+                        .with("max_depth", 5)
                         .with("move_ordering", "none")
         );
 
         BitNegaMaxEvaluator negaMaxWithMoveOrdering = new BitNegaMaxEvaluator(
                 new Config()
                         .with("max_nodes", 9_999_999)
-                        .with("max_depth", 7)
+                        .with("max_depth", 5)
                         .with("move_ordering", "ordered")
         );
 

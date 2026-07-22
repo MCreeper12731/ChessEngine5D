@@ -198,7 +198,7 @@ class GameTest {
     @Test
     public void isGameOverWhenKingCaptured() {
 
-        Game game = Preset.PUZZLE_QUEEN_1.getGame();
+        Game game = Preset.PUZZLE_QUEEN_TACTICS_1.getGame();
 
         game.applyMovesAndFinalizeTurn(List.of(
                 new Move.Builder(game)

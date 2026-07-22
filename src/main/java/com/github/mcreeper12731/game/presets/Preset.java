@@ -1,5 +1,6 @@
 package com.github.mcreeper12731.game.presets;
 
+import com.github.mcreeper12731.bitgame.BitGame;
 import com.github.mcreeper12731.game.presets.checkmatepractice.PawnPreset;
 import com.github.mcreeper12731.game.presets.checkmatepractice.QueenPreset;
 import com.github.mcreeper12731.game.presets.checkmatepractice.RookPreset;
@@ -17,18 +18,21 @@ public enum Preset {
     JUST_QUEENS_INVASION(new JustQueensInvasionPreset()),
     JUST_ROOKS(new JustRooksPreset()),
     JUST_DRAGONS(new JustDragonsPreset()),
-    PUZZLE_ROOK_1(new RookTactics1Puzzle()),
-    PUZZLE_ROOK_2(new RookTactics2Puzzle()),
-    PUZZLE_ROOK_3(new RookTactics3Puzzle()),
-    PUZZLE_ROOK_4(new RookTactics4Puzzle()),
-    PUZZLE_ROOK_5(new RookTactics5Puzzle()),
-    PUZZLE_QUEEN_1(new QueenTactics1Puzzle()),
-    PUZZLE_QUEEN_3(new QueenTactics3Puzzle()),
-    PUZZLE_QUEEN_4(new QueenTactics4Puzzle()),
+
+    // Puzzles
+    PUZZLE_ROOK_TACTICS_1(new RookTactics1Puzzle()),
+    PUZZLE_ROOK_TACTICS_2(new RookTactics2Puzzle()),
+    PUZZLE_ROOK_TACTICS_3(new RookTactics3Puzzle()),
+    PUZZLE_ROOK_TACTICS_4(new RookTactics4Puzzle()),
+    PUZZLE_ROOK_TACTICS_5(new RookTactics5Puzzle()),
+    PUZZLE_QUEEN_TACTICS_1(new QueenTactics1Puzzle()),
+    PUZZLE_QUEEN_TACTICS_3(new QueenTactics3Puzzle()),
+    PUZZLE_QUEEN_TACTICS_4(new QueenTactics4Puzzle()),
     PUZZLE_KNIGHT_6(new KnightTactics6Puzzle()),
     PUZZLE_BACKRANK_4(new BackrankBasics4Puzzle()),
-    PUZZLE_OPENING_TRAP_2(new OpeningTraps2Puzzle()),
-    PUZZLE_OPENING_TRAP_4(new OpeningTraps4Puzzle()),
+    PUZZLE_OPENING_TRAPS_2(new OpeningTraps2Puzzle()),
+    PUZZLE_OPENING_TRAPS_4(new OpeningTraps4Puzzle()),
+
     CHECKMATE_PRACTICE_QUEEN(new QueenPreset()),
     CHECKMATE_PRACTICE_ROOK(new RookPreset()),
     CHECKMATE_PRACTICE_PAWN(new PawnPreset()),
@@ -38,10 +42,6 @@ public enum Preset {
     CUSTOM_SIMPLE_SINGLEBOARD(new SimplePositionPreset()),
     CUSTOM_SIMPLE_MULTIBOARD(new SimpleMultiBoardPreset());
 
-    public static Preset fromString(String stringValue) {
-        return Preset.valueOf(stringValue.toUpperCase());
-    }
-
     private final GamePreset gamePreset;
 
     Preset(GamePreset gamePreset) {
@@ -50,6 +50,10 @@ public enum Preset {
 
     public Game getGame() {
         return this.gamePreset.createGame();
+    }
+
+    public BitGame getBitGame() {
+        return new BitGame(this.gamePreset.createGame());
     }
 
 }

@@ -2,6 +2,7 @@ package com.github.mcreeper12731.bitgame.movegeneration.iterators;
 
 import com.github.mcreeper12731.bitgame.BitGame;
 import com.github.mcreeper12731.bitgame.models.BitBoard;
+import com.github.mcreeper12731.bitgame.models.BitTimeline;
 import com.github.mcreeper12731.bitgame.movegeneration.BitMoveGenerator;
 import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Board;
@@ -108,7 +109,7 @@ class BitTurnIteratorTest {
             assertEquals(moves, bitMoves);
 
             moves = MoveGenerator.scoredMoves(board, game);
-            bitMoves = BitMoveGenerator.scoredMoves(bitBoard, bitGame);
+            bitMoves = BitMoveGenerator.scoredMoves(bitBoard, bitGame, true);
             assertEquals(moves, bitMoves);
         }
 
@@ -130,11 +131,34 @@ class BitTurnIteratorTest {
 
     @Test
     public void turnGenerationSameAsIterative() {
-        BitGame game = new BitGame(Preset.CUSTOM_COMPLEX_POSITION.getGame());
+        BitGame game = new BitGame(Preset.JUST_QUEENS_INVASION.getGame());
 
-        List<List<Move>> regularTurns = Iterators.consumeRemaining(BitMoveGenerator.getTurnsIterator(game));
-        List<List<Move>> iterativeTurns = Iterators.consumeRemaining(BitMoveGenerator.getIterativeTurnIterator(game));
+        List<List<Move>> unorderedBoardMoves = new ArrayList<>();
+        for (BitTimeline timeline : game.getMultiverse().getTimelines()) {
+            BitBoard board = timeline.getLastBoard();
+            if (board.getPlayerTurn() != game.getPlayerTurn()) continue;
+            List<Move> moves = BitMoveGenerator.scoredMoves(timeline.getLastBoard(), game, false);
+            unorderedBoardMoves.add(moves);
+        }
 
-        assertEquals(regularTurns.size(), iterativeTurns.size());
+        List<List<Move>> orderedBoardMoves = new ArrayList<>();
+        for (BitTimeline timeline : game.getMultiverse().getTimelines()) {
+            BitBoard board = timeline.getLastBoard();
+            if (board.getPlayerTurn() != game.getPlayerTurn()) continue;
+            List<Move> moves = BitMoveGenerator.scoredMoves(timeline.getLastBoard(), game, true);
+            orderedBoardMoves.add(moves);
+        }
+        assertEquals(unorderedBoardMoves.size(), orderedBoardMoves.size());
+        for (int i = 0; i < unorderedBoardMoves.size(); i++) {
+            assertEquals(unorderedBoardMoves.get(i).size(), orderedBoardMoves.get(i).size());
+        }
+
+        List<List<Move>> unorderedTurns = Iterators.consumeRemaining(BitMoveGenerator.getIterativeTurnIterator(game, false));
+        List<List<Move>> orderedTurns = Iterators.consumeRemaining(BitMoveGenerator.getIterativeTurnIterator(game, true));
+
+        assertEquals(unorderedTurns.size(), orderedTurns.size());
+        for (int i = 0; i < unorderedTurns.size(); i++) {
+            assertEquals(unorderedTurns.get(i).size(), orderedTurns.get(i).size());
+        }
     }
 }

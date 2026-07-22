@@ -2,11 +2,9 @@ package com.github.mcreeper12731.engine.evaluators;
 
 import com.github.mcreeper12731.bitgame.movegeneration.BitMoveGenerator;
 import com.github.mcreeper12731.bitgame.BitGame;
-import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Color;
 import com.github.mcreeper12731.game.models.Move;
 import com.github.mcreeper12731.game.models.scored.ScoredTurn;
-import com.github.mcreeper12731.game.movegeneration.MoveGenerator;
 import com.github.mcreeper12731.utility.Config;
 import com.github.mcreeper12731.utility.Log;
 
@@ -18,12 +16,16 @@ public class BitNegaMaxEvaluator {
     private static final int POSITIVE_INFINITY = Integer.MAX_VALUE;
     private static final int NEGATIVE_INFINITY = Integer.MIN_VALUE + 1;
 
+    // Configuration values
     private final int debugLevel;
     private final int maxDepth;
     private final int maxNodes;
     private final int maxAdditionalTimelines;
-    private final Function<BitGame, Iterator<List<Move>>> moveGenerator;
-    private final BitEvaluator evaluator;
+    private final Function<BitGame, Iterator<List<Move>>> turnsGenerator;
+    private final EvaluatorType evaluator;
+    // The nature of 5D chess means that the quiescence search will not stop until it hits the node limit
+    // as every move generates copies of boards and thus pieces to capture.
+    private final int maxQuiescenceDepth;
 
     public int startTimelineCount;
     public int maxTimelinesReached;
@@ -31,24 +33,24 @@ public class BitNegaMaxEvaluator {
     public boolean stoppedByNodeLimit;
 
     public BitNegaMaxEvaluator() {
-        this(Config.fromFile("negamax"), new BitStaticEvaluator());
+        this(Config.fromFile("negamax"));
     }
 
     public BitNegaMaxEvaluator(Config config) {
-        this(config, new BitStaticEvaluator());
-    }
-
-    public BitNegaMaxEvaluator(Config config, BitEvaluator evaluator) {
         Config fileConfig = Config.fromFile("negamax");
         this.debugLevel = config.getOrDefault("debug_level", fileConfig.getInt("debug_level"));
         this.maxDepth = config.getOrDefault("max_depth", fileConfig.getInt("max_depth"));
         this.maxNodes = config.getOrDefault("max_nodes", fileConfig.getInt("max_nodes"));
         this.maxAdditionalTimelines = config.getOrDefault("max_additional_timelines", fileConfig.getInt("max_additional_timelines"));
-        this.moveGenerator = config.getOrDefault("move_ordering", "ordered").equals("ordered") ?
-                BitMoveGenerator::getIterativeTurnIterator :
-                BitMoveGenerator::getTurnsIterator;
-
-        this.evaluator = evaluator;
+        this.turnsGenerator = config.getOrDefault("move_ordering", fileConfig.getString("move_ordering")).equals("ordered") ?
+                bitGame -> BitMoveGenerator.getIterativeTurnIterator(bitGame, true) :
+                bitGame -> BitMoveGenerator.getIterativeTurnIterator(bitGame, false);
+        this.evaluator = switch (config.getOrDefault("evaluator", fileConfig.getString("evaluator"))) {
+            case "static" -> EvaluatorType.STATIC;
+            case "quiescence" -> EvaluatorType.QUIESCENCE;
+            default -> throw new IllegalArgumentException("Invalid evaluator type");
+        };
+        this.maxQuiescenceDepth = config.getOrDefault("max_quiescence_depth", fileConfig.getInt("max_quiescence_depth"));
     }
 
     public ScoredTurn findBestTurn(BitGame game) {
@@ -59,25 +61,26 @@ public class BitNegaMaxEvaluator {
         long prevNodesSearched;
 
         List<Move> bestTurn = null;
-        double bestScore = NEGATIVE_INFINITY;
+        int bestScore = NEGATIVE_INFINITY;
         int currentDepth = 1;
 
         while (currentDepth <= this.maxDepth) {
             startTimelineCount = game.getMultiverse().getTimelines().size();
             nodesSearched = 0;
+            stoppedByNodeLimit = false;
             prevNodesSearched = 0;
 
             bestTurn = null;
             bestScore = NEGATIVE_INFINITY;
 
-            Iterator<List<Move>> turns = this.moveGenerator.apply(game);
+            Iterator<List<Move>> turns = this.turnsGenerator.apply(game);
 
             while (turns.hasNext()) {
                 List<Move> turn = turns.next();
 
                 game.applyMoves(turn);
                 if (!game.isCurrentTurnFinalizable()) {
-                    Log.print("AlphaBeta", "Found non-finalizable turn!");
+                    Log.print("BitAlphaBeta", "Found non-finalizable turn!");
                     game.undoAllMovesFromCurrentTurn();
                     continue;
                 }
@@ -87,7 +90,7 @@ public class BitNegaMaxEvaluator {
                     Log.debug("AlphaBeta", "Exploring: " + turn);
                 }
 
-                double score = -negamax(
+                int score = -negamax(
                         game,
                         currentDepth - 1,
                         NEGATIVE_INFINITY,
@@ -132,28 +135,33 @@ public class BitNegaMaxEvaluator {
         return new ScoredTurn(bestTurn, bestScore, nodesSearched);
     }
 
-    private double negamax(BitGame game, int depth, double alpha, double beta, int color) {
-        nodesSearched++;
+    private int negamax(BitGame game, int depth, int alpha, int beta, int color) {
 
-        if (game.getMultiverse().getTimelines().size() > maxTimelinesReached)
-            maxTimelinesReached = game.getMultiverse().getTimelines().size();
+        if (game.getMultiverse().getTimelines().size() > this.maxTimelinesReached)
+            this.maxTimelinesReached = game.getMultiverse().getTimelines().size();
 
         if (nodesSearched >= this.maxNodes) {
             stoppedByNodeLimit = true;
-            return color * evaluator.evaluateGameState(game);
+            return color * BitEvaluator.evaluateGameState(game);
         }
 
         if (depth == 0 || game.isGameOver()) {
-            return color * evaluator.evaluateGameState(game);
+            return switch (evaluator) {
+                case STATIC -> color * BitEvaluator.evaluateGameState(game);
+                case QUIESCENCE -> quiescence(game, this.maxQuiescenceDepth, alpha, beta, color);
+                default -> throw new IllegalStateException("Unknown evaluator: " + evaluator);
+            };
         }
+        this.nodesSearched++;
 
-        double best = NEGATIVE_INFINITY;
-        Iterator<List<Move>> turnsIterator = this.moveGenerator.apply(game);
+        int best = NEGATIVE_INFINITY;
+        Iterator<List<Move>> turnsIterator = this.turnsGenerator.apply(game);
         if (!turnsIterator.hasNext()) {
-            return -0.000001;
+            return 0;
         }
 
         while (turnsIterator.hasNext()) {
+            if (this.stoppedByNodeLimit) break;
             List<Move> turn = turnsIterator.next();
 
             game.applyMoves(turn);
@@ -167,7 +175,7 @@ public class BitNegaMaxEvaluator {
             }
             game.finalizeTurn();
 
-            double score = -negamax(game, depth - 1, -beta, -alpha, -color);
+            int score = -negamax(game, depth - 1, -beta, -alpha, -color);
 
             if (this.debugLevel >= 10 && score > best) {
                 Log.debug(" ".repeat(this.maxDepth - depth) + "AlphaBeta", "Exploring turn:", "best score:", score);
@@ -176,7 +184,64 @@ public class BitNegaMaxEvaluator {
             game.undoTurn();
             best = Math.max(best, score);
             alpha = Math.max(alpha, score);
-            if (alpha >= beta || this.stoppedByNodeLimit) break;
+            if (alpha >= beta) break;
+        }
+        return best;
+    }
+
+    private int quiescence(BitGame game, int depth, int alpha, int beta, int color) {
+
+        int evaluation = color * BitEvaluator.evaluateGameState(game);
+
+        if (this.nodesSearched >= this.maxNodes) {
+            this.stoppedByNodeLimit = true;
+            return evaluation;
+        }
+
+        if (depth == 0) {
+            return evaluation;
+        }
+
+        this.nodesSearched++;
+
+        if (evaluation >= beta)
+            return beta;
+
+        if (evaluation >= alpha)
+            alpha = evaluation;
+
+        int best = evaluation;
+        Iterator<List<Move>> turnsIterator = this.turnsGenerator.apply(game);
+        while (turnsIterator.hasNext()) {
+            if (this.stoppedByNodeLimit) break;
+            List<Move> turn = turnsIterator.next();
+
+            boolean isCapture = false;
+            for (Move move : turn) {
+                if (move.to() == null) continue;
+                if (game.getMultiverse().getLocationContents(move.to()) != 0 || move.enPassant() != null) {
+                    isCapture = true;
+                    break;
+                }
+            }
+            if (!isCapture) continue;
+            game.applyMoves(turn);
+            if (!game.isCurrentTurnFinalizable()) {
+                game.undoAllMovesFromCurrentTurn();
+                continue;
+            }
+            if (game.getMultiverse().getTimelines().size() > startTimelineCount + this.maxAdditionalTimelines) {
+                game.undoAllMovesFromCurrentTurn();
+                continue;
+            }
+            game.finalizeTurn();
+
+            int score = -quiescence(game, depth - 1, -beta, -alpha, -color);
+
+            game.undoTurn();
+            best = Math.max(best, score);
+            alpha = Math.max(alpha, score);
+            if (alpha >= beta) break;
         }
         return best;
     }

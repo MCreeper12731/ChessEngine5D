@@ -27,31 +27,24 @@ import java.util.stream.Collectors;
 
 public class BitMoveGenerator {
 
-    public static Iterator<List<Move>> getIterativeTurnIterator(BitGame game) {
+    public static Iterator<List<Move>> getIterativeTurnIterator(BitGame game, boolean ordered) {
 
         List<List<Move>> boardsMoves = new ArrayList<>();
         for (BitTimeline timeline : game.getMultiverse().getTimelines()) {
             BitBoard board = timeline.getLastBoard();
             if (board.getPlayerTurn() != game.getPlayerTurn()) continue;
-            List<Move> moves = scoredMoves(timeline.getLastBoard(), game);
+            List<Move> moves = scoredMoves(timeline.getLastBoard(), game, ordered);
             boardsMoves.add(moves);
         }
         return new BitIterativeTurnIterator(game, boardsMoves);
     }
 
     public static Iterator<List<Move>> getTurnsIterator(BitGame game) {
-        List<List<Move>> boardsMoves = new ArrayList<>();
-        for (BitTimeline timeline : game.getMultiverse().getTimelines()) {
-            BitBoard board = timeline.getLastBoard();
-            if (board.getPlayerTurn() != game.getPlayerTurn()) continue;
-            List<Move> moves = probableMoves(timeline.getLastBoard(), game);
-            boardsMoves.add(moves);
-        }
-        return new BitIterativeTurnIterator(game, boardsMoves);
+        return new BitTurnIterator(game);
     }
 
     public static Supplier<Iterator<Move>> scoredMovesSupplier(BitBoard board, BitGame game) {
-        List<Move> moves = scoredMoves(board, game);
+        List<Move> moves = scoredMoves(board, game, true);
         return moves::iterator;
     }
 
@@ -60,9 +53,9 @@ public class BitMoveGenerator {
         return () -> new BitBoardMoveIterator(board, game);
     }
 
-    public static List<Move> scoredMoves(BitBoard board, BitGame game) {
+    public static List<Move> scoredMoves(BitBoard board, BitGame game, boolean ordered) {
         ScoredBitBoard scoredBoard = new ScoredBitBoard(board, game);
-        return new MappedListView<>(scoredBoard.scoreMoves(game), ScoredMove::move);
+        return scoredBoard.scoreMoves(game, ordered).stream().filter(scoredMove -> scoredMove.score() != -100_000).map(ScoredMove::move).toList();
     }
 
     public static List<Move> probableMoves(BitBoard board, BitGame game) {

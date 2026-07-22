@@ -33,18 +33,18 @@ public class Constant {
 
     public static class PieceValue {
 
-        public static final double KING = 1_000;
-        public static final double QUEEN = 9;
-        public static final double ROOK = 5;
-        public static final double BISHOP = 3;
-        public static final double KNIGHT = 3;
-        public static final double PAWN = 1;
-        public static final double UNICORN = 2;
-        public static final double DRAGON = 0.5;
-        public static final double PRINCESS = 8;
-        public static final double BRAWN = 1.5;
+        public static final int KING = 100_000;
+        public static final int QUEEN = 900;
+        public static final int ROOK = 500;
+        public static final int BISHOP = 300;
+        public static final int KNIGHT = 300;
+        public static final int PAWN = 100;
+        public static final int UNICORN = 200;
+        public static final int DRAGON = 50;
+        public static final int PRINCESS = 800;
+        public static final int BRAWN = 150;
 
-        public static double fromType(PieceType pieceType) {
+        public static int fromType(PieceType pieceType) {
             return switch (pieceType) {
                 case KING -> KING;
                 case QUEEN -> QUEEN;
@@ -61,7 +61,7 @@ public class Constant {
             };
         }
 
-        public static double fromOrdinal(int ordinal) {
+        public static int fromOrdinal(int ordinal) {
             return fromType(PieceType.of(ordinal));
         }
     }

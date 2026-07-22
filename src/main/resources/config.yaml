@@ -3,4 +3,7 @@ negamax:
   max_nodes: 1_000_000
   max_depth: 7
   max_additional_timelines: 1
+  move_ordering: ordered
+  evaluator: quiescence
+  max_quiescence_depth: 7
 

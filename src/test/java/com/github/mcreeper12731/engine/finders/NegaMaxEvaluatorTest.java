@@ -1,7 +1,6 @@
 package com.github.mcreeper12731.engine.finders;
 
 import com.github.mcreeper12731.engine.evaluators.NegaMaxEvaluator;
-import com.github.mcreeper12731.engine.evaluators.StaticEvaluator;
 import com.github.mcreeper12731.game.Game;
 import com.github.mcreeper12731.game.models.Move;
 import com.github.mcreeper12731.game.models.scored.ScoredTurn;
@@ -22,7 +21,7 @@ class NegaMaxEvaluatorTest {
     @Test
     public void puzzleRook2() {
 
-        Game game = Preset.PUZZLE_ROOK_2.getGame();
+        Game game = Preset.PUZZLE_ROOK_TACTICS_2.getGame();
 
         NegaMaxEvaluator strategy = new NegaMaxEvaluator(
                 new Config()
@@ -92,7 +91,7 @@ class NegaMaxEvaluatorTest {
     @Test
     public void puzzleOpeningTrap2() {
 
-        Game game = Preset.PUZZLE_OPENING_TRAP_2.getGame();
+        Game game = Preset.PUZZLE_OPENING_TRAPS_2.getGame();
 
         NegaMaxEvaluator strategy = new NegaMaxEvaluator(
                 new Config()

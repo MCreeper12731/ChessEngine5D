@@ -4,8 +4,7 @@ import com.github.mcreeper12731.bitgame.BitGame;
 import com.github.mcreeper12731.bitgame.models.BitBoard;
 import com.github.mcreeper12731.bitgame.models.pieces.BitPiece;
 import com.github.mcreeper12731.bitgame.movegeneration.BitMoveGenerator;
-import com.github.mcreeper12731.engine.evaluators.BitStaticEvaluator;
-import com.github.mcreeper12731.engine.evaluators.StaticEvaluator;
+import com.github.mcreeper12731.engine.evaluators.BitEvaluator;
 import com.github.mcreeper12731.game.models.Move;
 import com.github.mcreeper12731.game.models.Point4D;
 import com.github.mcreeper12731.game.models.pieces.PieceType;
@@ -63,27 +62,18 @@ public record ScoredBitBoard(BitBoard board, List<Integer> danger, List<Point4D>
     }
 
     @SuppressWarnings("Duplicates")
-    public List<ScoredMove> scoreMoves(BitGame game) {
+    public List<ScoredMove> scoreMoves(BitGame game, boolean sort) {
         List<ScoredMove> scoredMoves = new ArrayList<>();
 
-        BitStaticEvaluator evaluator = new BitStaticEvaluator();
-
         List<Move> boardMoves = BitMoveGenerator.probableMoves(this.board, game);
-        boardMoves.addFirst(
-                new Move.Builder()
-                        .withNoop()
-                        .build()
-        );
         for (Move move : boardMoves) {
 
-            int score = evaluator.evaluateMove(move, game, this);
-
-            if (score == -100_000) continue;
+            int score = BitEvaluator.evaluateMove(move, game, this);
 
             scoredMoves.add(new ScoredMove(move, score));
         }
 
-        scoredMoves.sort(Comparator.naturalOrder());
+        if (sort) scoredMoves.sort(Comparator.naturalOrder());
 
         return scoredMoves;
     }
